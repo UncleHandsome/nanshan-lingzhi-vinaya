@@ -204,7 +204,7 @@ def build():
                      + '<p class="byline">' + html.escape(bk['by']) + '　·　' + str(len(bk['_groups'])) + ' 卷</p>'
                      + '<div class="grp">' + links + '</div></section>')
     idx_body = ('<h1>南山律典・白話對照</h1>'
-                '<section class="card"><h2>行事鈔資持記・句級合編</h2><p class="byline">鈔文與記文逐段並列　·　4 卷</p><div class="grp"><a href="hebian/卷一.html">卷一</a><a href="hebian/卷二.html">卷二</a><a href="hebian/卷三.html">卷三</a><a href="hebian/卷四.html">卷四</a></div></section>' + '<p class="intro">道宣律師三大部與相關鈔疏的白話對照本，逐段原文與白話並列；原文採 CBETA 電子佛典（大正藏／卍續藏）。</p>' + '<p class="intro"><a href="appendix.html">附錄：名相與度量衡</a></p>'
+                '<section class="card"><h2>行事鈔資持記・句級合編</h2><p class="byline">鈔文與記文逐段並列　·　12 卷</p><div class="grp"><a href="hebian/卷上之一.html">卷上之一</a><a href="hebian/卷上之二.html">卷上之二</a><a href="hebian/卷上之三.html">卷上之三</a><a href="hebian/卷上之四.html">卷上之四</a><a href="hebian/卷中之一.html">卷中之一</a><a href="hebian/卷中之二.html">卷中之二</a><a href="hebian/卷中之三.html">卷中之三</a><a href="hebian/卷中之四.html">卷中之四</a><a href="hebian/卷下之一.html">卷下之一</a><a href="hebian/卷下之二.html">卷下之二</a><a href="hebian/卷下之三.html">卷下之三</a><a href="hebian/卷下之四.html">卷下之四</a></div></section>' + '<p class="intro">道宣律師三大部與相關鈔疏的白話對照本，逐段原文與白話並列；原文採 CBETA 電子佛典（大正藏／卍續藏）。</p>' + '<p class="intro"><a href="appendix.html">附錄：名相與度量衡</a></p>'
                 + ''.join(cards) + '<p class="byline"><a href="search.html">→ 全文搜尋</a></p>')
     io.open(os.path.join(SITE, 'index.html'), 'w', encoding='utf-8').write(page('目錄', idx_body))
     # 搜尋頁

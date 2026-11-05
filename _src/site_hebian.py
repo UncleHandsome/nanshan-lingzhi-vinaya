@@ -33,7 +33,7 @@ def nav(cur_vol=None):
             parts.append('<li><a href="../%s/%s.html">%s</a></li>' % (out, v, v))
         parts.append('</ul></details>')
     parts.append('<details class="navj" open><summary class="cur">行事鈔資持記・句級合編</summary><ul>')
-    for v in ('卷一', '卷二', '卷三', '卷四'):
+    for v in ('卷上之一','卷上之二','卷上之三','卷上之四','卷中之一','卷中之二','卷中之三','卷中之四','卷下之一','卷下之二','卷下之三','卷下之四'):
         parts.append('<li><a href="%s.html">%s</a></li>' % (v, v))
     parts.append('</ul></details>')
     parts.append('</div></div></nav>')
@@ -56,7 +56,7 @@ def shaded(p):
     return p._p.find('.//' + qn('w:shd')) is not None
 
 
-for vol in ('卷一', '卷二', '卷三', '卷四'):
+for vol in ('卷上之一','卷上之二','卷上之三','卷上之四','卷中之一','卷中之二','卷中之三','卷中之四','卷下之一','卷下之二','卷下之三','卷下之四'):
     src = os.path.join(D, '白話', '行事鈔資持記句級合編_%s.docx' % vol)
     if not os.path.exists(src):
         continue

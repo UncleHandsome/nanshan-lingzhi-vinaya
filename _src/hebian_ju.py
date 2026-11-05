@@ -129,7 +129,9 @@ def build(label, vol):
         n_sec+=1
         p=doc.add_paragraph(); p.alignment=WD_ALIGN_PARAGRAPH.CENTER
         pf=p.paragraph_format; pf.space_before=Pt(14); pf.space_after=Pt(6)
-        tail=('（續）' if min(idxs) > 0 else '')
+        first_all = min([i for i, (o, t, v) in enumerate(sec['items'])
+                        if not SKIP1.match(o.strip()) and not SKIP2.match(o.strip())] or [0])
+        tail=('（續）' if min(idxs) > first_all else '')
         sr(p.add_run('第%d篇　%s%s' % (idx+1, sec['name'], tail)), 14, bold=True)
         for ci in idxs:
             co,ct,_v=sec['items'][ci]

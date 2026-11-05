@@ -406,3 +406,9 @@ mark{background:#ffe9a8;padding:0 .08em;border-radius:2px}
 #hits .o{color:#5d4c3a;font-size:14px}
 #hits .t{font-size:15.5px}
 @media(max-width:820px){nav{display:none}main{padding:1.4rem}}
+
+/* 合編頁：記文原文（淺藍）與篇標題 */
+.pair .o2{background:#eef2f6;border-left:3px solid #a9bfd3;padding:.45rem .8rem;color:#2b4a66;
+  font-size:15.5px;line-height:1.85;text-align:justify;font-family:"DFKai-SB",serif}
+h2.sec{font-size:19px;margin:2.2rem 0 .8rem;padding:.35rem 0;border-bottom:2px solid var(--line);
+  color:#4a3b2a;text-align:center}

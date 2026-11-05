@@ -104,6 +104,11 @@ def nav_html(cur_book=None, prefix='', toc=None, prev=None, nxt=None):
         if nxt:
             parts.append('<a href="' + prefix + cur_book['out'] + '/' + nxt + '.html">' + html.escape(nxt) + ' →</a>')
         parts.append('</div>')
+    if toc:
+        parts.append('<div class="grp"><b>本卷篇目</b><div class="toclist">')
+        for sid, name in toc:
+            parts.append('<a href="#p' + str(sid) + '">' + html.escape(name) + '</a>')
+        parts.append('</div></div>')
     parts.append('<div class="grp"><b>分卷</b><div class="bklist">')
     for bk in BOOKS:
         vols = bk.get('_vols') or []
@@ -116,12 +121,17 @@ def nav_html(cur_book=None, prefix='', toc=None, prev=None, nxt=None):
             mark = ' class="cur"' if here and cur_book and v == cur_book.get('_curvol') else ''
             parts.append('<li><a href="' + href + '"' + mark + '>' + html.escape(v) + '</a></li>')
         parts.append('</ul></details>')
+    HB = ['卷上之一', '卷上之二', '卷上之三', '卷上之四', '卷中之一', '卷中之二', '卷中之三', '卷中之四',
+          '卷下之一', '卷下之二', '卷下之三', '卷下之四']
+    herehb = bool(cur_book and cur_book['out'] == 'hebian')
+    parts.append('<details class="navj"' + (' open' if herehb else '') + '>'
+                 + '<summary' + (' class="cur"' if herehb else '') + '>行事鈔資持記・句級合編</summary><ul>')
+    for v in HB:
+        href = prefix + 'hebian/' + v + '.html'
+        mark = ' class="cur"' if herehb and cur_book.get('_curvol') == v else ''
+        parts.append('<li><a href="' + href + '"' + mark + '>' + html.escape(v) + '</a></li>')
+    parts.append('</ul></details>')
     parts.append('</div></div>')
-    if toc:
-        parts.append('<div class="grp"><b>本卷篇目</b><div class="toclist">')
-        for sid, name in toc:
-            parts.append('<a href="#p' + str(sid) + '">' + html.escape(name) + '</a>')
-        parts.append('</div></div>')
     parts.append('</nav>')
     return ''.join(parts)
 
@@ -130,7 +140,7 @@ def page(title, body, cur_book=None, prefix='', toc=None, prev=None, nxt=None):
            .replace('INDEX', prefix + 'index.html')
            .replace('SEARCH', prefix + 'search.html')
            .replace('APPENDIX', prefix + 'appendix.html'))
-    css = prefix + 'style.css?v=4'
+    css = prefix + 'style.css?v=5'
     return ('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
             '<title>' + html.escape(title) + '｜南山律典・白話對照</title>'

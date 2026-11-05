@@ -316,3 +316,8 @@ mark{background:#ffe9a8;padding:0 .08em;border-radius:2px}
 #hits .o{color:#5d4c3a;font-size:14px}
 #hits .t{font-size:15.5px}
 @media(max-width:820px){nav{display:none}main{padding:1.4rem}}
+
+/* 篇目（卷內分段連結） */
+.subtoc{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 1.6rem;padding:.7rem .9rem;background:#faf8f2;border:1px solid var(--line);border-radius:8px}
+.subtoc a{font-size:13px;padding:.22rem .6rem;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:var(--accent);background:#fff}
+.subtoc a:hover{background:#efeade}

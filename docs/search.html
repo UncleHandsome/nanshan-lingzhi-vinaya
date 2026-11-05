@@ -1,1 +1,35 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>搜尋</title><link rel="stylesheet" href="style.css"></head><body><header><a href="index.html">南山律典・白話對照</a><span class="sp"></span><a href="search.html">搜尋</a></header><main><h1>全文搜尋</h1><input id="q" type="search" placeholder="輸入關鍵字，例如：羯磨、波羅夷、安居"><p class="meta" id="count"></p><div id="res"></div></main><script src="app.js"></script></body></html>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>搜尋｜南山律典・白話對照</title><link rel="stylesheet" href="style.css"></head><body><div class="wrap"><nav><h1><a href="index.html">南山律典・白話對照</a></h1><div class="grp"><b>全書</b><a href="index.html">目錄</a><a href="search.html">全文搜尋</a></div><div class="grp"><b>四分律刪繁補闕行事鈔</b><a href="xingshichao/卷上.html">卷上</a><a href="xingshichao/卷中.html">卷中</a><a href="xingshichao/卷下.html">卷下</a></div><div class="grp"><b>四分律刪補隨機羯磨疏</b><a href="yeshu/卷一.html">卷一</a><a href="yeshu/卷二.html">卷二</a><a href="yeshu/卷三.html">卷三</a><a href="yeshu/卷四.html">卷四</a></div><div class="grp"><b>四分律含注戒本疏</b><a href="jieshu/卷一.html">卷一</a><a href="jieshu/卷二.html">卷二</a><a href="jieshu/卷三.html">卷三</a><a href="jieshu/卷四.html">卷四</a></div><div class="grp"><b>四分比丘尼鈔</b><a href="nicao/卷上.html">卷上</a><a href="nicao/卷中.html">卷中</a><a href="nicao/卷下.html">卷下</a></div></nav><main><h1>全文搜尋</h1><input id="q" type="search" placeholder="輸入關鍵字，例如：羯磨、波羅夷、安居" style="width:100%;padding:.6rem .8rem;font-size:16px;border:1px solid var(--line);border-radius:6px;background:#fff"><p class="byline" id="count"></p><div id="hits"></div><script>
+var BOOKS=[['xingshichao','四分律刪繁補闕行事鈔'],['yeshu','四分律刪補隨機羯磨疏'],['jieshu','四分律含注戒本疏'],['zhichi','四分律行事鈔資持記'],['nicao','四分比丘尼鈔'],['yichao','四分律拾毗尼義鈔']];
+var loaded={};
+function loadBook(id){ if(loaded[id]) return Promise.resolve(loaded[id]);
+  return new Promise(function(res){ var s=document.createElement('script'); s.src='search/'+id+'.js';
+    s.onload=function(){ loaded[id]=window.SIDX[id]; res(loaded[id]); }; s.onerror=function(){ res({entries:[]}); }; document.head.appendChild(s); }); }
+function esc(s){return s.replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+function hl(s,q){return esc(s).split(esc(q)).join('<mark>'+esc(q)+'</mark>');}
+async function run(q){
+  var c=document.getElementById('count'), h=document.getElementById('hits');
+  if(!q){ c.textContent=''; h.innerHTML=''; return; }
+  c.textContent='搜尋中…';
+  var out=[];
+  for(var i=0;i<BOOKS.length;i++){
+    var b=await loadBook(BOOKS[i][0]);
+    var es=(b&&b.entries)||[];
+    for(var j=0;j<es.length;j++){
+      var e=es[j];
+      if(e.o.indexOf(q)>=0||e.t.indexOf(q)>=0){ out.push({book:BOOKS[i][1],v:e.v,o:e.o,t:e.t,id:BOOKS[i][0]}); if(out.length>200) break; }
+    }
+    if(out.length>200) break;
+  }
+  c.textContent = out.length? ('找到 '+out.length+' 筆') : '沒有結果';
+  var parts=[];
+  for(var k=0;k<out.length;k++){ var x=out[k];
+    parts.push('<div class="hit"><div class="meta">'+x.book+'・'+x.v+'　<a href="'+x.id+'/'+x.v+'.html">前往</a></div>'
+      +'<div class="o">'+hl(x.o,q)+'</div><div class="t">'+hl(x.t,q)+'</div></div>');
+  }
+  h.innerHTML=parts.join('');
+}
+document.addEventListener('DOMContentLoaded',function(){
+  var inp=document.getElementById('q'); if(!inp) return; var t;
+  inp.addEventListener('input',function(e){ clearTimeout(t); t=setTimeout(function(){run(e.target.value.trim());},250); });
+});
+</script></main></div></body></html>

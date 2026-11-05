@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """句級合編 → docs/hebian/*.html（樣式與其他書一致：.pair/.o/.t、同一側欄）"""
-import io, os, re, glob, html
+import io, os, re, glob, html, json
 from docx import Document
 
 D = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
@@ -61,6 +61,7 @@ TPL = '''<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
 
 
 SEC = re.compile(r'^第(\d+)篇　(.+)$')
+ENTRIES = []
 
 for vi, vol in enumerate(HB):
     src = os.path.join(D, '白話', '行事鈔資持記句級合編_%s.docx' % vol)
@@ -89,6 +90,7 @@ for vi, vol in enumerate(HB):
             cls, o = pending
             body.append('<div class="pair"><div class="%s">%s</div><div class="t">%s</div></div>'
                         % (cls, html.escape(o), html.escape(t)))
+            ENTRIES.append(dict(v=vol, o=o, t=t))
             pending = None
     prev = HB[vi - 1] if vi > 0 else None
     nxt = HB[vi + 1] if vi + 1 < len(HB) else None
@@ -101,3 +103,12 @@ for vi, vol in enumerate(HB):
     out = TPL % (html.escape(ttl), nav(vol, toc, prev, nxt), html.escape(ttl), '\n'.join(body), pager)
     io.open(os.path.join(OUT, vol + '.html'), 'w', encoding='utf-8').write(out)
     print(vol, '篇', len(toc), '段', len(body))
+
+
+# 搜尋索引
+sp = os.path.join(SITE, 'search')
+os.makedirs(sp, exist_ok=True)
+payload = 'window.SIDX=window.SIDX||{};window.SIDX["hebian"]=' + json.dumps(
+    dict(title='行事鈔資持記・句級合編', entries=ENTRIES), ensure_ascii=False) + ';'
+io.open(os.path.join(sp, 'hebian.js'), 'w', encoding='utf-8').write(payload)
+print('search/hebian.js', len(ENTRIES), 'entries')

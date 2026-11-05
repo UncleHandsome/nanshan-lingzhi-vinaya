@@ -226,7 +226,7 @@ def build():
     print('books', len(all_books), 'vols', sum(len(b['_groups']) for b in all_books))
 
 SEARCH_JS = """
-var BOOKS=[['xingshichao','四分律刪繁補闕行事鈔'],['yeshu','四分律刪補隨機羯磨疏'],['jieshu','四分律含注戒本疏'],['zhichi','四分律行事鈔資持記'],['nicao','四分比丘尼鈔'],['yichao','四分律拾毗尼義鈔']];
+var BOOKS=[['xingshichao','四分律刪繁補闕行事鈔'],['yeshu','四分律刪補隨機羯磨疏'],['jieshu','四分律含注戒本疏'],['zhichi','四分律行事鈔資持記'],['nicao','四分比丘尼鈔'],['yichao','四分律拾毗尼義鈔'],['hebian','行事鈔資持記・句級合編']];
 var loaded={};
 function loadBook(id){ if(loaded[id]) return Promise.resolve(loaded[id]);
   return new Promise(function(res){ var s=document.createElement('script'); s.src='search/'+id+'.js';

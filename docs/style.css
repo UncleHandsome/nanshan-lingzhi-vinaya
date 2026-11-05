@@ -321,3 +321,8 @@ mark{background:#ffe9a8;padding:0 .08em;border-radius:2px}
 .subtoc{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 1.6rem;padding:.7rem .9rem;background:#faf8f2;border:1px solid var(--line);border-radius:8px}
 .subtoc a{font-size:13px;padding:.22rem .6rem;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:var(--accent);background:#fff}
 .subtoc a:hover{background:#efeade}
+
+/* 側欄篇目 */
+.navsub{display:flex;flex-wrap:wrap;gap:.25rem;padding:.2rem .9rem .5rem 1.8rem}
+.navsub a{font-size:12px;padding:.15rem .5rem;border-radius:999px;background:#f3efe6;color:var(--fg2);text-decoration:none}
+.navsub a:hover{background:#e7e0d0;color:var(--accent)}

@@ -93,25 +93,14 @@ def build(label, a, b):
                     if qh in han(co):
                         anchors.setdefault(ci,[]).append(k); break
         used=set(v for vs in anchors.values() for v in vs)
+        # 其餘記文依前後比例分配到各鈔段之下（保持原順序），不再堆在篇首或篇末
         if zi:
-            for ci in range(len(sec['items'])):
-                if ci in anchors: continue
-                k=ci*len(zi)//max(1,len(sec['items']))
-                if k<len(zi) and k not in used:
-                    anchors.setdefault(ci,[]).append(k); used.add(k)
-        # 未被引文錨定的記文，多為該篇開頭的篇題總釋與敘意，改置篇首
-        tail=[k for k in range(len(zi)) if k not in used]
-        if tail:
-            r=doc.add_paragraph(); r.paragraph_format.space_before=Pt(4); r.paragraph_format.space_after=Pt(2)
-            sr(r.add_run('【記・篇首】'), 9.5, bold=True, color=RGBColor(0x21,0x5a,0x8a))
-            for k in tail:
-                zo,zt=zi[k]
-                r2=doc.add_paragraph(); rf=r2.paragraph_format
-                rf.space_before=Pt(3); rf.space_after=Pt(0); rf.line_spacing=1.2; rf.keep_with_next=True
-                sr(r2.add_run(zo), 9.5, color=RGBColor(0x6b,0x5b,0x4a)); shade(r2,'F7F9FB')
-                b3=doc.add_paragraph(); b3.alignment=WD_ALIGN_PARAGRAPH.LEFT
-                bf=b3.paragraph_format; bf.first_line_indent=Pt(20); bf.line_spacing=1.35; bf.space_after=Pt(2)
-                sr(b3.add_run(zt), 10.5)
+            n_i = max(1, len(sec['items']))
+            for k in range(len(zi)):
+                if k in used:
+                    continue
+                ci = min(n_i - 1, k * n_i // max(1, len(zi)))
+                anchors.setdefault(ci, []).append(k)
         for ci,(co,ct) in enumerate(sec['items']):
             # 首條若只是篇名標題（與上方篇名重複），略過
             if re.match(r'^\d+\s*[\u4e00-\u9fff]{2,10}篇\(上[一二三四五六七八九十]?\)$', co.strip()):

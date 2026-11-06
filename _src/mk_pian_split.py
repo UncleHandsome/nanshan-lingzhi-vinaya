@@ -409,6 +409,6 @@ if __name__ == '__main__':
         exist = any(probe and probe in ''.join(x.text.split()) for x in d.paragraphs)
         if exist:
             continue
-        emit_ji_to(d, '【記（續前篇）】', head, htr)
+        emit_ji_to(d, '【記%03d】（續前篇）' % (len(ZI[p - 2]) + 1), head, htr)
         d.save(fp)
         print('  已補前篇尾巴到 篇%02d' % (p - 1))

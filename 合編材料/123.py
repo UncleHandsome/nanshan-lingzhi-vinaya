@@ -7,7 +7,7 @@ import pandas as pd
 # ==========================================
 # ⚙️ 設定區：每幾個工作表切成一個 .md 檔案？
 # ==========================================
-SHEETS_PER_FILE = 5  # 👈 可隨意修改這個數字（例如：5 或 10）
+SHEETS_PER_FILE = 2  # 👈 可隨意修改這個數字（例如：5 或 10）
 
 
 def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:

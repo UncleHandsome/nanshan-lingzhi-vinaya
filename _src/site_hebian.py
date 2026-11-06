@@ -10,6 +10,19 @@ os.makedirs(OUT, exist_ok=True)
 
 HB = ['卷上之一', '卷上之二', '卷上之三', '卷上之四', '卷中之一', '卷中之二', '卷中之三', '卷中之四',
       '卷下之一', '卷下之二', '卷下之三', '卷下之四']
+VOL_ORDER = ['卷上之一','卷上之二','卷上之三','卷上之四','卷中之一','卷中之二','卷中之三','卷中之四',
+             '卷下之一','卷下之二','卷下之三','卷下之四','卷上','卷中','卷下','卷一','卷二','卷三','卷四',
+             '上一上','上一下','上二','上三','上四','中一上','中一下','中二','中三上','中三下','中四上','中四下',
+             '下一','下二','下三','下四']
+
+
+def vol_order_key(v):
+    try:
+        return VOL_ORDER.index(v)
+    except ValueError:
+        return 999
+
+
 BOOKS = [
     ('xingshichao', '四分律刪繁補闕行事鈔'),
     ('jieshu', '四分律含注戒本疏'),
@@ -32,30 +45,30 @@ def nav(cur_vol, toc, prev, nxt):
             parts.append('<a href="' + nxt + '.html">' + html.escape(nxt) + ' →</a>')
         parts.append('</div>')
     if toc:
-        parts.append('<div class="grp"><b>本卷篇目</b><div class="toclist">')
+        parts.append('<div class="grp"><b>本卷篇目</b><div class="toch">')
         for sid, name in toc:
             parts.append('<a href="#p' + str(sid) + '">' + html.escape(name) + '</a>')
         parts.append('</div></div>')
-    parts.append('<div class="grp"><b>分卷</b><div class="bklist">')
+    parts.append('<div class="grp"><b>書目</b><div class="bkh">')
     for out, title in BOOKS:
-        vols = [os.path.basename(p)[:-5] for p in sorted(glob.glob(os.path.join(SITE, out, '*.html')))]
+        vols = sorted([os.path.basename(p)[:-5] for p in glob.glob(os.path.join(SITE, out, '*.html'))], key=vol_order_key)
         if not vols:
             continue
-        parts.append('<details class="navj"><summary>' + html.escape(title) + '</summary><ul>')
+        parts.append('<div class="bk"><span class="bkname">' + html.escape(title) + '</span><span class="vols">')
         for v in vols:
-            parts.append('<li><a href="../%s/%s.html">%s</a></li>' % (out, v, html.escape(v)))
-        parts.append('</ul></details>')
-    parts.append('<details class="navj" open><summary class="cur">行事鈔資持記・句級合編</summary><ul>')
+            parts.append('<a href="../%s/%s.html">%s</a>' % (out, v, html.escape(v)))
+        parts.append('</span></div>')
+    parts.append('<div class="bk"><span class="bkname">行事鈔資持記・句級合編</span><span class="vols">')
     for v in HB:
         mark = ' class="cur"' if v == cur_vol else ''
-        parts.append('<li><a href="%s.html"%s>%s</a></li>' % (v, mark, html.escape(v)))
-    parts.append('</ul></details></div></div></nav>')
+        parts.append('<a href="%s.html"%s>%s</a>' % (v, mark, html.escape(v)))
+    parts.append('</span></div></div></div></nav>')
     return ''.join(parts)
 
 
 TPL = '''<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>%s</title>
-<link rel="stylesheet" href="../style.css?v=5"></head><body><div class="wrap">
+<link rel="stylesheet" href="../style.css?v=6"></head><body><div class="wrap">
 %s<main><h1>%s</h1><p class="byline">鈔文（淺褐）與記文（淺藍）逐段並列，每段附白話</p>
 %s<div class="pager">%s</div></main></div></body></html>'''
 

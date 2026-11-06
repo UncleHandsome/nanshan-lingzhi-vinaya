@@ -93,6 +93,23 @@ mark{background:#ffe9a8;padding:0 .08em;border-radius:2px}
 
 SEC_RE = re.compile(r'^[○◎◯【]?\s*[\u4e00-\u9fff]{2,10}篇第[一二三四五六七八九十]+[】]?$')
 
+
+VOL_ORDER = ['卷上之一', '卷上之二', '卷上之三', '卷上之四',
+             '卷中之一', '卷中之二', '卷中之三', '卷中之四',
+             '卷下之一', '卷下之二', '卷下之三', '卷下之四',
+             '卷上', '卷中', '卷下', '卷一', '卷二', '卷三', '卷四',
+             '上一上', '上一下', '上二', '上三', '上四',
+             '中一上', '中一下', '中二', '中三上', '中三下', '中四上', '中四下',
+             '下一', '下二', '下三', '下四']
+
+
+def vol_order_key(v):
+    try:
+        return VOL_ORDER.index(v)
+    except ValueError:
+        return 999
+
+
 def nav_html(cur_book=None, prefix='', toc=None, prev=None, nxt=None):
     parts = ['<nav><h1><a href="INDEX">南山律典・白話對照</a></h1>']
     parts.append('<div class="grp"><b>全書</b><a href="INDEX">目錄</a><a href="SEARCH">全文搜尋</a>'
@@ -105,42 +122,38 @@ def nav_html(cur_book=None, prefix='', toc=None, prev=None, nxt=None):
             parts.append('<a href="' + prefix + cur_book['out'] + '/' + nxt + '.html">' + html.escape(nxt) + ' →</a>')
         parts.append('</div>')
     if toc:
-        parts.append('<div class="grp"><b>本卷篇目</b><div class="toclist">')
+        parts.append('<div class="grp"><b>本卷篇目</b><div class="toch">')
         for sid, name in toc:
             parts.append('<a href="#p' + str(sid) + '">' + html.escape(name) + '</a>')
         parts.append('</div></div>')
-    parts.append('<div class="grp"><b>分卷</b><div class="bklist">')
+    parts.append('<div class="grp"><b>書目</b><div class="bkh">')
     for bk in BOOKS:
         vols = bk.get('_vols') or []
-        if not vols: continue
+        if not vols:
+            continue
         here = cur_book and bk['out'] == cur_book['out']
-        parts.append('<details class="navj"' + (' open' if here else '') + '>'
-                     + '<summary' + (' class="cur"' if here else '') + '>' + html.escape(bk['title']) + '</summary><ul>')
+        parts.append('<div class="bk"><span class="bkname">' + html.escape(bk['title']) + '</span><span class="vols">')
         for v, url in vols:
-            href = prefix + bk['out'] + '/' + v + '.html'
             mark = ' class="cur"' if here and cur_book and v == cur_book.get('_curvol') else ''
-            parts.append('<li><a href="' + href + '"' + mark + '>' + html.escape(v) + '</a></li>')
-        parts.append('</ul></details>')
+            parts.append('<a href="' + prefix + bk['out'] + '/' + v + '.html"' + mark + '>' + html.escape(v) + '</a>')
+        parts.append('</span></div>')
     HB = ['卷上之一', '卷上之二', '卷上之三', '卷上之四', '卷中之一', '卷中之二', '卷中之三', '卷中之四',
           '卷下之一', '卷下之二', '卷下之三', '卷下之四']
     herehb = bool(cur_book and cur_book['out'] == 'hebian')
-    parts.append('<details class="navj"' + (' open' if herehb else '') + '>'
-                 + '<summary' + (' class="cur"' if herehb else '') + '>行事鈔資持記・句級合編</summary><ul>')
+    parts.append('<div class="bk"><span class="bkname">行事鈔資持記・句級合編</span><span class="vols">')
     for v in HB:
-        href = prefix + 'hebian/' + v + '.html'
         mark = ' class="cur"' if herehb and cur_book.get('_curvol') == v else ''
-        parts.append('<li><a href="' + href + '"' + mark + '>' + html.escape(v) + '</a></li>')
-    parts.append('</ul></details>')
-    parts.append('</div></div>')
-    parts.append('</nav>')
+        parts.append('<a href="' + prefix + 'hebian/' + v + '.html"' + mark + '>' + html.escape(v) + '</a>')
+    parts.append('</span></div></div></div></nav>')
     return ''.join(parts)
+
 
 def page(title, body, cur_book=None, prefix='', toc=None, prev=None, nxt=None):
     nav = (nav_html(cur_book, prefix, toc, prev, nxt)
            .replace('INDEX', prefix + 'index.html')
            .replace('SEARCH', prefix + 'search.html')
            .replace('APPENDIX', prefix + 'appendix.html'))
-    css = prefix + 'style.css?v=5'
+    css = prefix + 'style.css?v=6'
     return ('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
             '<title>' + html.escape(title) + '｜南山律典・白話對照</title>'
@@ -167,7 +180,7 @@ def build():
             pre = groups.pop('__PRE__')
             first = list(groups.keys())[0] if groups else '卷一'
             groups[first] = pre + groups.get(first, [])
-        bk['_vols'] = [(v, '') for v in groups]
+        bk['_vols'] = [(v, '') for v in sorted(groups, key=vol_order_key)]
         bk['_groups'] = groups
         all_books.append(bk)
     search_idx = {}

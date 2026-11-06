@@ -412,3 +412,24 @@ mark{background:#ffe9a8;padding:0 .08em;border-radius:2px}
   font-size:15.5px;line-height:1.85;text-align:justify;font-family:"DFKai-SB",serif}
 h2.sec{font-size:19px;margin:2.2rem 0 .8rem;padding:.35rem 0;border-bottom:2px solid var(--line);
   color:#4a3b2a;text-align:center}
+
+/* 側欄：扁平分組 + 書目縮排（仿五部律站） */
+nav .grp{margin:.55rem 0 .9rem}
+nav .grp > b{display:block;font-size:12px;letter-spacing:.08em;color:#8a7a63;
+  font-weight:700;margin:0 0 .25rem;padding-left:.2rem}
+nav .grp > a{display:inline;margin-right:.7rem;font-size:13.5px;line-height:1.9;
+  color:var(--fg2);text-decoration:none;white-space:nowrap}
+nav .grp > a:hover{color:var(--accent);text-decoration:underline}
+nav .toch a{display:inline;font-size:13px;line-height:1.85;color:var(--fg2);
+  text-decoration:none;margin-right:.55rem;white-space:nowrap}
+nav .toch a:before{content:"· ";color:#c3b49a}
+nav .toch a:hover{color:var(--accent);text-decoration:underline}
+nav .bkh .bk{margin:.1rem 0 .5rem;padding-left:.2rem}
+nav .bkh .bkname{display:block;font-size:13px;font-weight:600;color:var(--fg);
+  margin-bottom:.1rem;line-height:1.5}
+nav .bkh .vols{display:block;padding-left:1.1rem}
+nav .bkh .vols a{display:inline-block;margin:0 .3rem .22rem 0;padding:.06rem .38rem;
+  border:1px solid var(--line);border-radius:4px;font-size:12.5px;color:var(--fg2);
+  text-decoration:none;line-height:1.55}
+nav .bkh .vols a:hover{border-color:#cdbc9c;color:var(--accent)}
+nav .bkh .vols a.cur{background:#f4efe2;border-color:#cdbc9c;color:#5d4c3a;font-weight:600}

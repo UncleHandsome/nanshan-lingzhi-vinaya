@@ -176,7 +176,7 @@ def build(p, splits):
             continue
         # 尾片不得越過下一記段的鈔號，否則會造成記號逆序
         if p != 10:
-            nxt = int(am[n]) if n < len(am) and int(am[n]) > 0 else tg[-1]
+            nxt = (cmap.get(n + 1, 0) if BS else (int(am[n]) if n < len(am) and int(am[n]) > 0 else 0)) or tg[-1]
             if tg[-1] > nxt:
                 continue
         o, t = zi[n - 1]
@@ -237,6 +237,7 @@ def build(p, splits):
         for k in front:
             emit_ji_tagged('【記%03d】' % (k + 1), clean(zi[k][0]), zi[k][1])
 
+    EMIT = set()
     for cno, it in enumerate(chao, 1):
         qq = doc.add_paragraph(); qf = qq.paragraph_format
         qf.space_before = Pt(8); qf.space_after = Pt(1); qf.line_spacing = 1.25; qf.keep_with_next = True
@@ -251,6 +252,9 @@ def build(p, splits):
                 rows.append((k + 1, 0, zi[k][0], zi[k][1]))
                 used.add(k + 1)
         for n, idx2, part, tr in sorted(rows, key=lambda x: (x[0], x[1])):
+            if (n, idx2) in EMIT:
+                continue
+            EMIT.add((n, idx2))
             tot = PARTS.get(n, 1)
             if tot > 1:
                 sub = ['前半', '後半'] if tot == 2 else (['前', '中', '後'] if tot == 3 else ['一', '二', '三', '四', '五'][:tot])

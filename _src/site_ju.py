@@ -126,17 +126,27 @@ except Exception:
 
 
 TITLE_RE = re.compile(r'^\s*No\.?\s*\d')
+try:
+    _YS_OFF = _json.load(io.open(os.path.join(B, 'AI語譯', '_work', 'ys_offsets_final.json'), encoding='utf-8'))
+except Exception:
+    _YS_OFF = {}
+
+# 卷首的人工修正（ye_new.txt 指定的 3~5 列）
+_YS0_FIX = {
+    2: '【篇名題署】No. 728-B 會刻羯磨疏記序',
+    3: '曾聽聞毗尼律藏乃是佛法長久傳續的真實壽命；律藏若能久住於世，正法才得依託久住。因此，生長一切善法、滅除一切罪惡，全以如法羯磨為其宗要；斷盡妄見惑障、證悟涅槃聖理，沒有比受戒之體更重要的了；滅除罪惡之大，沒有比懺悔重罪更高的了。羯磨的功德，其深遠可知。',
+    4: '時值享保十五年、歲次庚戌（龍舍）秋季七月十五僧自恣日，通受戒苾芻禪龍於泉州萬代莊佛頂山金輪寺丈室敬謹書寫。',
+}
 
 
 def pairs_chunks(src_dir, tr_tag, ju_dir):
-    """業疏：句讀原文 ＋ 譯文（譯文開頭多 2 段說明，且原文有標題行無譯）"""
+    """業疏：句讀原文 ＋ 依 ye_new.txt 位移量取譯文"""
     chunks = load_chunks(src_dir, tr_tag)
-    tt_all = []
-    for key, sp, tt in chunks:
-        tt_all += tt
     res, entries, cur_vol = [], [], None
-    core = 0          # 已處理的非標題原文段數
-    for key, sp, tt in chunks:
+    for ci, (key, sp, tt) in enumerate(chunks):
+        short = key
+        off = int(_YS_OFF.get(short, 0))
+        nxt = chunks[ci + 1][2] if ci + 1 < len(chunks) else []
         p = os.path.join(B, 'TXT_句讀', ju_dir, key + '.txt')
         o_lines = None
         if os.path.exists(p):
@@ -157,11 +167,16 @@ def pairs_chunks(src_dir, tr_tag, ju_dir):
             entries, cur_vol = [], vol
         for i in range(len(sp)):
             if TITLE_RE.match(sp[i]):
-                continue          # 標題行沒有譯文，不顯示
-            g = 2 + core
-            t = tt_all[g] if g < len(tt_all) else ''
+                continue
+            j = i + off
+            if j < len(tt):
+                t = tt[j]
+            else:
+                k = j - len(tt)
+                t = nxt[k] if 0 <= k < len(nxt) else ''
+            if key.startswith('00_卷首') and i in _YS0_FIX:
+                t = _YS0_FIX[i]
             entries.append((o_lines[i], t))
-            core += 1
     if entries:
         res.append((cur_vol, entries))
     return res

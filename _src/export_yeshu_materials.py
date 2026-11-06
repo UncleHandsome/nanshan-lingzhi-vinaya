@@ -20,7 +20,17 @@ def vol_of(key):
     return m.group(0) if m else j
 
 
+def load_offsets():
+    import json
+    p = os.path.join(B, 'AI語譯', '_work', 'ys_offsets_final.json')
+    try:
+        return json.load(io.open(p, encoding='utf-8'))
+    except Exception:
+        return {}
+
+
 def main():
+    OFF = load_offsets()
     rows_by_vol = {}
     for f in sorted(os.listdir(S)):
         if not f.endswith('.txt'):
@@ -30,9 +40,11 @@ def main():
         tt = [x.strip() for x in re.split(r'\r?\n\r?\n', io.open(os.path.join(T, k + '.txt'), encoding='utf-8').read()) if x.strip()]
         v = vol_of(k)
         rows_by_vol.setdefault(v, [])
+        off = int(OFF.get(k, 0))
         for i, o in enumerate(sp, 1):
-            t = tt[i + 1] if i + 1 < len(tt) else ''
-            rows_by_vol[v].append([k, v, i, o, t, i + 2])
+            j = (i - 1) + off
+            t = tt[j] if 0 <= j < len(tt) else ''
+            rows_by_vol[v].append([k, v, i, o, t, j + 1])
 
     try:
         import openpyxl

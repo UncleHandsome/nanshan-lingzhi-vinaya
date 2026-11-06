@@ -64,6 +64,14 @@ def split_tr(tr, src_parts):
     return parts
 
 
+HDR = re.compile(r'(?:四分律行事鈔資持記[^ ]{0,12}\s*)?(?:\d+\s*)?釋[\u4e00-\u9fff]{1,6}篇(?:\([^)）]*\))?\s*')
+
+
+def clean(t):
+    head, rest = t[:80], t[80:]
+    return HDR.sub('', head) + rest
+
+
 def build(p, splits):
     idx = p - 1
     sec = SECS[idx]; zi = ZI[idx]
@@ -81,6 +89,7 @@ def build(p, splits):
 
     # 切點
     pieces = {}
+    used = set()
     for e in splits:
         n = int(e['n']); marks = e['markers']; tg = [int(x) for x in e['targets']]
         base = int(am[n - 1]) if n - 1 < len(am) else 0
@@ -100,6 +109,7 @@ def build(p, splits):
         ts = split_tr(t, parts)
         for part, tr, c in zip(parts, ts, tg):
             pieces.setdefault(c, []).append((n, part, tr))
+            used.add(n)
 
     doc = Document()
     st = doc.styles['Normal']; st.font.size = Pt(10); st.font.name = LATIN
@@ -126,9 +136,8 @@ def build(p, splits):
         q = doc.add_paragraph(); q.paragraph_format.space_before = Pt(10)
         sr(q.add_run('〔篇前總釋〕'), 11, bold=True, color=RGBColor(0x21, 0x5a, 0x8a))
         for k in front:
-            emit_ji(k + 1, zi[k][0], zi[k][1])
+            emit_ji(k + 1, clean(zi[k][0]), zi[k][1])
 
-    used = set()
     for cno, it in enumerate(chao, 1):
         qq = doc.add_paragraph(); qf = qq.paragraph_format
         qf.space_before = Pt(8); qf.space_after = Pt(1); qf.line_spacing = 1.25; qf.keep_with_next = True
@@ -143,7 +152,7 @@ def build(p, splits):
                 rows.append((k + 1, zi[k][0], zi[k][1]))
                 used.add(k + 1)
         for n, part, tr in sorted(rows, key=lambda x: x[0]):
-            emit_ji(n, part, tr)
+            emit_ji(n, clean(part), tr)
 
     out = os.path.join(B, '白話', '會本_篇%02d_%s.docx' % (p, sec['name']))
     doc.save(out)

@@ -56,7 +56,8 @@ def match(book, text):
             return False
     if book == 'jieshu':
         if t.startswith('【序】'):
-            return True
+            body = re.sub(r'^【序】\s*', '', t)
+            return len(re.findall(r'[\u4e00-\u9fff]', body)) >= 6
         if t.startswith('【條目】'):
             return True
     if not r['pat'].search(t):

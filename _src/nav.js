@@ -21,7 +21,7 @@
     try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {}
   }
 
-  fetch(root + 'nav.json?v=3').then(function (r) { return r.json(); }).then(function (data) {
+  fetch(root + 'nav.json?v=4').then(function (r) { return r.json(); }).then(function (data) {
     var here = path;
     var html = '';
     (data.books || []).forEach(function (b) {
@@ -86,7 +86,12 @@
   function jump() {
     if (!location.hash) return;
     var el = document.getElementById(location.hash.slice(1));
-    if (el) el.scrollIntoView({ block: 'start', behavior: 'auto' });
+    if (!el) return;
+    var de = document.documentElement;
+    var old = de.style.scrollBehavior;
+    de.style.scrollBehavior = 'auto';
+    el.scrollIntoView({ block: 'start', behavior: 'instant' });
+    de.style.scrollBehavior = old;
   }
   function restoreHash() {
     [0, 120, 320, 700].forEach(function (ms) { setTimeout(jump, ms); });

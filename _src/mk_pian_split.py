@@ -314,6 +314,7 @@ def build(p, splits):
             nxts = [starts[x] for x in cvals if x > cno]
             nxt = min(nxts) if nxts else len(zi) + 1
             nxt = max(nxt, ptr)
+            nxt = min(nxt, len(front) + 1 if front else 224)
             for k in range(ptr - 1, min(nxt - 1, len(zi))):
                 emit_ji_tagged('【記%03d】' % (k + 1), clean(zi[k][0]), zi[k][1])
             ptr = nxt

@@ -292,10 +292,17 @@ def build(p, splits):
         rf.space_before = Pt(4); rf.space_after = Pt(1); rf.line_spacing = 1.2
         rf.left_indent = Pt(14); rf.keep_with_next = True
         sr(r.add_run(tag + zo), 9.5, color=RGBColor(0x21, 0x5a, 0x8a)); shade(r, 'EEF2F6')
+        _lead = ''
+        _zt = zt
+        while _zt[:1] in ('〕', '」', '）'):
+            _lead += _zt[0]
+            _zt = _zt[1:]
+        if _lead and doc.paragraphs:
+            doc.paragraphs[-1].add_run(_lead)
         b2 = doc.add_paragraph(); b2.paragraph_format.first_line_indent = Pt(20)
         b2.paragraph_format.left_indent = Pt(14)
         b2.paragraph_format.line_spacing = 1.28; b2.paragraph_format.space_after = Pt(2)
-        sr(b2.add_run(zt), 10)
+        sr(b2.add_run(_zt), 10)
 
     if p == 1:
         sp0 = [x.strip() for x in io.open(os.path.join(B, 'TXT_分卷', '01_行事鈔', '00_卷首.txt'), encoding='utf-8').read().split('\n')[5:] if x.strip()]

@@ -169,7 +169,7 @@ def build(p, splits):
     PARTS = {}
     for e in splits:
         n = int(e['n']); marks = e['markers']; tg = [int(x) for x in e['targets']]
-        base = (cmap.get(n, 0) if BS else (int(am[n - 1]) if n - 1 < len(am) else 0))
+        base = (int(e['base']) if 'base' in e else (cmap.get(n, 0) if BS else (int(am[n - 1]) if n - 1 < len(am) else 0)))
         if p != 10 and tg != list(range(base, base + len(tg))):
             continue
         if p == 10 and (tg != sorted(tg) or len(set(tg)) != len(tg)):
@@ -276,6 +276,12 @@ if __name__ == '__main__':
         if os.path.exists(sp):
             d = json.load(io.open(sp, encoding='utf-8-sig'))
             splits = d.get('splits', [])
+        mp = os.path.join(B, 'AI語譯', '_work', 'pian_manual', '篇%02d.json' % p)
+        if os.path.exists(mp):
+            dm = json.load(io.open(mp, encoding='utf-8-sig'))
+            man = dm.get('splits', [])
+            mn = {int(x['n']) for x in man}
+            splits = man + [x for x in splits if int(x['n']) not in mn]
         out, nc, nz, used = build(p, splits)
         print('篇%02d %-8s 鈔%3d 記%3d 切點%2d → %s' % (p, SECS[p - 1]['name'], nc, nz, len(splits), os.path.basename(out)))
     # 各篇首記的前篇尾巴 → 補到前一篇

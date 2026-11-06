@@ -310,7 +310,12 @@ def build():
                         _o2 = re.sub(r'^【[律註疏記]】\s*', '', o).rstrip('。')
                         if re.sub(r'[^\u4e00-\u9fff]', '', _o2) == re.sub(r'[^\u4e00-\u9fff]', '', _lb):
                             continue
-                body.append('<div class="pair" id="' + sid_s + '"><div class="o">' + html.escape(it['o']) + '</div>'
+                _oc = ''
+                if it['o'].startswith('【記】'):
+                    _oc = ' ji'
+                elif it['o'].startswith('【疏】'):
+                    _oc = ' shu'
+                body.append('<div class="pair" id="' + sid_s + '"><div class="o' + _oc + '">' + html.escape(it['o']) + '</div>'
                             + '<div class="t">' + html.escape(it['t']) + '</div></div>')
             prev = vols[i-1] if i > 0 else None
             nxt = vols[i+1] if i+1 < len(vols) else None

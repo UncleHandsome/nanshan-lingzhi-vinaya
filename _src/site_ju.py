@@ -130,6 +130,10 @@ try:
     _YS_OFF = _json.load(io.open(os.path.join(B, 'AI語譯', '_work', 'ys_offsets_final.json'), encoding='utf-8'))
 except Exception:
     _YS_OFF = {}
+try:
+    _YS_MAP = _json.load(io.open(os.path.join(B, 'AI語譯', '_work', 'ys_align_map.json'), encoding='utf-8'))
+except Exception:
+    _YS_MAP = {}
 
 # 卷首的人工修正（ye_new.txt 指定的 3~5 列）
 _YS0_FIX = {
@@ -177,10 +181,14 @@ def pairs_chunks(src_dir, tr_tag, ju_dir):
             if entries:
                 res.append((cur_vol, entries))
             entries, cur_vol = [], vol
+        mp = _YS_MAP.get(key)
         for i in range(len(sp)):
             if TITLE_RE.match(sp[i]):
                 continue
-            g = pref[key] + i + _off_for(off, i)
+            if mp and i < len(mp):
+                g = pref[key] + int(mp[i])
+            else:
+                g = pref[key] + i + _off_for(off, i)
             t = tt_all[g] if 0 <= g < len(tt_all) else ''
             if key.startswith('00_卷首') and i in _YS0_FIX:
                 t = _YS0_FIX[i]

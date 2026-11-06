@@ -106,6 +106,10 @@ def toc_match(book, text):
         return True
     pat = TOC_EXTRA.get(book)
     if pat is not None and pat.search(t):
+        if book == 'jieshu':
+            t3 = re.sub(r'^【[律註疏記]】\s*', '', t).rstrip('。')
+            if len(t3) < 5:
+                return False
         return True
     return False
 
@@ -116,6 +120,12 @@ def toc_label(book, text):
         m = re.search(r'釋[\u4e00-\u9fff]{2,6}篇', t)
         if m:
             return m.group(0)
+    if book == 'jieshu':
+        t2 = re.sub(r'^【[律註疏記]】\s*', '', t).rstrip('。')
+        t2 = re.sub(r'^([一二三四五六七八九十百]+)[、，]\s*', r'\1、', t2)
+        if len(t2) > 20:
+            t2 = t2[:18] + '…'
+        return t2
     if len(t) > 28:
         return t[:26] + '…'
     return t

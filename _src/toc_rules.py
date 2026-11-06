@@ -57,6 +57,8 @@ def match(book, text):
         if len(re.findall(r'[\u4e00-\u9fff]', t)) > 40:
             return False
     if book == 'jieshu':
+        if t in ('凡例', '目錄', '條目'):
+            return t
         if t.startswith('【序】'):
             body = re.sub(r'^【序】\s*', '', t)
             return len(re.findall(r'[\u4e00-\u9fff]', body)) >= 6
@@ -81,6 +83,8 @@ def label(book, text):
         m = r['pat'].search(t)
         return m.group(0) if m else t
     if book == 'jieshu':
+        if t in ('凡例', '目錄', '條目'):
+            return t
         if t.startswith('【序】'):
             body = re.sub(r'^【序】\s*', '', t)
             return '序文：' + body[:10] + ('…' if len(body) > 10 else '')

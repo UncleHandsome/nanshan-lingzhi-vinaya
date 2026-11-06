@@ -228,9 +228,15 @@ def build():
                 o = it['o'].strip()
                 if re.match(r'^\d+\s*[\u4e00-\u9fff]{2,10}篇\(上[一二三四五六七八九十]?\)$', o):
                     continue
-                if i2 not in drop_toc and toc_match(bk['out'], o):
+                if o.startswith('【目錄】') or o.startswith('【條目】'):
+                    pass
+                elif i2 not in drop_toc and toc_match(bk['out'], o):
                     _lb = toc_label(bk['out'], o)
-                    if _lb not in [n for _, n in tt]:
+                    if _lb.startswith('序文：'):
+                        _lb = '序文'
+                    if bk['out'] == 'jieshu' and v in ('卷一', '卷一上') and _lb not in ('序文', '凡例', '目錄', '條目'):
+                        _lb = ''
+                    if _lb and _lb not in [n for _, n in tt]:
                         tt.append((len(tt) + 1, _lb))
             tmap[v] = tt
         bk['_toc'] = tmap
@@ -283,9 +289,15 @@ def build():
                     continue
                 sid_s = 's' + str(len(body))
                 it['_id'] = sid_s
-                if i2 not in drop_toc and toc_match(bk['out'], o):
+                if o.startswith('【目錄】') or o.startswith('【條目】'):
+                    pass
+                elif i2 not in drop_toc and toc_match(bk['out'], o):
                     _lb = toc_label(bk['out'], o)
-                    if _lb not in [n for _, n in toc]:
+                    if _lb.startswith('序文：'):
+                        _lb = '序文'
+                    if bk['out'] == 'jieshu' and v in ('卷一', '卷一上') and _lb not in ('序文', '凡例', '目錄', '條目'):
+                        _lb = ''
+                    if _lb and _lb not in [n for _, n in toc]:
                         sid = len(toc) + 1
                         toc.append((sid, _lb))
                         it['_id'] = 'p' + str(sid)

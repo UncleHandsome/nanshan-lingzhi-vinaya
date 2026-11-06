@@ -37,7 +37,7 @@ _s2 = lambda x: [y for y in re.findall(r'[^。！？；]*[。！？；]?', x) if
 for _p in range(2, 11):
     _o, _t = ZI[_p - 1][0]
     _m = HDR.search(_o[:160])
-    if _m and 4 < _m.start() < 60:
+    if _m and 4 < _m.start() < 120:
         _head = _o[:_m.start()].strip()
         _k = max(1, int(round(_h2(_head) / max(1, _h2(_o)) * len(_s2(_t)))))
         _ts = _s2(_t)
@@ -206,7 +206,6 @@ def build(p, splits):
                 if n0 - 1 in by_c[cc]:
                     by_c[cc].remove(n0 - 1)
             by_c.setdefault(int(e['base']), []).append(n0 - 1)
-            used.add(n0)
     PARTS = {}
     for e in splits:
         if 'markers' not in e:
@@ -218,7 +217,7 @@ def build(p, splits):
         if p == 10 and (tg != sorted(tg) or len(set(tg)) != len(tg)):
             continue
         # 尾片不得越過下一記段的鈔號，否則會造成記號逆序
-        if p != 10:
+        if p != 10 and 'base' not in e:
             nxt = (cmap.get(n + 1, 0) if BS else (int(am[n]) if n < len(am) and int(am[n]) > 0 else 0)) or tg[-1]
             if tg[-1] > nxt:
                 continue
@@ -350,7 +349,7 @@ if __name__ == '__main__':
         print('篇%02d %-8s 鈔%3d 記%3d 切點%2d → %s' % (p, SECS[p - 1]['name'], nc, nz, len(splits), os.path.basename(out)))
     # 各篇首記的前篇尾巴 → 補到前一篇
     for p, (head, htr) in HEADS.items():
-        if '釋結界篇' in head or '資持記上' in head:
+        if '釋結界篇' in head or '資持記上二' in head:
             continue
         fp = os.path.join(B, '白話', '會本_篇%02d_%s.docx' % (p - 1, SECS[p - 2]['name']))
         if not os.path.exists(fp):

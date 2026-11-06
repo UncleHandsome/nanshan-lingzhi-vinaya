@@ -54,6 +54,10 @@ SO = os.path.join(B, 'AI語譯', '_work', 'pian_split_out')
 han = lambda s: len(re.findall(r'[\u4e00-\u9fff]', s))
 
 
+def clean_tr(t):
+    return t.lstrip('。，；、：')
+
+
 def sr(run, size, bold=False, color=None):
     run.font.size = Pt(size); run.bold = bold; run.font.name = LATIN
     run._element.rPr.rFonts.set(qn('w:eastAsia'), FONT)
@@ -355,6 +359,10 @@ if __name__ == '__main__':
         if not os.path.exists(fp):
             continue
         d = Document(fp)
+        probe = ''.join(head.split())[:16]
+        exist = any(probe and probe in ''.join(x.text.split()) for x in d.paragraphs)
+        if exist:
+            continue
         emit_ji_to(d, '【記%03d】（續前篇）' % len(ZI[p - 2]), head, htr)
         d.save(fp)
         print('  已補前篇尾巴到 篇%02d' % (p - 1))

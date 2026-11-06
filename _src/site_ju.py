@@ -8,7 +8,7 @@
 
 輸出結構：[('卷名', [(原文, 譯文), ...]), ...]
 """
-import os, io, re, bisect
+import os, io, re, bisect, json
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 VAR = {'牀': '床', '説': '說', '衆': '眾', '爲': '為', '敎': '教', '卽': '即', '旣': '既', '竝': '並'}
@@ -215,8 +215,11 @@ def pairs_chunks(src_dir, tr_tag, ju_dir):
     return res
 
 
+PUNCT_MAPS = {'04_比丘尼鈔': 'nicao_punct.json', '05_拾毗尼義鈔': 'yichao_punct.json'}
+
+
 def pairs_global(src_dir, tr_tag, ju_file):
-    """尼鈔、義鈔：整本 句讀_clean.txt。"""
+    """尼鈔、義鈔：整本 句讀_clean.txt（優先使用字元錨點取回的帶標點段落）。"""
     ju = [x.strip() for x in re.split(r'\n\s*\n', io.open(ju_file, encoding='utf-8').read()) if x.strip()]
     src_all, tr_all, keys = [], [], []
     for key, sp, tt in load_chunks(src_dir, tr_tag):
@@ -224,12 +227,20 @@ def pairs_global(src_dir, tr_tag, ju_file):
             src_all.append(sp[i])
             tr_all.append(tt[i])
             keys.append(key)
+    punct = None
+    pm = PUNCT_MAPS.get(src_dir)
+    if pm:
+        pth = os.path.join(B, 'AI語譯', '_work', pm)
+        if os.path.exists(pth):
+            punct = json.load(io.open(pth, encoding='utf-8'))
     buckets, _ = assign(ju, src_all)
     res = []
     cur_vol = None
     entries = []
     for i, key in enumerate(keys):
         o = '　'.join(buckets[i]) if buckets[i] else src_all[i]
+        if punct and i < len(punct) and re.search(r'[，。、；：？！」]', punct[i]):
+            o = punct[i]
         vol = vol_of(key)
         if vol != cur_vol:
             if entries:

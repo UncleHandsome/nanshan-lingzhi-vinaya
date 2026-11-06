@@ -118,8 +118,9 @@ for idx,sec in enumerate(secs):
                 if qh in han(co):
                     anchors.setdefault(ci,[]).append(k); break
     am = AIMAP.get(str(idx))
+    front = []
     if am:
-        # AI 的 c 是「已濾掉標題行」的鈔段序號，先換成 items 索引
+        # c 是「已濾掉標題行」的鈔段序號；0 代表篇前總釋
         valid = [i for i, (o, t, *_) in enumerate(sec['items'])
                  if not SKIP1.match(o.strip()) and not SKIP2.match(o.strip())]
         anchors = {}
@@ -127,8 +128,11 @@ for idx,sec in enumerate(secs):
         for k in range(len(zi)):
             if k < len(am):
                 c = max(0, int(am[k]))
+                if c == 0 and k < len(am):
+                    front.append(k)
+                    continue
                 if valid:
-                    c = valid[min(c, len(valid) - 1)]
+                    c = valid[min(c - 1 if c > 0 else 0, len(valid) - 1)]
                 lastc = min(len(sec['items']) - 1, c)
             anchors.setdefault(lastc, []).append(k)
         used = set(range(len(zi)))
@@ -160,7 +164,7 @@ for idx,sec in enumerate(secs):
             ks = anchors.pop(ci)
             nxt = next((v for v in valid if v > ci), valid[-1])
             anchors.setdefault(nxt, []).extend(ks)
-    PLAN.append((idx, zi, anchors))
+    PLAN.append((idx, zi, anchors, front))
 
 
 def build(label, vol):
@@ -173,7 +177,7 @@ def build(label, vol):
     p=doc.add_paragraph(); p.alignment=WD_ALIGN_PARAGRAPH.CENTER; p.paragraph_format.space_after=Pt(14)
     sr(p.add_run(label), 11, color=RGBColor(0x66,0x66,0x66))
     n_sec=0
-    for idx, zi, anchors in PLAN:
+    for idx, zi, anchors, front in PLAN:
         sec=secs[idx]
         idxs=[i for i,(o,t,v) in enumerate(sec['items']) if v==vol and not SKIP1.match(o.strip()) and not SKIP2.match(o.strip())]
         if not idxs: continue
@@ -184,6 +188,14 @@ def build(label, vol):
                         if not SKIP1.match(o.strip()) and not SKIP2.match(o.strip())] or [0])
         tail=('（續）' if min(idxs) > first_all else '')
         sr(p.add_run('第%d篇　%s%s' % (idx+1, sec['name'], tail)), 14, bold=True)
+        for k in front:
+            zo, zt = zi[k]
+            r=doc.add_paragraph(); rf=r.paragraph_format
+            rf.space_before=Pt(4); rf.space_after=Pt(0); rf.line_spacing=1.2; rf.keep_with_next=True
+            sr(r.add_run('【記】'+zo), 9.5, color=RGBColor(0x21,0x5a,0x8a)); shade(r,'EEF2F6')
+            b2=doc.add_paragraph(); b2.alignment=WD_ALIGN_PARAGRAPH.LEFT
+            bf=b2.paragraph_format; bf.first_line_indent=Pt(20); bf.line_spacing=1.35; bf.space_after=Pt(2)
+            sr(b2.add_run(zt), 10.5)
         for ci in idxs:
             co,ct,_v=sec['items'][ci]
             q=doc.add_paragraph(); qf=q.paragraph_format

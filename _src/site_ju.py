@@ -268,6 +268,10 @@ def pairs_simple(src_dir, tr_tag):
     pth = os.path.join(B, 'AI語譯', '_work', 'yeshu_punct.json')
     if os.path.exists(pth):
         punct = json.load(io.open(pth, encoding='utf-8'))
+    ytags = None
+    pth3 = os.path.join(B, 'AI語譯', '_work', 'yeshu_tags.json')
+    if os.path.exists(pth3):
+        ytags = json.load(io.open(pth3, encoding='utf-8'))
     amap = None
     pth2 = os.path.join(B, 'AI語譯', '_work', 'ys_align_map.json')
     if os.path.exists(pth2):
@@ -290,9 +294,13 @@ def pairs_simple(src_dir, tr_tag):
             o = sp[i]
             if punct and gi < len(punct) and re.search(r'[，。、；：？！]', punct[gi]):
                 o = punct[gi]
-                mtag = re.match(r'^【[律疏記註]】', sp[i].strip())
-                if mtag and '【' not in o[:4]:
-                    o = mtag.group(0) + o
+            o = o.strip('*').lstrip()
+            o = re.sub(r'\*+', '', o)
+            m3 = re.search(r'【[疏記]】', o)
+            if m3 and m3.start() > 0:
+                o = o[m3.start():]
+            if ytags and 0 <= gi < len(ytags) and ytags[gi] and not o.startswith('【'):
+                o = ytags[gi] + o
             j = i
             if mp and i < len(mp) and 0 <= mp[i] < len(tt):
                 j = mp[i]

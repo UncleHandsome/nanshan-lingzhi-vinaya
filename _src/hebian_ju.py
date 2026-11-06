@@ -47,13 +47,17 @@ for k,sp,tt in cs:
         vol='卷上之一'      # 卷首併入第一卷
     if vol not in vols: vols.append(vol)
     for i in range(len(sp)):
-        flat.append((sp[i], tt[i] if i < len(tt) else '', vol))
+        flat.append((sp[i], tt[i] if i < len(tt) else '', vol, k))
 PATS=re.compile(r'^([\u4e00-\u9fff]{2,8})篇第([一二三四五六七八九十]+)$')
 secs=[]; cur=None
 PRE=[]          # 卷首（篇1 之前的鈔文）
-for o,t,vol in flat:
-    if cur is None and vol=='卷上之一':
+for o,t,vol,key in flat:
+    in_js = key.startswith('00_')
+    if in_js:
+        if PATS.match(o) or re.match(r'^\d+\s*[\u4e00-\u9fff]{2,10}篇', o):
+            continue          # 卷首目次，不當篇名
         PRE.append((o,t,vol))
+        continue
     m=PATS.match(o)
     if m:
         if any(x['no']==m.group(2) for x in secs):
@@ -224,12 +228,12 @@ def build(label, vol):
             sr(a2.add_run(pt), 10.5)
     for idx, zi, anchors, front in PLAN:
         sec=secs[idx]
-        idxs=[i for i,(o,t,v) in enumerate(sec['items']) if v==vol and not SKIP1.match(o.strip()) and not SKIP2.match(o.strip())]
+        idxs=[i for i,(o,t,v,*_) in enumerate(sec['items']) if v==vol and not SKIP1.match(o.strip()) and not SKIP2.match(o.strip())]
         if not idxs: continue
         n_sec+=1
         p=doc.add_paragraph(); p.alignment=WD_ALIGN_PARAGRAPH.CENTER
         pf=p.paragraph_format; pf.space_before=Pt(14); pf.space_after=Pt(6)
-        first_all = min([i for i, (o, t, v) in enumerate(sec['items'])
+        first_all = min([i for i, (o, t, v, *_) in enumerate(sec['items'])
                         if not SKIP1.match(o.strip()) and not SKIP2.match(o.strip())] or [0])
         tail=('（續）' if min(idxs) > first_all else '')
         sr(p.add_run('第%d篇　%s%s' % (idx+1, sec['name'], tail)), 14, bold=True)

@@ -119,11 +119,17 @@ for idx,sec in enumerate(secs):
                     anchors.setdefault(ci,[]).append(k); break
     am = AIMAP.get(str(idx))
     if am:
+        # AI 的 c 是「已濾掉標題行」的鈔段序號，先換成 items 索引
+        valid = [i for i, (o, t, *_) in enumerate(sec['items'])
+                 if not SKIP1.match(o.strip()) and not SKIP2.match(o.strip())]
         anchors = {}
-        lastc = 0
+        lastc = valid[0] if valid else 0
         for k in range(len(zi)):
             if k < len(am):
-                lastc = min(len(sec['items']) - 1, max(0, int(am[k])))
+                c = max(0, int(am[k]))
+                if valid:
+                    c = valid[min(c, len(valid) - 1)]
+                lastc = min(len(sec['items']) - 1, c)
             anchors.setdefault(lastc, []).append(k)
         used = set(range(len(zi)))
     used=set(v for vs in anchors.values() for v in vs)

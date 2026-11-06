@@ -78,13 +78,31 @@ def build(p, splits):
     am = AM.get(str(idx), [])
     chao = [it for it in sec['items'] if not SKIP.match(it[0].strip())]
     by_c = {}
-    last = 0
-    for k, c in enumerate(am[:len(zi)]):
-        c = int(c)
-        if c > 0:
-            c = max(c, last)   # 強制單調
-            last = c
-            by_c.setdefault(c, []).append(k)
+    if p == 10:
+        # 篇10 的 c 是區塊粗標，改用 AI 切點推導逐記鈔號
+        smap = {}
+        for e in splits:
+            smap[int(e['n'])] = e
+        FORCED = {35: 5, 51: 13, 52: 15}
+        cur = 1
+        for n in range(1, len(zi) + 1):
+            if n in FORCED:
+                cur = FORCED[n]
+            if n in smap:
+                tg = [int(x) for x in smap[n]['targets']]
+                for c in tg:
+                    by_c.setdefault(c, []).append(n - 1)
+                cur = tg[-1]
+            else:
+                by_c.setdefault(cur, []).append(n - 1)
+    else:
+        last = 0
+        for k, c in enumerate(am[:len(zi)]):
+            c = int(c)
+            if c > 0:
+                c = max(c, last)   # 強制單調
+                last = c
+                by_c.setdefault(c, []).append(k)
     front = [k for k in range(len(zi)) if k < len(am) and int(am[k]) == 0]
 
     # 切點
@@ -93,8 +111,15 @@ def build(p, splits):
     for e in splits:
         n = int(e['n']); marks = e['markers']; tg = [int(x) for x in e['targets']]
         base = int(am[n - 1]) if n - 1 < len(am) else 0
-        if tg != list(range(base, base + len(tg))):
+        if p != 10 and tg != list(range(base, base + len(tg))):
             continue
+        if p == 10 and (tg != sorted(tg) or len(set(tg)) != len(tg)):
+            continue
+        # 尾片不得越過下一記段的鈔號，否則會造成記號逆序
+        if p != 10:
+            nxt = int(am[n]) if n < len(am) and int(am[n]) > 0 else tg[-1]
+            if tg[-1] > nxt:
+                continue
         o, t = zi[n - 1]
         parts, cur, ok = [], o, True
         for m in marks:

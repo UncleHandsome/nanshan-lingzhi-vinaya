@@ -118,6 +118,13 @@ def load_chunks(src_dir, tr_tag):
     return out
 
 
+import json as _json
+try:
+    _AI_YS = _json.load(io.open(os.path.join(B, 'AI語譯', '_work', 'hb_align_ys.json'), encoding='utf-8'))
+except Exception:
+    _AI_YS = {}
+
+
 def pairs_chunks(src_dir, tr_tag, ju_dir):
     """業疏：逐塊用 TXT_句讀/<書>/<分塊>.txt。"""
     res = []
@@ -132,10 +139,23 @@ def pairs_chunks(src_dir, tr_tag, ju_dir):
             # 去掉檔頭 5 行（若有標題列）
             if ju and (ju[0].startswith('四分律') or ju[0].startswith('《')):
                 ju = ju[5:] if len(ju) > 5 else ju
-            hs, hd = len(han(''.join(ju))), len(han(''.join(sp)))
-            if hd and abs(hs - hd) / hd < 0.15:
-                buckets, _ = assign(ju, sp)
-                o_lines = ['　'.join(b) if b else sp[i] for i, b in enumerate(buckets)]
+            try:
+                _am = _AI_YS.get(key)
+            except NameError:
+                _am = None
+            if _am:
+                buck = [[] for _ in sp]
+                for i, c in enumerate(_am):
+                    if i >= len(ju):
+                        break
+                    if 0 <= c < len(buck):
+                        buck[c].append(ju[i])
+                o_lines = ['　'.join(b) if b else sp[i] for i, b in enumerate(buck)]
+            if not _am:
+                hs, hd = len(han(''.join(ju))), len(han(''.join(sp)))
+                if hd and abs(hs - hd) / hd < 0.15:
+                    buckets, _ = assign(ju, sp)
+                    o_lines = ['　'.join(b) if b else sp[i] for i, b in enumerate(buckets)]
         if o_lines is None:
             o_lines = sp
         vol = vol_of(key)

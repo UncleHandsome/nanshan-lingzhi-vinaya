@@ -91,49 +91,19 @@ mark{background:#ffe9a8;padding:0 .08em;border-radius:2px}
 @media(max-width:820px){nav{display:none}main{padding:1.4rem}}
 """
 
-SEC_RE = re.compile(r'^[○◎◯【]?\s*[\u4e00-\u9fff]{2,10}篇第[一二三四五六七八九十]+[】]?$')
-
-TOC_EXTRA = {
-    'yeshu': re.compile(r'[\u4e00-\u9fff]{2,8}篇第[一二三四五六七八九十]+'),
-    'jieshu': re.compile(r'^【律】[^，。]{0,24}戒。?$'),
-    'zhichi': re.compile(r'釋[\u4e00-\u9fff]{2,6}篇'),
-    'yichao': re.compile(r'^[\u4e00-\u9fff]{2,8}$'),
-}
+import toc_rules as TR
 
 
 def toc_match(book, text):
-    t = text.strip()
-    if SEC_RE.match(t):
-        return True
-    pat = TOC_EXTRA.get(book)
-    if pat is not None and pat.search(t):
-        if book == 'jieshu':
-            t3 = re.sub(r'^【[律註疏記]】\s*', '', t).rstrip('。')
-            if len(t3) < 5:
-                return False
-        return True
-    return False
+    return TR.match(book, text)
 
 
 def toc_label(book, text):
-    t = text.strip()
-    if book == 'zhichi':
-        m = re.search(r'釋[\u4e00-\u9fff]{2,6}篇', t)
-        if m:
-            return m.group(0)
-    if book == 'yeshu':
-        m = re.search(r'[\u4e00-\u9fff]{2,8}篇第[一二三四五六七八九十]+', t)
-        if m:
-            return m.group(0)
-    if book == 'jieshu':
-        t2 = re.sub(r'^【[律註疏記]】\s*', '', t).rstrip('。')
-        t2 = re.sub(r'^([一二三四五六七八九十百]+)[、，]\s*', r'\1、', t2)
-        if len(t2) > 20:
-            t2 = t2[:18] + '…'
-        return t2
-    if len(t) > 28:
-        return t[:26] + '…'
-    return t
+    return TR.label(book, text)
+
+
+def toc_whole_line(book, text):
+    return TR.is_line(book, text)
 
 
 VOL_ORDER = ['卷上之一', '卷上之二', '卷上之三', '卷上之四',
@@ -232,7 +202,7 @@ def build():
             tt = []
             run, drop = [], set()
             for i2, it2 in enumerate(items):
-                if SEC_RE.match(it2['o'].strip()):
+                if TR.match('xingshichao', it2['o'].strip()):
                     run.append(i2)
                 else:
                     if len(run) >= 3:
@@ -266,7 +236,7 @@ def build():
             drop = set()
             run = []
             for i2, it2 in enumerate(items):
-                if SEC_RE.match(it2['o'].strip()):
+                if TR.match('xingshichao', it2['o'].strip()):
                     run.append(i2)
                 else:
                     if len(run) >= 3:
@@ -282,7 +252,7 @@ def build():
                 if re.match(r'^\d+\s*[\u4e00-\u9fff]{2,10}篇\(上[一二三四五六七八九十]?\)$', o):
                     continue
                 # 篇名行改成標題，不再重複成 pair
-                if SEC_RE.match(o):
+                if TR.match('xingshichao', o):
                     sid = len(toc) + 1
                     toc.append((sid, o))
                     body.append('<h2 class="sec" id="p%d">%s</h2>' % (sid, html.escape(o)))

@@ -56,6 +56,32 @@
         }
       });
     });
+
+  // 捲動時高亮所在篇目
+  function spy() {
+    var heads = [].slice.call(document.querySelectorAll('h2.sec'));
+    if (!heads.length || !('IntersectionObserver' in window)) return;
+    var links = {};
+    [].slice.call(box.querySelectorAll('a[href*="#p"]')).forEach(function (a) {
+      var id = a.getAttribute('href').split('#')[1];
+      if (id) links[id] = a;
+    });
+    var cur = null;
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var a = links[e.target.id];
+        if (!a) return;
+        if (cur) cur.classList.remove('cursec');
+        cur = a;
+        a.classList.add('cursec');
+        var d = a.closest('details.vk'); if (d && !d.open) d.open = true;
+        var t = a.closest('details.tk'); if (t && !t.open) t.open = true;
+      });
+    }, { rootMargin: '-8% 0px -82% 0px' });
+    heads.forEach(function (h) { io.observe(h); });
+  }
+  spy();
   }).catch(function () {
     box.innerHTML = '<a href="' + root + 'index.html">目錄</a>';
   });

@@ -1,38 +1,36 @@
 # -*- coding: utf-8 -*-
-"""合併兩批 AI 對齊結果 → hb_align.json"""
-import io, os, re, json, glob
+"""合併兩批 AI 對齊結果 → hb_align.json（以批次檔的 sec 為準，避免 z 撞號）"""
+import io, os, glob, json
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 AD = os.path.join(B, 'AI語譯', '_work', 'align_ai')
 AD2 = os.path.join(B, 'AI語譯', '_work', 'align_ai2')
+AD3 = os.path.join(B, 'AI語譯', '_work', 'align_ys')
 
 
 def collect(dirpath):
-    meta = {}
-    for f in sorted(glob.glob(os.path.join(dirpath, '[0-9][0-9][0-9].json'))):
-        if f.endswith('manifest.json'):
-            continue
-        d = json.load(io.open(f, encoding='utf-8'))
-        for it in d.get('items', []):
-            meta[it['z']] = d['sec']
     maps = {}
-    for f in sorted(glob.glob(os.path.join(dirpath, 'out_*.json'))):
-        d = json.load(io.open(f, encoding='utf-8'))
+    for bf in sorted(glob.glob(os.path.join(dirpath, '[0-9][0-9][0-9].json'))):
+        n = os.path.basename(bf)[:3]
+        out = os.path.join(dirpath, 'out_%s.json' % n)
+        if not os.path.exists(out):
+            continue
+        meta = json.load(io.open(bf, encoding='utf-8'))
+        sec = meta.get('sec')
+        if sec is None:
+            continue
+        d = json.load(io.open(out, encoding='utf-8'))
         for m in d.get('map', []):
-            z, c = int(m['z']), int(m['c'])
-            s = meta.get(z)
-            if s is None:
-                continue
-            maps.setdefault(s, {})[z] = c
+            maps.setdefault(sec, {})[int(m['z'])] = int(m['c'])
     return maps
 
 
 def main():
     maps = collect(AD)
-    if os.path.isdir(AD2):
-        m2 = collect(AD2)
-        for s, d in m2.items():
-            maps.setdefault(s, {}).update(d)
+    for extra in (AD2 if os.path.isdir(AD2) else None,):
+        if extra:
+            for s, d in collect(extra).items():
+                maps.setdefault(s, {}).update(d)
     out = {}
     for s, d in maps.items():
         mx = max(d) + 1
@@ -48,8 +46,7 @@ def main():
         out[str(s - 1)] = arr
     json.dump(out, io.open(os.path.join(B, 'AI語譯', '_work', 'hb_align.json'), 'w', encoding='utf-8'), ensure_ascii=False)
     print('篇', len(out), '記段', sum(len(v) for v in out.values()))
-    for s, arr in sorted(out.items(), key=lambda x: int(x[0])):
-        print('  篇%-3d 對齊 %d 段' % (int(s) + 1, len(arr)))
+    print('篇號:', sorted(int(k) + 1 for k in out))
 
 
 if __name__ == '__main__':

@@ -338,6 +338,10 @@ def build():
                         toc.append((sid, _lb))
                         it['_id'] = 'p' + str(sid)
                         body.append('<h2 class="sec" id="p' + str(sid) + '">' + html.escape(_lb) + '</h2>')
+                        # 這一段本身就是篇名（整行相同）→ 只留標題，不再重複成 pair
+                        _o2 = re.sub(r'^【[律註疏記]】\s*', '', o).rstrip('。')
+                        if re.sub(r'[^\u4e00-\u9fff]', '', _o2) == re.sub(r'[^\u4e00-\u9fff]', '', _lb):
+                            continue
                 body.append('<div class="pair" id="' + sid_s + '"><div class="o">' + html.escape(it['o']) + '</div>'
                             + '<div class="t">' + html.escape(it['t']) + '</div></div>')
             prev = vols[i-1] if i > 0 else None

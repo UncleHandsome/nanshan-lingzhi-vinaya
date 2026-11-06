@@ -122,7 +122,7 @@ def build_html(blocks):
            '<meta name="viewport" content="width=device-width,initial-scale=1">'
            '<title>附錄：名相、音注與度量衡｜南山律典・白話對照</title>'
            '<meta name="DC.rights" content="CC BY-NC-SA 4.0">'
-           '<link rel="stylesheet" href="style.css?v=6"><style>' + CSS_EXTRA + '</style></head>'
+           '<link rel="stylesheet" href="style.css?v=7"><style>' + CSS_EXTRA + '</style></head>'
            '<body><div class="wrap">' + nav + '<main>' + body +
            '<p class="intro" style="margin-top:2rem">回 <a href="index.html">目錄</a></p>'
            + footer + '</main></div></body></html>')

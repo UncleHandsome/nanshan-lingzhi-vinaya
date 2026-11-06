@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""句級合編 → docs/hebian/*.html（樣式與其他書一致：.pair/.o/.t、同一側欄）"""
+"""句級合編 → docs/hebian/*.html（三層側欄：書 → 卷 → 篇）"""
 import io, os, re, glob, html, json
 from docx import Document
 
@@ -10,19 +10,6 @@ os.makedirs(OUT, exist_ok=True)
 
 HB = ['卷上之一', '卷上之二', '卷上之三', '卷上之四', '卷中之一', '卷中之二', '卷中之三', '卷中之四',
       '卷下之一', '卷下之二', '卷下之三', '卷下之四']
-VOL_ORDER = ['卷上之一','卷上之二','卷上之三','卷上之四','卷中之一','卷中之二','卷中之三','卷中之四',
-             '卷下之一','卷下之二','卷下之三','卷下之四','卷上','卷中','卷下','卷一','卷二','卷三','卷四',
-             '上一上','上一下','上二','上三','上四','中一上','中一下','中二','中三上','中三下','中四上','中四下',
-             '下一','下二','下三','下四']
-
-
-def vol_order_key(v):
-    try:
-        return VOL_ORDER.index(v)
-    except ValueError:
-        return 999
-
-
 BOOKS = [
     ('xingshichao', '四分律刪繁補闕行事鈔'),
     ('jieshu', '四分律含注戒本疏'),
@@ -31,6 +18,43 @@ BOOKS = [
     ('nicao', '四分比丘尼鈔'),
     ('yichao', '四分律拾毗尼義鈔'),
 ]
+VOL_ORDER = ['卷上之一', '卷上之二', '卷上之三', '卷上之四',
+             '卷中之一', '卷中之二', '卷中之三', '卷中之四',
+             '卷下之一', '卷下之二', '卷下之三', '卷下之四',
+             '卷上', '卷中', '卷下', '卷一', '卷二', '卷三', '卷四',
+             '上一上', '上一下', '上二', '上三', '上四',
+             '中一上', '中一下', '中二', '中三上', '中三下', '中四上', '中四下',
+             '下一', '下二', '下三', '下四']
+
+
+def vkey(v):
+    try:
+        return VOL_ORDER.index(v)
+    except ValueError:
+        return 999
+
+
+SEC = re.compile(r'^第(\d+)篇　(.+?)(（續）)?$')
+
+
+def book_toc(out):
+    t = {}
+    for f in glob.glob(os.path.join(SITE, out, '*.html')):
+        v = os.path.basename(f)[:-5]
+        h = io.open(f, encoding='utf-8').read()
+        pat = re.compile(r'<a href="[^"]*' + re.escape(out) + '/' + re.escape(v) + r'\.html#p(\d+)">([^<]+)</a>')
+        items, seen = [], set()
+        for m in pat.finditer(h):
+            sid = int(m.group(1))
+            if sid in seen:
+                continue
+            seen.add(sid)
+            items.append((sid, m.group(2)))
+        t[v] = items
+    return t
+
+
+TOC = {out: book_toc(out) for out, _ in BOOKS}
 
 
 def nav(cur_vol, toc, prev, nxt):
@@ -44,45 +68,46 @@ def nav(cur_vol, toc, prev, nxt):
         if nxt:
             parts.append('<a href="' + nxt + '.html">' + html.escape(nxt) + ' →</a>')
         parts.append('</div>')
-    if toc:
-        parts.append('<div class="grp"><b>本卷篇目</b><div class="toch">')
-        for sid, name in toc:
-            parts.append('<a href="#p' + str(sid) + '">' + html.escape(name) + '</a>')
-        parts.append('</div></div>')
-    parts.append('<div class="grp"><b>書目</b><div class="bkh">')
+    parts.append('<div class="grp"><b>書目</b><div class="tree">')
     for out, title in BOOKS:
-        vols = sorted([os.path.basename(p)[:-5] for p in glob.glob(os.path.join(SITE, out, '*.html'))], key=vol_order_key)
+        tmap = TOC.get(out, {})
+        vols = sorted(tmap.keys(), key=vkey)
         if not vols:
             continue
-        parts.append('<div class="bk"><span class="bkname">' + html.escape(title) + '</span><span class="vols">')
+        parts.append('<details class="tk"><summary>' + html.escape(title) + '</summary>')
         for v in vols:
-            parts.append('<a href="../%s/%s.html">%s</a>' % (out, v, html.escape(v)))
-        parts.append('</span></div>')
-    parts.append('<div class="bk"><span class="bkname">行事鈔資持記・句級合編</span><span class="vols">')
+            parts.append('<details class="vk"><summary>' + html.escape(v) + '</summary><ul>')
+            for sid, name in tmap[v]:
+                parts.append('<li><a href="../%s/%s.html#p%d">%s</a></li>' % (out, v, sid, html.escape(name)))
+            parts.append('</ul></details>')
+        parts.append('</details>')
+    parts.append('<details class="tk" open><summary>行事鈔資持記・句級合編</summary>')
     for v in HB:
-        mark = ' class="cur"' if v == cur_vol else ''
-        parts.append('<a href="%s.html"%s>%s</a>' % (v, mark, html.escape(v)))
-    parts.append('</span></div></div></div></nav>')
+        cur = v == cur_vol
+        parts.append('<details class="vk"' + (' open' if cur else '') + '>'
+                     + '<summary' + (' class="cur"' if cur else '') + '>' + html.escape(v) + '</summary><ul>')
+        for sid, name in (toc if cur else []):
+            parts.append('<li><a href="%s.html#p%d">%s</a></li>' % (v, sid, html.escape(name)))
+        if not cur:
+            parts.append('<li><a href="%s.html">（全卷）</a></li>' % v)
+        parts.append('</ul></details>')
+    parts.append('</details></div></div></nav>')
     return ''.join(parts)
 
 
 TPL = '''<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>%s</title>
-<link rel="stylesheet" href="../style.css?v=6"></head><body><div class="wrap">
+<link rel="stylesheet" href="../style.css?v=7"></head><body><div class="wrap">
 %s<main><h1>%s</h1><p class="byline">鈔文（淺褐）與記文（淺藍）逐段並列，每段附白話</p>
 %s<div class="pager">%s</div></main></div></body></html>'''
 
-
-SEC = re.compile(r'^第(\d+)篇　(.+)$')
 ENTRIES = []
-
 for vi, vol in enumerate(HB):
     src = os.path.join(D, '白話', '行事鈔資持記句級合編_%s.docx' % vol)
     if not os.path.exists(src):
         continue
     d = Document(src)
-    body = []
-    toc = []
+    body, toc = [], []
     pending = None
     for p in d.paragraphs:
         t = p.text.strip()
@@ -118,8 +143,6 @@ for vi, vol in enumerate(HB):
     io.open(os.path.join(OUT, vol + '.html'), 'w', encoding='utf-8').write(out)
     print(vol, '篇', len(toc), '段', len(body))
 
-
-# 搜尋索引
 sp = os.path.join(SITE, 'search')
 os.makedirs(sp, exist_ok=True)
 payload = 'window.SIDX=window.SIDX||{};window.SIDX["hebian"]=' + json.dumps(

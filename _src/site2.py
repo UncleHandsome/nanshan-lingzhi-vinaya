@@ -137,6 +137,27 @@ def vol_order_key(v):
         return 999
 
 
+
+def read_hb_toc():
+    import glob as _g
+    t = {}
+    for f in _g.glob(os.path.join(SITE, 'hebian', '*.html')):
+        v = os.path.basename(f)[:-5]
+        h = io.open(f, encoding='utf-8').read()
+        items, seen = [], set()
+        for m in re.finditer(r'<h2 class="sec" id="p(\d+)">([^<]+)</h2>', h):
+            sid = int(m.group(1))
+            if sid in seen:
+                continue
+            seen.add(sid)
+            items.append((sid, m.group(2)))
+        t[v] = items
+    return t
+
+
+HB_TOC = read_hb_toc()
+
+
 def nav_html(cur_book=None, prefix='', toc=None, prev=None, nxt=None):
     parts = ['<nav><h1><a href="INDEX">南山律典・白話對照</a></h1>']
     parts.append('<div class="grp"><b>全書</b><a href="INDEX">目錄</a><a href="SEARCH">全文搜尋</a>'
@@ -148,30 +169,51 @@ def nav_html(cur_book=None, prefix='', toc=None, prev=None, nxt=None):
         if nxt:
             parts.append('<a href="' + prefix + cur_book['out'] + '/' + nxt + '.html">' + html.escape(nxt) + ' →</a>')
         parts.append('</div>')
-    if toc:
-        parts.append('<div class="grp"><b>本卷篇目</b><div class="toch">')
-        for sid, name in toc:
-            parts.append('<a href="#p' + str(sid) + '">' + html.escape(name) + '</a>')
-        parts.append('</div></div>')
-    parts.append('<div class="grp"><b>書目</b><div class="bkh">')
+    parts.append('<div class="grp"><b>書目</b><div class="tree">')
     for bk in BOOKS:
         vols = bk.get('_vols') or []
         if not vols:
             continue
         here = cur_book and bk['out'] == cur_book['out']
-        parts.append('<div class="bk"><span class="bkname">' + html.escape(bk['title']) + '</span><span class="vols">')
+        parts.append('<details class="tk"' + (' open' if here else '') + '>'
+                     + '<summary>' + html.escape(bk['title']) + '</summary>')
+        toc_map = bk.get('_toc') or {}
         for v, url in vols:
-            mark = ' class="cur"' if here and cur_book and v == cur_book.get('_curvol') else ''
-            parts.append('<a href="' + prefix + bk['out'] + '/' + v + '.html"' + mark + '>' + html.escape(v) + '</a>')
-        parts.append('</span></div>')
+            cur_vol = here and cur_book and v == cur_book.get('_curvol')
+            subs = toc_map.get(v) or []
+            parts.append('<details class="vk"' + (' open' if cur_vol else '') + '>'
+                         + '<summary' + (' class="cur"' if cur_vol else '') + '>' + html.escape(v) + '</summary>')
+            if subs:
+                parts.append('<ul>')
+                for sid, name in subs:
+                    parts.append('<li><a href="' + prefix + bk['out'] + '/' + v + '.html#p' + str(sid) + '">'
+                                 + html.escape(name) + '</a></li>')
+                parts.append('</ul>')
+            else:
+                parts.append('<ul><li><a href="' + prefix + bk['out'] + '/' + v + '.html">（全卷）</a></li></ul>')
+            parts.append('</details>')
+        parts.append('</details>')
+    # 合編
     HB = ['卷上之一', '卷上之二', '卷上之三', '卷上之四', '卷中之一', '卷中之二', '卷中之三', '卷中之四',
           '卷下之一', '卷下之二', '卷下之三', '卷下之四']
     herehb = bool(cur_book and cur_book['out'] == 'hebian')
-    parts.append('<div class="bk"><span class="bkname">行事鈔資持記・句級合編</span><span class="vols">')
+    hbtoc = HB_TOC
+    parts.append('<details class="tk"' + (' open' if herehb else '') + '><summary>行事鈔資持記・句級合編</summary>')
     for v in HB:
-        mark = ' class="cur"' if herehb and cur_book.get('_curvol') == v else ''
-        parts.append('<a href="' + prefix + 'hebian/' + v + '.html"' + mark + '>' + html.escape(v) + '</a>')
-    parts.append('</span></div></div></div></nav>')
+        cur_vol = herehb and cur_book.get('_curvol') == v
+        subs = hbtoc.get(v) or []
+        parts.append('<details class="vk"' + (' open' if cur_vol else '') + '>'
+                     + '<summary' + (' class="cur"' if cur_vol else '') + '>' + html.escape(v) + '</summary>')
+        if subs:
+            parts.append('<ul>')
+            for sid, name in subs:
+                parts.append('<li><a href="' + prefix + 'hebian/' + v + '.html#p' + str(sid) + '">'
+                             + html.escape(name) + '</a></li>')
+            parts.append('</ul>')
+        else:
+            parts.append('<ul><li><a href="' + prefix + 'hebian/' + v + '.html">（全卷）</a></li></ul>')
+        parts.append('</details>')
+    parts.append('</details></div></div></nav>')
     return ''.join(parts)
 
 
@@ -180,7 +222,7 @@ def page(title, body, cur_book=None, prefix='', toc=None, prev=None, nxt=None):
            .replace('INDEX', prefix + 'index.html')
            .replace('SEARCH', prefix + 'search.html')
            .replace('APPENDIX', prefix + 'appendix.html'))
-    css = prefix + 'style.css?v=6'
+    css = prefix + 'style.css?v=7'
     return ('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
             '<title>' + html.escape(title) + '｜南山律典・白話對照</title>'
@@ -210,6 +252,17 @@ def build():
         bk['_vols'] = [(v, '') for v in sorted(groups, key=vol_order_key)]
         bk['_groups'] = groups
         all_books.append(bk)
+    # 預先計算每卷篇目（供側欄三層樹）
+    for bk in all_books:
+        tmap = {}
+        for v, items in bk['_groups'].items():
+            tt = []
+            for it in items:
+                o = it['o'].strip()
+                if toc_match(bk['out'], o):
+                    tt.append((len(tt) + 1, toc_label(bk['out'], o)))
+            tmap[v] = tt
+        bk['_toc'] = tmap
     search_idx = {}
     for bk in all_books:
         outdir = os.path.join(SITE, bk['out']); os.makedirs(outdir, exist_ok=True)

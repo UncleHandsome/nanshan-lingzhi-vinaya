@@ -433,3 +433,21 @@ nav .bkh .vols a{display:inline-block;margin:0 .3rem .22rem 0;padding:.06rem .38
   text-decoration:none;line-height:1.55}
 nav .bkh .vols a:hover{border-color:#cdbc9c;color:var(--accent)}
 nav .bkh .vols a.cur{background:#f4efe2;border-color:#cdbc9c;color:#5d4c3a;font-weight:600}
+
+/* 側欄三層樹：書 → 卷 → 篇（可折疊） */
+nav .tree details.tk{margin:.15rem 0}
+nav .tree details.tk > summary{font-size:13.5px;font-weight:700;color:var(--fg);
+  padding:.25rem .2rem;cursor:pointer;list-style:none;line-height:1.5}
+nav .tree details.tk > summary::-webkit-details-marker{display:none}
+nav .tree details.tk > summary:before{content:"▸ ";color:#b9a789;font-size:10px}
+nav .tree details.tk[open] > summary:before{content:"▾ "}
+nav .tree details.vk{margin:.05rem 0 .05rem 1rem;padding-left:.35rem;border-left:1px solid var(--line)}
+nav .tree details.vk > summary{font-size:12.5px;color:var(--fg2);cursor:pointer;list-style:none;
+  padding:.14rem 0;line-height:1.4}
+nav .tree details.vk > summary::-webkit-details-marker{display:none}
+nav .tree details.vk > summary:before{content:"– ";color:#c3b49a}
+nav .tree details.vk > summary.cur{color:var(--accent);font-weight:600}
+nav .tree details.vk ul{list-style:none;margin:0;padding:0 0 .2rem 1rem}
+nav .tree details.vk li a{display:block;font-size:12.5px;color:var(--fg2);
+  text-decoration:none;line-height:1.65;padding:.05rem 0}
+nav .tree details.vk li a:hover{color:var(--accent);text-decoration:underline}

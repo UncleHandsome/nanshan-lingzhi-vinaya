@@ -21,7 +21,7 @@
     try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {}
   }
 
-  fetch(root + 'nav.json').then(function (r) { return r.json(); }).then(function (data) {
+  fetch(root + 'nav.json?v=3').then(function (r) { return r.json(); }).then(function (data) {
     var here = path;
     var html = '';
     (data.books || []).forEach(function (b) {
@@ -83,13 +83,18 @@
   }
 
   // 目錄點擊後：等 nav 重建完再回到錨點，避免「重刷後跑掉」
-  function restoreHash() {
+  function jump() {
     if (!location.hash) return;
     var el = document.getElementById(location.hash.slice(1));
-    if (el) setTimeout(function () { el.scrollIntoView({ block: 'start' }); }, 60);
+    if (el) el.scrollIntoView({ block: 'start', behavior: 'auto' });
+  }
+  function restoreHash() {
+    [0, 120, 320, 700].forEach(function (ms) { setTimeout(jump, ms); });
   }
   spy();
   restoreHash();
+  window.addEventListener('load', restoreHash);
+  window.addEventListener('hashchange', function () { setTimeout(jump, 0); setTimeout(jump, 200); });
   }).catch(function () {
     box.innerHTML = '<a href="' + root + 'index.html">目錄</a>';
   });

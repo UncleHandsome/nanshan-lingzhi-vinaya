@@ -1,0 +1,10 @@
+coverage 97.70%
+gap 0-72 (72 chars) before= after=四分律比丘尼鈔南山五大部之四唐道
+gap 9684-9720 (36 chars) before=壽不淫是沙彌尼戒能持 after=否盡形壽不妄語是沙彌尼戒能持否盡
+gap 9768-9792 (24 chars) before=大牀上坐是沙彌尼戒能 after=持否盡形壽不非時食是沙彌尼戒能持
+gap 13824-13848 (24 chars) before=臘不滿度弟子知非而度 after=犯提弟子不知是非得戒問緒方僧尼情
+gap 16356-16380 (24 chars) before=正法久住此是上品智度 after=論云下持戒生人中持戒生六欲天上持
+gap 24720-24744 (24 chars) before=汝有此長衣未作淨為淨 after=故與我我今受之汝施與誰施與某甲長
+gap 24912-24936 (24 chars) before=是長衣淨施與某甲隨彼 after=取用第四存亡者僧祗云施主齊三由旬
+gap 31860-31884 (24 chars) before=語我我若見罪當如法懺 after=悔尼說已大僧良久默然上座應勑尼云
+gap 83616-83640 (24 chars) before=問鐵瓦木作者皆判入輕 after=或事輕從用重者如大小悵步障枕扇氈

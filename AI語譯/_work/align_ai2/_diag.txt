@@ -1,0 +1,11 @@
+持犯 n=241 chars=24512 mean=101.7
+懺六聚 n=148 chars=14766 mean=99.8
+二衣 n=273 chars=26864 mean=98.4
+batch slice z300..449: n=150 chars=14960 mean=99.7
+zi total chars=66142 mean=99.9
+pref[300]=0.4603 -> count-frac=0.4532
+pref[330]=0.5055 -> count-frac=0.4985
+pref[360]=0.5503 -> count-frac=0.5438
+pref[389]=0.5938 -> count-frac=0.5876
+pref[420]=0.6407 -> count-frac=0.6344
+pref[449]=0.6850 -> count-frac=0.6782

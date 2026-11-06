@@ -134,6 +134,10 @@ try:
     _YS_MAP = _json.load(io.open(os.path.join(B, 'AI語譯', '_work', 'ys_align_map.json'), encoding='utf-8'))
 except Exception:
     _YS_MAP = {}
+try:
+    _YS_JU = _json.load(io.open(os.path.join(B, 'AI語譯', '_work', 'ys_ju_map.json'), encoding='utf-8'))
+except Exception:
+    _YS_JU = {}
 
 # 卷首的人工修正（ye_new.txt 指定的 3~5 列）
 _YS0_FIX = {
@@ -170,10 +174,18 @@ def pairs_chunks(src_dir, tr_tag, ju_dir):
             while ju and (len(ju[0]) < 8 or ju[0].startswith(('=', '.', '四分律', '（', '南山三大部', '底本'))):
                 ju = ju[1:]
             if ju:
-                hs, hd = len(han(''.join(ju))), len(han(''.join(sp)))
-                if hd and abs(hs - hd) / hd < 0.30:
-                    buckets, _ = assign(ju, sp)
-                    o_lines = ['　'.join(b) if b else sp[i] for i, b in enumerate(buckets)]
+                jm = _YS_JU.get(key)
+                if jm and len(jm) == len(ju):
+                    buck = [[] for _ in sp]
+                    for li, si in enumerate(jm):
+                        if 0 <= si < len(buck):
+                            buck[si].append(ju[li])
+                    o_lines = ['　'.join(b) if b else sp[i] for i, b in enumerate(buck)]
+                else:
+                    hs, hd = len(han(''.join(ju))), len(han(''.join(sp)))
+                    if hd and abs(hs - hd) / hd < 0.30:
+                        buckets, _ = assign(ju, sp)
+                        o_lines = ['　'.join(b) if b else sp[i] for i, b in enumerate(buckets)]
         if o_lines is None:
             o_lines = sp
         vol = vol_of(key)

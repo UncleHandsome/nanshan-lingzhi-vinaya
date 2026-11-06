@@ -293,7 +293,7 @@ def build(p, splits):
         rf.left_indent = Pt(14); rf.keep_with_next = True
         sr(r.add_run(tag + zo), 9.5, color=RGBColor(0x21, 0x5a, 0x8a)); shade(r, 'EEF2F6')
         _lead = ''
-        _zt = zt
+        _zt = clean_tr(zt)
         while _zt[:1] in ('〕', '」', '）'):
             _lead += _zt[0]
             _zt = _zt[1:]

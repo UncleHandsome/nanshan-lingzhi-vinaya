@@ -88,6 +88,7 @@ def build_zi(secs, zs):
     if len(ZI[11]) > 90:
         ZI[12] = [ZI[11][-1]] + ZI[12]
         ZI[11] = ZI[11][:-1]
+    ZI[29] = ZI[29][:28]
     return ZI
 
 

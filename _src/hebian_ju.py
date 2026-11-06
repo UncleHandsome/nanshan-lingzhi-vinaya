@@ -104,6 +104,8 @@ def _build_zi():
     if RE_SLICE and len(_ZI[11]) > 90:
         _ZI[12] = [_ZI[11][-1]] + _ZI[12]
         _ZI[11] = _ZI[11][:-1]
+    # 篇30 記29-53 是卷末校勘記，不屬正文
+    _ZI[29] = _ZI[29][:28]
 
 
 def zitems_for(idx):

@@ -250,12 +250,12 @@ def build(p, splits):
             continue
         n = int(e['n']); marks = e['markers']; tg = [int(x) for x in e['targets']]
         base = (int(e['base']) if 'base' in e else (cmap.get(n, 0) if BS else (int(am[n - 1]) if n - 1 < len(am) else 0)))
-        if p != 10 and tg != list(range(base, base + len(tg))):
+        if p != 10 and not e.get('flex') and tg != list(range(base, base + len(tg))):
             continue
         if p == 10 and (tg != sorted(tg) or len(set(tg)) != len(tg)):
             continue
         # 尾片不得越過下一記段的鈔號，否則會造成記號逆序
-        if p != 10 and 'base' not in e:
+        if p != 10 and 'base' not in e and not e.get('flex'):
             nxt = (cmap.get(n + 1, 0) if BS else (int(am[n]) if n < len(am) and int(am[n]) > 0 else 0)) or tg[-1]
             if tg[-1] > nxt:
                 continue
@@ -291,7 +291,7 @@ def build(p, splits):
         r = doc.add_paragraph(); rf = r.paragraph_format
         rf.space_before = Pt(4); rf.space_after = Pt(1); rf.line_spacing = 1.2
         rf.left_indent = Pt(14); rf.keep_with_next = True
-        sr(r.add_run(tag + zo), 9.5, color=RGBColor(0x21, 0x5a, 0x8a)); shade(r, 'EEF2F6')
+        sr(r.add_run(tag + zo.rstrip('〕')), 9.5, color=RGBColor(0x21, 0x5a, 0x8a)); shade(r, 'EEF2F6')
         _lead = ''
         _zt = clean_tr(zt)
         while _zt[:1] in ('〕', '」', '）'):

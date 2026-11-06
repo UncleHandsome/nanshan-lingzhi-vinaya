@@ -236,6 +236,8 @@ def build():
                         _lb = '序文'
                     if bk['out'] == 'jieshu' and v in ('卷一', '卷一上') and _lb not in ('序文', '凡例', '目錄', '條目'):
                         _lb = ''
+                    if bk['out'] == 'yeshu' and _lb not in {'集法緣成篇第一','諸界結解篇第二','諸戒受法篇第三','衣藥受淨篇第四','諸說戒法篇第五','諸眾安居法篇第六','諸眾自恣法篇第七','諸分衣法篇第八','懺六聚法篇第九','雜法住持篇第十'}:
+                        _lb = ''
                     if _lb and _lb not in [n for _, n in tt]:
                         tt.append((len(tt) + 1, _lb))
             tmap[v] = tt
@@ -296,6 +298,8 @@ def build():
                     if _lb.startswith('序文：'):
                         _lb = '序文'
                     if bk['out'] == 'jieshu' and v in ('卷一', '卷一上') and _lb not in ('序文', '凡例', '目錄', '條目'):
+                        _lb = ''
+                    if bk['out'] == 'yeshu' and _lb not in {'集法緣成篇第一','諸界結解篇第二','諸戒受法篇第三','衣藥受淨篇第四','諸說戒法篇第五','諸眾安居法篇第六','諸眾自恣法篇第七','諸分衣法篇第八','懺六聚法篇第九','雜法住持篇第十'}:
                         _lb = ''
                     if _lb and _lb not in [n for _, n in toc]:
                         sid = len(toc) + 1

@@ -174,7 +174,12 @@ def pairs_chunks(src_dir, tr_tag, ju_dir):
             while ju and (len(ju[0]) < 8 or ju[0].startswith(('=', '.', '四分律', '（', '南山三大部', '底本'))):
                 ju = ju[1:]
             if ju:
-                jm = _YS_JU.get(key)
+                rec = _YS_JU.get(key)
+                jm = rec.get('map') if isinstance(rec, dict) else rec
+                if isinstance(rec, dict):
+                    t0 = int(rec.get('trim', 0))
+                    if t0:
+                        ju = ju[t0:]
                 if jm and len(jm) == len(ju):
                     buck = [[] for _ in sp]
                     for li, si in enumerate(jm):

@@ -55,6 +55,29 @@ def align(Lj, Ls):
     return mp
 
 
+def hstr(x):
+    return ''.join(re.findall(r'[\u4e00-\u9fff]', x))
+
+
+def trim_ju(ju, sp):
+    """切掉句讀檔開頭屬於上一塊的溢出句"""
+    if not sp or not ju:
+        return ju, 0
+    for probe_len in (10, 8, 6):
+        head = hstr(sp[0])[:probe_len]
+        if len(head) < probe_len:
+            continue
+        for idx, line in enumerate(ju[:40]):
+            if head in hstr(line):
+                return ju[idx:], idx
+        if len(sp) > 1:
+            head2 = hstr(sp[1])[:probe_len]
+            for idx, line in enumerate(ju[:40]):
+                if head2 and head2 in hstr(line):
+                    return ju[idx:], idx
+    return ju, 0
+
+
 res = {}
 for f in sorted(os.listdir(S)):
     if not f.endswith('.txt'):
@@ -67,9 +90,13 @@ for f in sorted(os.listdir(S)):
     ju = [x.strip() for x in io.open(jp, encoding='utf-8').read().split('\n') if x.strip()]
     while ju and (len(ju[0]) < 8 or ju[0].startswith(SKIP)):
         ju = ju[1:]
+    ju, trimmed = trim_ju(ju, sp)
+    if trimmed:
+        print('  切掉溢出', k, trimmed, '行')
     if not sp or not ju:
         continue
-    res[k] = align([max(1, han(x)) for x in ju], [max(1, han(x)) for x in sp])
+    mp = align([max(1, han(x)) for x in ju], [max(1, han(x)) for x in sp])
+    res[k] = dict(trim=trimmed, map=mp)
 json.dump(res, io.open(OUT, 'w', encoding='utf-8'), ensure_ascii=False)
 print('分塊', len(res))
 for k in list(res)[:3]:

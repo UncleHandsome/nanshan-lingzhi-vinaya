@@ -116,6 +116,29 @@ def emit_ji_to(doc, tag, text, tr):
     sr(b.add_run(tr), 10)
 
 
+def strip_dup_tail(p):
+    if p != 8:
+        return
+    import re as _re
+    o169, t169 = ZI[7][168]
+    o170, t170 = ZI[7][169]
+    # 找 o169 後綴與 o170 前綴的最長重疊
+    best = 0
+    for L in range(min(120, len(o169), len(o170)), 20, -1):
+        if o169[-L:] == o170[:L]:
+            best = L
+            break
+    if best >= 20:
+        rest = o170[best:].lstrip('。；，')
+        # 白話按比例切掉
+        ratio = best / max(1, len(o170))
+        cut = int(round(len(t170) * ratio))
+        # 對到句號
+        j = t170.find('。', cut)
+        rest_t = t170[j + 1:] if j > 0 else t170
+        ZI[7][169] = (rest, rest_t)
+
+
 def build(p, splits):
     idx = p - 1
     sec = SECS[idx]; zi = ZI[idx]
@@ -282,11 +305,12 @@ if __name__ == '__main__':
             man = dm.get('splits', [])
             mn = {int(x['n']) for x in man}
             splits = man + [x for x in splits if int(x['n']) not in mn]
+        strip_dup_tail(p)
         out, nc, nz, used = build(p, splits)
         print('篇%02d %-8s 鈔%3d 記%3d 切點%2d → %s' % (p, SECS[p - 1]['name'], nc, nz, len(splits), os.path.basename(out)))
     # 各篇首記的前篇尾巴 → 補到前一篇
     for p, (head, htr) in HEADS.items():
-        if '釋結界篇' in head or '資持記上二' in head:
+        if '釋結界篇' in head or '資持記上' in head:
             continue
         fp = os.path.join(B, '白話', '會本_篇%02d_%s.docx' % (p - 1, SECS[p - 2]['name']))
         if not os.path.exists(fp):

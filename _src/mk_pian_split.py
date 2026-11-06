@@ -116,6 +116,15 @@ def emit_ji_to(doc, tag, text, tr):
     sr(b.add_run(tr), 10)
 
 
+def move_siju():
+    o49, t49 = ZI[3][48]
+    o50, t50 = ZI[3][49]
+    key = '四俱是，可知。'
+    if o50.startswith(key):
+        ZI[3][48] = (o49 + key, t49)
+        ZI[3][49] = (o50[len(key):], t50)
+
+
 def strip_dup_tail(p):
     if p != 8:
         return
@@ -189,8 +198,19 @@ def build(p, splits):
     # 切點
     pieces = {}
     used = set()
+    # 整段搬移（manual: 只有 base、沒有 markers）
+    for e in splits:
+        if 'markers' not in e and 'base' in e:
+            n0 = int(e['n'])
+            for cc in list(by_c):
+                if n0 - 1 in by_c[cc]:
+                    by_c[cc].remove(n0 - 1)
+            by_c.setdefault(int(e['base']), []).append(n0 - 1)
+            used.add(n0)
     PARTS = {}
     for e in splits:
+        if 'markers' not in e:
+            continue
         n = int(e['n']); marks = e['markers']; tg = [int(x) for x in e['targets']]
         base = (int(e['base']) if 'base' in e else (cmap.get(n, 0) if BS else (int(am[n - 1]) if n - 1 < len(am) else 0)))
         if p != 10 and tg != list(range(base, base + len(tg))):
@@ -254,6 +274,25 @@ def build(p, splits):
             a2.paragraph_format.line_spacing = 1.3; a2.paragraph_format.space_after = Pt(2)
             sr(a2.add_run(tt0[i]), 10.5)
 
+    if p == 1:
+        MEN = [
+            '第一門：序教興意', '第二門：教網綱要意', '第三門：對事約教制處意',
+            '第四門：用諸部文意', '第五門：文義決通意', '第六門：教所詮意',
+            '第七門：道俗七部立教通局意', '第八門：僧尼二部行事通塞意',
+            '第九門：下三眾隨行異同意', '第十門：引用正文去濫傳真科酌意',
+        ]
+        q = doc.add_paragraph(); q.paragraph_format.space_before = Pt(8)
+        sr(q.add_run('【鈔首・十門】'), 11, bold=True, color=RGBColor(0x6b, 0x5b, 0x4a))
+        intro = ('然一部之文，義張三位：上卷則攝於眾務，成用有儀；中卷則遵於戒體，持犯立懺；'
+                 '下卷則隨機要行，託事而起。今取物類相從者，以標名首；更以十門例括：')
+        q2 = doc.add_paragraph(); q2.paragraph_format.first_line_indent = Pt(20)
+        q2.paragraph_format.line_spacing = 1.3; q2.paragraph_format.space_after = Pt(2)
+        sr(q2.add_run(intro), 10.5)
+        for i, m in enumerate(MEN):
+            qm = doc.add_paragraph(); qm.paragraph_format.left_indent = Pt(16)
+            qm.paragraph_format.space_before = Pt(1); qm.paragraph_format.space_after = Pt(1)
+            sr(qm.add_run(m), 10.5)
+
     if front:
         q = doc.add_paragraph(); q.paragraph_format.space_before = Pt(10)
         sr(q.add_run('〔篇前總釋〕'), 11, bold=True, color=RGBColor(0x21, 0x5a, 0x8a))
@@ -305,6 +344,7 @@ if __name__ == '__main__':
             man = dm.get('splits', [])
             mn = {int(x['n']) for x in man}
             splits = man + [x for x in splits if int(x['n']) not in mn]
+        move_siju()
         strip_dup_tail(p)
         out, nc, nz, used = build(p, splits)
         print('篇%02d %-8s 鈔%3d 記%3d 切點%2d → %s' % (p, SECS[p - 1]['name'], nc, nz, len(splits), os.path.basename(out)))

@@ -22,6 +22,7 @@ han = lambda s: len(re.findall(r'[\u4e00-\u9fff]', s))
 MARK = {
     10: ['作法中二'],
     16: ['大界中'],
+    20: ['戒場中'],
     22: ['三小界'],
     24: ['依位解者'],
     47: ['唱相，離過'],
@@ -61,7 +62,7 @@ PLAN = {
     3: [(9, 0), (10, 0)],
     4: [(10, 1), (11, 0), (12, 0), (13, 0), (14, 0), (15, 0), (16, 0)],
     5: [(16, 1), (17, 0), (18, 0), (19, 0), (20, 0)],
-    6: [(21, 0), (22, 0)],
+    6: [(20, 1), (21, 0), (22, 0)],
     7: [(22, 1), (23, 0), (24, 0)],
     8: [(24, 1)],
     9: [(25, 0), (26, 0)],
@@ -286,7 +287,16 @@ for cno, it in enumerate(chao, 1):
         r = doc.add_paragraph(); rf = r.paragraph_format
         rf.space_before = Pt(4); rf.space_after = Pt(1); rf.line_spacing = 1.2
         rf.left_indent = Pt(14); rf.keep_with_next = True
-        tag = '【記%03d】' % n + ('（後半）' if part else '') if len(seq) > 1 else '【記%03d】' % n
+        if len(seq) > 1:
+            if len(seq) == 2:
+                sub = ['前半', '後半'][part]
+            elif len(seq) == 3:
+                sub = ['前', '中', '後'][part]
+            else:
+                sub = ['一', '二', '三', '四', '五'][part] if part < 5 else str(part + 1)
+            tag = '【記%03d】（%s）' % (n, sub)
+        else:
+            tag = '【記%03d】' % n
         sr(r.add_run(tag + zo), 9.5, color=RGBColor(0x21, 0x5a, 0x8a)); shade(r, 'EEF2F6')
         b2 = doc.add_paragraph(); b2.paragraph_format.first_line_indent = Pt(20)
         b2.paragraph_format.left_indent = Pt(14)

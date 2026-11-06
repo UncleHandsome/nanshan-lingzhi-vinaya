@@ -31,6 +31,16 @@ def load_bounds(pp):
         return None
     return bs
 HDR = re.compile(r'(\d*\s*釋[\u4e00-\u9fff]{1,6}篇(?:\([^)）]*\))?)')
+# 篇9 白話前兩段重新切分：t2 同時涵蓋 記1 尾與 記2
+_o9b, _t9b = ZI[8][0]
+_o9c, _t9c = ZI[8][1]
+_i9b = _t9c.find('「資」是取受')
+if _i9b < 0:
+    _i9b = _t9c.find('取受、取法')
+if _i9b > 0:
+    _cut = _t9c.find('。', _i9b)
+    if _cut > 0:
+        ZI[8] = [(_o9b, _t9c[:_cut + 1]), (_o9c, _t9c[_cut + 1:])] + ZI[8][2:]
 _o9, _t9 = ZI[8][0]
 _i9 = _t9.find('在〈釋師資篇〉')
 if _i9 > 0:

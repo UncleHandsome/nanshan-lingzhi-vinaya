@@ -37,7 +37,7 @@ _s2 = lambda x: [y for y in re.findall(r'[^。！？；]*[。！？；]?', x) if
 for _p in range(2, 11):
     _o, _t = ZI[_p - 1][0]
     _m = HDR.search(_o[:160])
-    if _m and _m.start() > 4:
+    if _m and 4 < _m.start() < 60:
         _head = _o[:_m.start()].strip()
         _k = max(1, int(round(_h2(_head) / max(1, _h2(_o)) * len(_s2(_t)))))
         _ts = _s2(_t)
@@ -280,6 +280,8 @@ if __name__ == '__main__':
         print('篇%02d %-8s 鈔%3d 記%3d 切點%2d → %s' % (p, SECS[p - 1]['name'], nc, nz, len(splits), os.path.basename(out)))
     # 各篇首記的前篇尾巴 → 補到前一篇
     for p, (head, htr) in HEADS.items():
+        if '釋結界篇' in head or '資持記上二' in head:
+            continue
         fp = os.path.join(B, '白話', '會本_篇%02d_%s.docx' % (p - 1, SECS[p - 2]['name']))
         if not os.path.exists(fp):
             continue

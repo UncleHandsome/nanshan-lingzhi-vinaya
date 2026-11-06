@@ -330,16 +330,21 @@ def build():
                     body.append('<h2 class="sec" id="p%d">%s</h2>' % (sid, html.escape(o)))
                     continue
                 sid_s = 's' + str(len(body))
-                anchor = ' id="' + sid_s + '"'
                 it['_id'] = sid_s
+                o_html = html.escape(it['o'])
                 if toc_match(bk['out'], o):
                     _lb = toc_label(bk['out'], o)
                     if _lb not in [n for _, n in toc]:
                         sid = len(toc) + 1
                         toc.append((sid, _lb))
-                        anchor = ' id="p' + str(sid) + '"'
-                    it['_id'] = 'p' + str(sid)
-                body.append('<div class="pair"' + anchor + '><div class="o">' + html.escape(it['o']) + '</div>'
+                        it['_id'] = 'p' + str(sid)
+                        pat = TOC_EXTRA.get(bk['out'])
+                        mm = pat.search(o) if pat is not None else None
+                        if mm and mm.start() > 0:
+                            pos = mm.start()
+                            o_html = (html.escape(it['o'][:pos]) + '<span id="p' + str(sid) + '"></span>'
+                                      + html.escape(it['o'][pos:]))
+                body.append('<div class="pair" id="' + sid_s + '"><div class="o">' + o_html + '</div>'
                             + '<div class="t">' + html.escape(it['t']) + '</div></div>')
             prev = vols[i-1] if i > 0 else None
             nxt = vols[i+1] if i+1 < len(vols) else None

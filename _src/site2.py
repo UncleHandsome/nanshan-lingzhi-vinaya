@@ -165,7 +165,7 @@ def page(title, body, cur_book=None, prefix='', toc=None, prev=None, nxt=None):
            .replace('SEARCH', prefix + 'search.html')
            .replace('APPENDIX', prefix + 'appendix.html')
            .replace('UNTRANSLATED', prefix + 'untranslated.html'))
-    css = prefix + 'style.css?v=8'
+    css = prefix + 'style.css?v=9'
     return ('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
             '<title>' + html.escape(title) + '｜南山律典・白話對照</title>'

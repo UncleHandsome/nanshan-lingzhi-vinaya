@@ -76,7 +76,7 @@ def nav(cur_vol, toc, prev, nxt):
 
 TPL = '''<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>%s</title>
-<link rel="stylesheet" href="../style.css?v=8"><script defer src="../nav.js?v=5"></script></head><body><div class="wrap">
+<link rel="stylesheet" href="../style.css?v=9"><script defer src="../nav.js?v=5"></script></head><body><div class="wrap">
 %s<main><h1>%s</h1><p class="byline">鈔文（淺褐）與記文（淺藍）逐段並列，每段附白話</p>
 %s<div class="pager">%s</div></main></div></body></html>'''
 

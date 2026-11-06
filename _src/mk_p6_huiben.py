@@ -129,26 +129,92 @@ def split_para(text, marks):
     return parts
 
 
-def split_tr(tr, weights):
-    """白話按比例在句號處切"""
-    sents = re.findall(r'[^。！？]*[。！？]?', tr)
-    sents = [s for s in sents if s]
-    total = sum(han(s) for s in sents) or 1
-    out, cur, acc, k = [], [], 0, 0
-    targets = []
-    run = 0
-    for w in weights[:-1]:
-        run += w
-        targets.append(run)
-    for s in sents:
-        cur.append(s)
-        acc += han(s)
-        if k < len(targets) and acc >= targets[k]:
-            out.append(''.join(cur)); cur = []; k += 1
-    out.append(''.join(cur))
-    while len(out) < len(weights):
-        out.append('')
+def _sents(x):
+    out = re.findall(r'[^。！？；]*[。！？；]?', x)
+    return [y for y in out if y.strip()]
+
+
+def _align(ls, lt):
+    n, m = len(ls), len(lt)
+    if n == 0 or m == 0:
+        return [0] * n
+    ms = sum(ls) / n
+    mt = sum(lt) / m
+    INF = 1e9
+    dp = [[INF] * (m + 1) for _ in range(n + 1)]
+    bk = [[None] * (m + 1) for _ in range(n + 1)]
+    dp[0][0] = 0
+    for i in range(n + 1):
+        for j in range(m + 1):
+            if i == 0 and j == 0:
+                continue
+            best, b = INF, None
+            if i:
+                v = dp[i - 1][j] + 1.2
+                if v < best:
+                    best, b = v, (i - 1, j)
+            if j:
+                v = dp[i][j - 1] + 1.2
+                if v < best:
+                    best, b = v, (i, j - 1)
+            if i and j:
+                v = dp[i - 1][j - 1] + abs(ls[i - 1] / ms - lt[j - 1] / mt)
+                if v < best:
+                    best, b = v, (i - 1, j - 1)
+            dp[i][j] = best
+            bk[i][j] = b
+    pair = {}
+    i, j = n, m
+    while i > 0 or j > 0:
+        pi, pj = bk[i][j]
+        if pi == i - 1 and pj == j - 1:
+            pair[i - 1] = j - 1
+        i, j = pi, pj
+    out = [None] * n
+    for k in range(n):
+        if k in pair:
+            out[k] = pair[k]
+    nxt = None
+    for k in range(n - 1, -1, -1):
+        if out[k] is None:
+            out[k] = nxt
+        else:
+            nxt = out[k]
+    last = 0
+    for k in range(n):
+        if out[k] is None:
+            out[k] = last
+        out[k] = max(out[k], last)
+        last = out[k]
     return out
+
+
+def split_tr(tr, src_parts):
+    """依原文段落切點，把白話切到同樣段數（句對句單調對齊）"""
+    src_s, tr_s = [], _sents(tr)
+    for part in src_parts:
+        src_s += _sents(part)
+    if len(src_parts) <= 1:
+        return [tr]
+    mp = _align([max(1, han(x)) for x in src_s], [max(1, han(x)) for x in tr_s])
+    cuts = []
+    acc = 0
+    for part in src_parts[:-1]:
+        acc += len(_sents(part))
+        j = max(mp[min(acc, len(mp) - 1)], mp[min(acc - 1, len(mp) - 1)] + 1) if acc > 0 else mp[0]
+        cuts.append(j)
+    cuts = sorted(set(max(1, min(j, len(tr_s))) for j in cuts))
+    while len(cuts) < len(src_parts) - 1:
+        cuts.append(min(len(tr_s) - 1, (cuts[-1] if cuts else 0) + 1))
+    cuts = sorted(set(cuts))[:len(src_parts) - 1]
+    parts, prev = [], 0
+    for c in cuts:
+        parts.append(''.join(tr_s[prev:c]))
+        prev = c
+    parts.append(''.join(tr_s[prev:]))
+    while len(parts) < len(src_parts):
+        parts.append('')
+    return parts
 
 
 # 切好所有記段
@@ -162,8 +228,7 @@ for n in range(1, len(zi) + 1):
             miss.append(n)
             pieces[n] = [(o, t)]
             continue
-        w = [han(p) for p in ps]
-        ts = split_tr(t, w)
+        ts = split_tr(t, ps)
         pieces[n] = list(zip(ps, ts))
     else:
         pieces[n] = [(o, t)]

@@ -210,13 +210,25 @@ def build():
                     run = []
             if len(run) >= 3:
                 drop.update(run)
+            drop_toc = set()
+            run3 = []
+            for i2, it2 in enumerate(items[:40]):
+                o2 = it2['o'].strip()
+                if toc_match(bk['out'], o2) and len(re.sub(r'[^\u4e00-\u9fff]', '', o2)) <= 10:
+                    run3.append(i2)
+                else:
+                    if len(run3) >= 3:
+                        drop_toc.update(run3)
+                    run3 = []
+            if len(run3) >= 3:
+                drop_toc.update(run3)
             for i2, it in enumerate(items):
                 if i2 in drop:
                     continue
                 o = it['o'].strip()
                 if re.match(r'^\d+\s*[\u4e00-\u9fff]{2,10}篇\(上[一二三四五六七八九十]?\)$', o):
                     continue
-                if toc_match(bk['out'], o):
+                if i2 not in drop_toc and toc_match(bk['out'], o):
                     _lb = toc_label(bk['out'], o)
                     if _lb not in [n for _, n in tt]:
                         tt.append((len(tt) + 1, _lb))
@@ -244,6 +256,18 @@ def build():
                     run = []
             if len(run) >= 3:
                 drop.update(run)
+            drop_toc = set()
+            run3 = []
+            for i2, it2 in enumerate(items[:40]):
+                o2 = it2['o'].strip()
+                if toc_match(bk['out'], o2) and len(re.sub(r'[^\u4e00-\u9fff]', '', o2)) <= 10:
+                    run3.append(i2)
+                else:
+                    if len(run3) >= 3:
+                        drop_toc.update(run3)
+                    run3 = []
+            if len(run3) >= 3:
+                drop_toc.update(run3)
             for i2, it in enumerate(items):
                 if i2 in drop:
                     continue
@@ -259,7 +283,7 @@ def build():
                     continue
                 sid_s = 's' + str(len(body))
                 it['_id'] = sid_s
-                if toc_match(bk['out'], o):
+                if i2 not in drop_toc and toc_match(bk['out'], o):
                     _lb = toc_label(bk['out'], o)
                     if _lb not in [n for _, n in toc]:
                         sid = len(toc) + 1

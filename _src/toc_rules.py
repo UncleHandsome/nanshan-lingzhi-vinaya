@@ -47,6 +47,8 @@ def match(book, text):
     t = text.strip()
     if r.get('deny') is not None and r['deny'].search(t):
         return False
+    if book == 'yichao' and t.startswith('將講'):
+        return True
     if book == 'yeshu':
         # 目次型段落（同時列出多篇）不算篇名
         if len(re.findall(r'[\u4e00-\u9fff]{2,8}篇第[一二三四五六七八九十]+', t)) >= 2:
@@ -72,6 +74,9 @@ def match(book, text):
 def label(book, text):
     r = RULES.get(book) or {}
     t = text.strip()
+    if book == 'yichao' and t.startswith('將講'):
+        m = re.match(r'將講(.+?)(?:略存|略以|即以|略)', t)
+        return m.group(1) if m else t[2:10]
     if r.get('label') == 'match':
         m = r['pat'].search(t)
         return m.group(0) if m else t

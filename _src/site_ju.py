@@ -254,7 +254,7 @@ def pairs_global(src_dir, tr_tag, ju_file):
 
 
 BOOKS = {
-    '03_業疏': dict(src='03_業疏', tr='03_業疏', mode='chunks', ju_dir='03_業疏'),
+    '03_業疏': dict(src='03_業疏', tr='03_業疏', mode='simple'),
     '04_比丘尼鈔': dict(src='04_比丘尼鈔', tr='04_比丘尼鈔', mode='global',
                     ju=os.path.join(B, '04_四分律比丘尼鈔_句讀_clean.txt')),
     '05_拾毗尼義鈔': dict(src='05_拾毗尼義鈔', tr='05_拾毗尼義鈔', mode='global',
@@ -262,8 +262,53 @@ BOOKS = {
 }
 
 
+def pairs_simple(src_dir, tr_tag):
+    """直接以分卷原文配白話（段數已 1:1），有標點表則優先使用。"""
+    punct = None
+    pth = os.path.join(B, 'AI語譯', '_work', 'yeshu_punct.json')
+    if os.path.exists(pth):
+        punct = json.load(io.open(pth, encoding='utf-8'))
+    amap = None
+    pth2 = os.path.join(B, 'AI語譯', '_work', 'ys_align_map.json')
+    if os.path.exists(pth2):
+        amap = json.load(io.open(pth2, encoding='utf-8'))
+    res = []
+    cur = None
+    entries = []
+    gi = -1
+    for key, sp, tt in load_chunks(src_dir, tr_tag):
+        vol = vol_of(key)
+        if vol != cur:
+            if entries:
+                res.append((cur, entries))
+            entries = []
+            cur = vol
+        n = min(len(sp), len(tt))
+        mp = amap.get(key) if (amap and not key.startswith('00_')) else None
+        for i in range(n):
+            gi += 1
+            o = sp[i]
+            if punct and gi < len(punct) and re.search(r'[，。、；：？！]', punct[gi]):
+                o = punct[gi]
+                mtag = re.match(r'^【[律疏記註]】', sp[i].strip())
+                if mtag and '【' not in o[:4]:
+                    o = mtag.group(0) + o
+            j = i
+            if mp and i < len(mp) and 0 <= mp[i] < len(tt):
+                j = mp[i]
+            entries.append((o, tt[j]))
+        for i in range(n, len(sp)):
+            gi += 1
+            entries.append((sp[i], ''))
+    if entries:
+        res.append((cur, entries))
+    return res
+
+
 def get(tag):
     cfg = BOOKS[tag]
+    if cfg['mode'] == 'simple':
+        return pairs_simple(cfg['src'], cfg['tr'])
     if cfg['mode'] == 'chunks':
         return pairs_chunks(cfg['src'], cfg['tr'], cfg['ju_dir'])
     return pairs_global(cfg['src'], cfg['tr'], cfg['ju'])

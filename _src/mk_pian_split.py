@@ -14,6 +14,23 @@ spec.loader.exec_module(ex)
 SECS = ex.sections(); ZI = ex.build_zi(SECS, ex.zsecs())
 AM = json.load(io.open(os.path.join(B, 'AI語譯', '_work', 'hb_align.json'), encoding='utf-8'))
 SKIP = re.compile(r'^\d+\s*[\u4e00-\u9fff]{2,10}篇')
+HDR = re.compile(r'(\d*\s*釋[\u4e00-\u9fff]{1,6}篇(?:\([^)）]*\))?)')
+HEADS = {}
+_h2 = lambda x: len(re.findall(r'[\u4e00-\u9fff]', x))
+_s2 = lambda x: [y for y in re.findall(r'[^。！？；]*[。！？；]?', x) if y.strip()]
+for _p in range(2, 11):
+    _o, _t = ZI[_p - 1][0]
+    _m = HDR.search(_o[:160])
+    if _m and _m.start() > 4:
+        _head = _o[:_m.start()].strip()
+        _k = max(1, int(round(_h2(_head) / max(1, _h2(_o)) * len(_s2(_t)))))
+        _ts = _s2(_t)
+        _htr = ''.join(_ts[:_k])
+        HEADS[_p] = (_head, _htr)
+        _rest = _t[len(_htr):]
+        _rest = re.sub(r'^.*?解釋[\u4e00-\u9fff]{1,8}篇(?:\([^)）]*\))?', '', _rest, count=1)
+        ZI[_p - 1] = [(_o[_m.start():].strip(), _rest)] + ZI[_p - 1][1:]
+
 FONT = 'SimSun'; LATIN = 'Times New Roman'
 IN = os.path.join(B, 'AI語譯', '_work', 'pian_split_in')
 SO = os.path.join(B, 'AI語譯', '_work', 'pian_split_out')
@@ -72,6 +89,17 @@ def clean(t):
     return HDR.sub('', head) + rest
 
 
+def emit_ji_to(doc, tag, text, tr):
+    r = doc.add_paragraph(); rf = r.paragraph_format
+    rf.space_before = Pt(4); rf.space_after = Pt(1); rf.line_spacing = 1.2
+    rf.left_indent = Pt(14); rf.keep_with_next = True
+    sr(r.add_run(tag + text), 9.5, color=RGBColor(0x21, 0x5a, 0x8a)); shade(r, 'EEF2F6')
+    b = doc.add_paragraph(); b.paragraph_format.first_line_indent = Pt(20)
+    b.paragraph_format.left_indent = Pt(14)
+    b.paragraph_format.line_spacing = 1.28; b.paragraph_format.space_after = Pt(2)
+    sr(b.add_run(tr), 10)
+
+
 def build(p, splits):
     idx = p - 1
     sec = SECS[idx]; zi = ZI[idx]
@@ -108,6 +136,7 @@ def build(p, splits):
     # 切點
     pieces = {}
     used = set()
+    PARTS = {}
     for e in splits:
         n = int(e['n']); marks = e['markers']; tg = [int(x) for x in e['targets']]
         base = int(am[n - 1]) if n - 1 < len(am) else 0
@@ -132,8 +161,9 @@ def build(p, splits):
         if not ok or len(parts) != len(tg):
             continue
         ts = split_tr(t, parts)
-        for part, tr, c in zip(parts, ts, tg):
-            pieces.setdefault(c, []).append((n, part, tr))
+        PARTS[n] = len(tg)
+        for idx2, (part, tr, c) in enumerate(zip(parts, ts, tg)):
+            pieces.setdefault(c, []).append((n, idx2, part, tr))
             used.add(n)
 
     doc = Document()
@@ -147,21 +177,35 @@ def build(p, splits):
     q = doc.add_paragraph(); q.alignment = WD_ALIGN_PARAGRAPH.CENTER
     sr(q.add_run('第%d篇　%s' % (p, sec['name'])), 11, color=RGBColor(0x66, 0x66, 0x66))
 
-    def emit_ji(n, zo, zt):
+    def emit_ji_tagged(tag, zo, zt):
         r = doc.add_paragraph(); rf = r.paragraph_format
         rf.space_before = Pt(4); rf.space_after = Pt(1); rf.line_spacing = 1.2
         rf.left_indent = Pt(14); rf.keep_with_next = True
-        sr(r.add_run('【記%03d】' % n + zo), 9.5, color=RGBColor(0x21, 0x5a, 0x8a)); shade(r, 'EEF2F6')
+        sr(r.add_run(tag + zo), 9.5, color=RGBColor(0x21, 0x5a, 0x8a)); shade(r, 'EEF2F6')
         b2 = doc.add_paragraph(); b2.paragraph_format.first_line_indent = Pt(20)
         b2.paragraph_format.left_indent = Pt(14)
         b2.paragraph_format.line_spacing = 1.28; b2.paragraph_format.space_after = Pt(2)
         sr(b2.add_run(zt), 10)
 
+    if p == 1:
+        sp0 = [x.strip() for x in io.open(os.path.join(B, 'TXT_分卷', '01_行事鈔', '00_卷首.txt'), encoding='utf-8').read().split('\n')[5:] if x.strip()]
+        tp0 = os.path.join(B, 'AI語譯', 'out', '01_行事鈔', '00_卷首.txt')
+        tt0 = [x.strip() for x in re.split(r'\r?\n\r?\n', io.open(tp0, encoding='utf-8').read()) if x.strip()]
+        q = doc.add_paragraph(); q.paragraph_format.space_before = Pt(12)
+        sr(q.add_run('〔鈔首〕序與十門'), 12, bold=True, color=RGBColor(0x6b, 0x5b, 0x4a))
+        for i in range(min(len(sp0), len(tt0), 6)):
+            qq = doc.add_paragraph(); qf = qq.paragraph_format
+            qf.space_before = Pt(6); qf.space_after = Pt(1); qf.line_spacing = 1.2; qf.keep_with_next = True
+            sr(qq.add_run('【鈔首%02d】' % (i + 1) + sp0[i]), 10, color=RGBColor(0x6b, 0x5b, 0x4a)); shade(qq, 'F4EFE2')
+            a2 = doc.add_paragraph(); a2.paragraph_format.first_line_indent = Pt(20)
+            a2.paragraph_format.line_spacing = 1.3; a2.paragraph_format.space_after = Pt(2)
+            sr(a2.add_run(tt0[i]), 10.5)
+
     if front:
         q = doc.add_paragraph(); q.paragraph_format.space_before = Pt(10)
         sr(q.add_run('〔篇前總釋〕'), 11, bold=True, color=RGBColor(0x21, 0x5a, 0x8a))
         for k in front:
-            emit_ji(k + 1, clean(zi[k][0]), zi[k][1])
+            emit_ji_tagged('【記%03d】' % (k + 1), clean(zi[k][0]), zi[k][1])
 
     for cno, it in enumerate(chao, 1):
         qq = doc.add_paragraph(); qf = qq.paragraph_format
@@ -171,13 +215,19 @@ def build(p, splits):
         a2.paragraph_format.line_spacing = 1.3; a2.paragraph_format.space_after = Pt(2)
         sr(a2.add_run(it[1]), 10.5)
         # 合併切點片段與整段，按記號排序
-        rows = [(n, part, tr) for n, part, tr in pieces.get(cno, [])]
+        rows = [(n, idx2, part, tr) for n, idx2, part, tr in pieces.get(cno, [])]
         for k in by_c.get(cno, []):
             if k + 1 not in used:
-                rows.append((k + 1, zi[k][0], zi[k][1]))
+                rows.append((k + 1, 0, zi[k][0], zi[k][1]))
                 used.add(k + 1)
-        for n, part, tr in sorted(rows, key=lambda x: x[0]):
-            emit_ji(n, clean(part), tr)
+        for n, idx2, part, tr in sorted(rows, key=lambda x: (x[0], x[1])):
+            tot = PARTS.get(n, 1)
+            if tot > 1:
+                sub = ['前半', '後半'] if tot == 2 else (['前', '中', '後'] if tot == 3 else ['一', '二', '三', '四', '五'][:tot])
+                tag = '【記%03d】（%s）' % (n, sub[idx2] if idx2 < len(sub) else str(idx2 + 1))
+            else:
+                tag = '【記%03d】' % n
+            emit_ji_tagged(tag, clean(part), tr)
 
     out = os.path.join(B, '白話', '會本_篇%02d_%s.docx' % (p, sec['name']))
     doc.save(out)
@@ -194,3 +244,12 @@ if __name__ == '__main__':
             splits = d.get('splits', [])
         out, nc, nz, used = build(p, splits)
         print('篇%02d %-8s 鈔%3d 記%3d 切點%2d → %s' % (p, SECS[p - 1]['name'], nc, nz, len(splits), os.path.basename(out)))
+    # 各篇首記的前篇尾巴 → 補到前一篇
+    for p, (head, htr) in HEADS.items():
+        fp = os.path.join(B, '白話', '會本_篇%02d_%s.docx' % (p - 1, SECS[p - 2]['name']))
+        if not os.path.exists(fp):
+            continue
+        d = Document(fp)
+        emit_ji_to(d, '【記%03d】（續前篇）' % len(ZI[p - 2]), head, htr)
+        d.save(fp)
+        print('  已補前篇尾巴到 篇%02d' % (p - 1))

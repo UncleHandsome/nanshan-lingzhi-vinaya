@@ -312,7 +312,7 @@ def build(p, splits):
             front = []
             starts = None
         cvals = [c for c, n in bz]
-        ptr = bz[0][1] if bz else 1
+        ptr = 1
         for i, ct in enumerate(sp0):
             if starts is None:
                 break
@@ -404,6 +404,6 @@ if __name__ == '__main__':
         exist = any(probe and probe in ''.join(x.text.split()) for x in d.paragraphs)
         if exist:
             continue
-        emit_ji_to(d, '【記%03d】（續前篇）' % len(ZI[p - 2]), head, htr)
+        emit_ji_to(d, '【記（續前篇）】', head, htr)
         d.save(fp)
         print('  已補前篇尾巴到 篇%02d' % (p - 1))

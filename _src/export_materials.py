@@ -57,14 +57,15 @@ def zsecs():
     for k, sp, tt in load('資持記_細分', '資持記'):
         zj += list(zip(sp, tt))
     ZP = re.compile(r'釋([\u4e00-\u9fff]{2,6})篇')
-    zs, z = [], None
+    valid = [x['name'] for x in sections()]
+    z = dict(name='序', items=[])
+    zs = [z]
     for o, t in zj:
         m = ZP.search(o) or ZP.search(t)
-        if m:
+        if m and any(v.startswith(m.group(1)) or m.group(1) in v for v in valid):
             z = dict(name=m.group(1), items=[])
             zs.append(z)
-        if z is not None:
-            z['items'].append((o, t))
+        z['items'].append((o, t))
     return zs
 
 
@@ -81,7 +82,6 @@ def build_zi(secs, zs):
     for i, sec in enumerate(zs):
         if i < len(Z2S):
             ZI[Z2S[i]] += sec['items']
-    # 與 hebian_ju 相同的重切：篇14 前 122 段歸篇13；篇12 末段（卷頭題記）歸篇13
     if len(ZI[13]) > 122:
         ZI[12] = ZI[12] + ZI[13][:122]
         ZI[13] = ZI[13][122:]

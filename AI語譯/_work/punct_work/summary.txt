@@ -1,0 +1,6 @@
+keys: 01a_卷一之一 || 01b_卷一之一 || 17a_卷三之六 || 17b_卷三之六
+01a_卷一之一: n=48 chars=7527 nopunct=10 le2=43
+01b_卷一之一: n=114 chars=6569 nopunct=0 le2=114
+17a_卷三之六: n=154 chars=8755 nopunct=0 le2=154
+17b_卷三之六: n=189 chars=8648 nopunct=0 le2=189
+TOTAL chars=31499 paragraphs_without_any_mark=10

@@ -269,13 +269,24 @@ def build(p, splits):
         tt0 = [x.strip() for x in re.split(r'\r?\n\r?\n', io.open(tp0, encoding='utf-8').read()) if x.strip()]
         q = doc.add_paragraph(); q.paragraph_format.space_before = Pt(12)
         sr(q.add_run('〔鈔首〕序與十門'), 12, bold=True, color=RGBColor(0x6b, 0x5b, 0x4a))
-        for i in range(min(len(sp0), len(tt0), 6)):
+        _fl = list(front)
+        _tot = sum(max(1, len(re.findall(r'[\u4e00-\u9fff]', t))) for t in sp0) or 1
+        _acc = 0
+        _st = 0
+        for i, ct in enumerate(sp0):
             qq = doc.add_paragraph(); qf = qq.paragraph_format
             qf.space_before = Pt(6); qf.space_after = Pt(1); qf.line_spacing = 1.2; qf.keep_with_next = True
-            sr(qq.add_run('【鈔首%02d】' % (i + 1) + sp0[i]), 10, color=RGBColor(0x6b, 0x5b, 0x4a)); shade(qq, 'F4EFE2')
-            a2 = doc.add_paragraph(); a2.paragraph_format.first_line_indent = Pt(20)
-            a2.paragraph_format.line_spacing = 1.3; a2.paragraph_format.space_after = Pt(2)
-            sr(a2.add_run(tt0[i]), 10.5)
+            sr(qq.add_run('【鈔首%02d】' % (i + 1) + ct), 10, color=RGBColor(0x6b, 0x5b, 0x4a)); shade(qq, 'F4EFE2')
+            if i < len(tt0):
+                a2 = doc.add_paragraph(); a2.paragraph_format.first_line_indent = Pt(20)
+                a2.paragraph_format.line_spacing = 1.3; a2.paragraph_format.space_after = Pt(2)
+                sr(a2.add_run(clean_tr(tt0[i])), 10.5)
+            _acc += max(1, len(re.findall(r'[\u4e00-\u9fff]', ct)))
+            _nx = int(round(len(_fl) * _acc / _tot)) if i < len(sp0) - 1 else len(_fl)
+            for k in _fl[_st:_nx]:
+                emit_ji_tagged('【記%03d】' % (k + 1), clean(zi[k][0]), zi[k][1])
+            _st = _nx
+        front = []
 
     if p == 1:
         MEN = [

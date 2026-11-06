@@ -93,6 +93,33 @@ mark{background:#ffe9a8;padding:0 .08em;border-radius:2px}
 
 SEC_RE = re.compile(r'^[○◎◯【]?\s*[\u4e00-\u9fff]{2,10}篇第[一二三四五六七八九十]+[】]?$')
 
+TOC_EXTRA = {
+    'jieshu': re.compile(r'^【律】[^，。]{0,24}戒。?$'),
+    'zhichi': re.compile(r'釋[\u4e00-\u9fff]{2,6}篇'),
+    'yichao': re.compile(r'^[\u4e00-\u9fff]{2,8}$'),
+}
+
+
+def toc_match(book, text):
+    t = text.strip()
+    if SEC_RE.match(t):
+        return True
+    pat = TOC_EXTRA.get(book)
+    if pat is not None and pat.search(t):
+        return True
+    return False
+
+
+def toc_label(book, text):
+    t = text.strip()
+    if book == 'zhichi':
+        m = re.search(r'釋[\u4e00-\u9fff]{2,6}篇', t)
+        if m:
+            return m.group(0)
+    if len(t) > 28:
+        return t[:26] + '…'
+    return t
+
 
 VOL_ORDER = ['卷上之一', '卷上之二', '卷上之三', '卷上之四',
              '卷中之一', '卷中之二', '卷中之三', '卷中之四',
@@ -195,11 +222,14 @@ def build():
             toc = []
             for it in items:
                 o = it['o'].strip()
-                anchor = ''
-                if SEC_RE.match(o):
+                sid_s = 's' + str(len(body))
+                anchor = ' id="' + sid_s + '"'
+                it['_id'] = sid_s
+                if toc_match(bk['out'], o):
                     sid = len(toc) + 1
-                    toc.append((sid, o))
+                    toc.append((sid, toc_label(bk['out'], o)))
                     anchor = ' id="p' + str(sid) + '"'
+                    it['_id'] = 'p' + str(sid)
                 body.append('<div class="pair"' + anchor + '><div class="o">' + html.escape(it['o']) + '</div>'
                             + '<div class="t">' + html.escape(it['t']) + '</div></div>')
             prev = vols[i-1] if i > 0 else None
@@ -213,7 +243,7 @@ def build():
             io.open(os.path.join(outdir, v + '.html'), 'w', encoding='utf-8').write(
                 page(bk['title'] + '　' + v, ''.join(body), bk, '../', toc, prev, nxt))
             for it in items:
-                entries.append(dict(v=v, o=it['o'], t=it['t']))
+                entries.append(dict(v=v, o=it['o'], t=it['t'], i=it.get('_id', '')))
         search_idx[bk['out']] = dict(title=bk['title'], entries=entries)
     # 搜尋索引（每本一檔）
     os.makedirs(os.path.join(SITE, 'search'), exist_ok=True)
@@ -236,6 +266,23 @@ def build():
           '<p class="byline" id="count"></p><div id="hits"></div>'
           '<script>' + SEARCH_JS + '</script>')
     io.open(os.path.join(SITE, 'search.html'), 'w', encoding='utf-8').write(page('搜尋', sb))
+    # 未譯段落清單頁（目前 0 段）
+    try:
+        import json as _json
+        rows = _json.load(io.open(os.path.join(B, 'AI語譯', '_work', 'untranslated.json'), encoding='utf-8'))
+        nseg = sum(len(b['rows']) for b in rows)
+    except Exception:
+        nseg = 0
+    ub = ['<h1>未譯段落清單</h1>',
+          '<p class="byline">全書逐段比對「原文／白話」的結果</p>',
+          '<div class="intro"><p>目前未譯段落：<b>%d</b> 段。</p>' % nseg]
+    if nseg == 0:
+        ub.append('<p>六部書（行事鈔、戒疏、業疏、資持記、尼鈔、尼義鈔）與句級合編，'
+                  '每一段原文都已有對應白話，沒有「直接照抄原文」的段落。</p>')
+    ub.append('<p>同名 PDF（<code>白話/未譯段落清單.pdf</code>）另行提供。</p></div>')
+    io.open(os.path.join(SITE, 'untranslated.html'), 'w', encoding='utf-8').write(
+        page('未譯段落清單', ''.join(ub)))
+    print('untranslated page, segs', nseg)
     print('books', len(all_books), 'vols', sum(len(b['_groups']) for b in all_books))
 
 SEARCH_JS = """
@@ -263,7 +310,7 @@ async function run(q){
   c.textContent = out.length? ('找到 '+out.length+' 筆') : '沒有結果';
   var parts=[];
   for(var k=0;k<out.length;k++){ var x=out[k];
-    parts.push('<div class="hit"><div class="meta">'+x.book+'・'+x.v+'　<a href="'+x.id+'/'+x.v+'.html">前往</a></div>'
+    parts.push('<div class="hit"><div class="meta">'+x.book+'・'+x.v+'　<a href="'+x.id+'/'+x.v+'.html'+(x.i?'#'+x.i:'')+'">前往</a></div>'
       +'<div class="o">'+hl(x.o,q)+'</div><div class="t">'+hl(x.t,q)+'</div></div>');
   }
   h.innerHTML=parts.join('');

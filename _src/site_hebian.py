@@ -101,9 +101,10 @@ for vi, vol in enumerate(HB):
             continue
         if pending is not None:
             cls, o = pending
-            body.append('<div class="pair"><div class="%s">%s</div><div class="t">%s</div></div>'
-                        % (cls, html.escape(o), html.escape(t)))
-            ENTRIES.append(dict(v=vol, o=o, t=t))
+            sid = 's' + str(len(body))
+            body.append('<div class="pair" id="%s"><div class="%s">%s</div><div class="t">%s</div></div>'
+                        % (sid, cls, html.escape(o), html.escape(t)))
+            ENTRIES.append(dict(v=vol, o=o, t=t, i=sid))
             pending = None
     prev = HB[vi - 1] if vi > 0 else None
     nxt = HB[vi + 1] if vi + 1 < len(HB) else None

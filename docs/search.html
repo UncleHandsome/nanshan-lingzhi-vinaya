@@ -23,7 +23,7 @@ async function run(q){
   c.textContent = out.length? ('找到 '+out.length+' 筆') : '沒有結果';
   var parts=[];
   for(var k=0;k<out.length;k++){ var x=out[k];
-    parts.push('<div class="hit"><div class="meta">'+x.book+'・'+x.v+'　<a href="'+x.id+'/'+x.v+'.html">前往</a></div>'
+    parts.push('<div class="hit"><div class="meta">'+x.book+'・'+x.v+'　<a href="'+x.id+'/'+x.v+'.html'+(x.i?'#'+x.i:'')+'">前往</a></div>'
       +'<div class="o">'+hl(x.o,q)+'</div><div class="t">'+hl(x.t,q)+'</div></div>');
   }
   h.innerHTML=parts.join('');

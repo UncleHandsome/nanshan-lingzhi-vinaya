@@ -50,7 +50,10 @@ for k,sp,tt in cs:
         flat.append((sp[i], tt[i] if i < len(tt) else '', vol))
 PATS=re.compile(r'^([\u4e00-\u9fff]{2,8})篇第([一二三四五六七八九十]+)$')
 secs=[]; cur=None
+PRE=[]          # 卷首（篇1 之前的鈔文）
 for o,t,vol in flat:
+    if cur is None and vol=='卷上之一':
+        PRE.append((o,t,vol))
     m=PATS.match(o)
     if m:
         if any(x['no']==m.group(2) for x in secs):
@@ -207,6 +210,18 @@ def build(label, vol):
     p=doc.add_paragraph(); p.alignment=WD_ALIGN_PARAGRAPH.CENTER; p.paragraph_format.space_after=Pt(14)
     sr(p.add_run(label), 11, color=RGBColor(0x66,0x66,0x66))
     n_sec=0
+    # 卷首（全書總序、十門等）
+    if vol=='卷上之一' and PRE:
+        p=doc.add_paragraph(); p.alignment=WD_ALIGN_PARAGRAPH.CENTER
+        pf=p.paragraph_format; pf.space_before=Pt(10); pf.space_after=Pt(4)
+        sr(p.add_run('卷首'), 13, bold=True)
+        for po, pt, _pv in PRE:
+            q=doc.add_paragraph(); qf=q.paragraph_format
+            qf.space_before=Pt(5); qf.space_after=Pt(0); qf.line_spacing=1.2; qf.keep_with_next=True
+            sr(q.add_run('【鈔】'+po), 9.5, color=RGBColor(0x6b,0x5b,0x4a)); shade(q,'F4EFE2')
+            a2=doc.add_paragraph(); a2.alignment=WD_ALIGN_PARAGRAPH.LEFT
+            af=a2.paragraph_format; af.first_line_indent=Pt(20); af.line_spacing=1.35; af.space_after=Pt(2)
+            sr(a2.add_run(pt), 10.5)
     for idx, zi, anchors, front in PLAN:
         sec=secs[idx]
         idxs=[i for i,(o,t,v) in enumerate(sec['items']) if v==vol and not SKIP1.match(o.strip()) and not SKIP2.match(o.strip())]

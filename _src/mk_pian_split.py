@@ -14,6 +14,22 @@ spec.loader.exec_module(ex)
 SECS = ex.sections(); ZI = ex.build_zi(SECS, ex.zsecs())
 AM = json.load(io.open(os.path.join(B, 'AI語譯', '_work', 'hb_align.json'), encoding='utf-8'))
 SKIP = re.compile(r'^\d+\s*[\u4e00-\u9fff]{2,10}篇')
+BDIR = os.path.join(B, 'AI語譯', '_work', 'pian_bounds')
+
+
+def load_bounds(pp):
+    fp = os.path.join(BDIR, 'bounds_篇%02d.json' % pp)
+    if not os.path.exists(fp):
+        return None
+    try:
+        d = json.load(io.open(fp, encoding='utf-8-sig'))
+        bs = [(int(x['c']), int(x['n'])) for x in d.get('bounds', [])]
+    except Exception:
+        return None
+    bs = [b for b in bs if b[1] >= 1]
+    if len(bs) < 2:
+        return None
+    return bs
 HDR = re.compile(r'(\d*\s*釋[\u4e00-\u9fff]{1,6}篇(?:\([^)）]*\))?)')
 HEADS = {}
 _h2 = lambda x: len(re.findall(r'[\u4e00-\u9fff]', x))
@@ -106,7 +122,21 @@ def build(p, splits):
     am = AM.get(str(idx), [])
     chao = [it for it in sec['items'] if not SKIP.match(it[0].strip())]
     by_c = {}
-    if p == 10:
+    BS = load_bounds(p)
+    if BS:
+        cmap = {}
+        for i2, (c2, n2) in enumerate(BS):
+            end2 = BS[i2 + 1][1] - 1 if i2 + 1 < len(BS) else len(zi)
+            for n3 in range(n2, max(n2, end2) + 1):
+                cmap[n3] = c2
+        first_n = BS[0][1]
+        fend = max([k + 1 for k in range(len(zi)) if k < len(am) and int(am[k]) == 0], default=0)
+        for n3 in range(fend + 1, first_n):
+            cmap[n3] = 1
+        for n3 in range(1, len(zi) + 1):
+            if n3 in cmap:
+                by_c.setdefault(cmap[n3], []).append(n3 - 1)
+    elif p == 10:
         # 篇10 的 c 是區塊粗標，改用 AI 切點推導逐記鈔號
         smap = {}
         for e in splits:
@@ -139,7 +169,7 @@ def build(p, splits):
     PARTS = {}
     for e in splits:
         n = int(e['n']); marks = e['markers']; tg = [int(x) for x in e['targets']]
-        base = int(am[n - 1]) if n - 1 < len(am) else 0
+        base = (cmap.get(n, 0) if BS else (int(am[n - 1]) if n - 1 < len(am) else 0))
         if p != 10 and tg != list(range(base, base + len(tg))):
             continue
         if p == 10 and (tg != sorted(tg) or len(set(tg)) != len(tg)):

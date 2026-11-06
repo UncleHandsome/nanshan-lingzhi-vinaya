@@ -43,6 +43,8 @@ flat=[]
 vols=[]
 for k,sp,tt in cs:
     vol=k.split('_',1)[1] if '_' in k else k
+    if vol.startswith('卷首'):
+        vol='卷上之一'      # 卷首併入第一卷
     if vol not in vols: vols.append(vol)
     for i in range(len(sp)):
         flat.append((sp[i], tt[i] if i < len(tt) else '', vol))

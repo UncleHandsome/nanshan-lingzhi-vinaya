@@ -257,8 +257,22 @@ def build():
         tmap = {}
         for v, items in bk['_groups'].items():
             tt = []
-            for it in items:
+            run, drop = [], set()
+            for i2, it2 in enumerate(items):
+                if SEC_RE.match(it2['o'].strip()):
+                    run.append(i2)
+                else:
+                    if len(run) >= 3:
+                        drop.update(run)
+                    run = []
+            if len(run) >= 3:
+                drop.update(run)
+            for i2, it in enumerate(items):
+                if i2 in drop:
+                    continue
                 o = it['o'].strip()
+                if re.match(r'^\d+\s*[\u4e00-\u9fff]{2,10}篇\(上[一二三四五六七八九十]?\)$', o):
+                    continue
                 if toc_match(bk['out'], o):
                     tt.append((len(tt) + 1, toc_label(bk['out'], o)))
             tmap[v] = tt
@@ -273,8 +287,31 @@ def build():
             body = ['<h1>' + html.escape(bk['title']) + '　' + html.escape(v) + '</h1>',
                     '<p class="byline">' + html.escape(bk['by']) + '　｜　白話對照</p>']
             toc = []
-            for it in items:
+            # 偵測「連續篇名」的卷首目次，整段略過（側欄已有篇目）
+            drop = set()
+            run = []
+            for i2, it2 in enumerate(items):
+                if SEC_RE.match(it2['o'].strip()):
+                    run.append(i2)
+                else:
+                    if len(run) >= 3:
+                        drop.update(run)
+                    run = []
+            if len(run) >= 3:
+                drop.update(run)
+            for i2, it in enumerate(items):
+                if i2 in drop:
+                    continue
                 o = it['o'].strip()
+                # 略過卷首「1 X篇(上一)」這種重複的目次序號行
+                if re.match(r'^\d+\s*[\u4e00-\u9fff]{2,10}篇\(上[一二三四五六七八九十]?\)$', o):
+                    continue
+                # 篇名行改成標題，不再重複成 pair
+                if SEC_RE.match(o):
+                    sid = len(toc) + 1
+                    toc.append((sid, o))
+                    body.append('<h2 class="sec" id="p%d">%s</h2>' % (sid, html.escape(o)))
+                    continue
                 sid_s = 's' + str(len(body))
                 anchor = ' id="' + sid_s + '"'
                 it['_id'] = sid_s

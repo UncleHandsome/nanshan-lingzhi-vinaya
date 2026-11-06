@@ -31,6 +31,10 @@ def load_bounds(pp):
         return None
     return bs
 HDR = re.compile(r'(\d*\s*釋[\u4e00-\u9fff]{1,6}篇(?:\([^)）]*\))?)')
+_o9, _t9 = ZI[8][0]
+_i9 = _t9.find('在〈釋師資篇〉')
+if _i9 > 0:
+    ZI[8] = [(_o9, _t9[_i9:])] + ZI[8][1:]
 HEADS = {}
 _h2 = lambda x: len(re.findall(r'[\u4e00-\u9fff]', x))
 _s2 = lambda x: [y for y in re.findall(r'[^。！？；]*[。！？；]?', x) if y.strip()]
@@ -39,9 +43,13 @@ for _p in range(2, 11):
     _m = HDR.search(_o[:160])
     if _m and 4 < _m.start() < 120:
         _head = _o[:_m.start()].strip()
-        _k = max(1, int(round(_h2(_head) / max(1, _h2(_o)) * len(_s2(_t)))))
         _ts = _s2(_t)
-        _htr = ''.join(_ts[:_k])
+        _need = _h2(_head)
+        _htr = ''
+        for _sx in _ts:
+            if _h2(_htr) >= _need + 4:
+                break
+            _htr += _sx
         HEADS[_p] = (_head, _htr)
         _rest = _t[len(_htr):]
         _rest = re.sub(r'^.*?解釋[\u4e00-\u9fff]{1,8}篇(?:\([^)）]*\))?', '', _rest, count=1)

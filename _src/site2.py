@@ -94,6 +94,7 @@ mark{background:#ffe9a8;padding:0 .08em;border-radius:2px}
 SEC_RE = re.compile(r'^[○◎◯【]?\s*[\u4e00-\u9fff]{2,10}篇第[一二三四五六七八九十]+[】]?$')
 
 TOC_EXTRA = {
+    'yeshu': re.compile(r'[\u4e00-\u9fff]{2,8}篇第[一二三四五六七八九十]+'),
     'jieshu': re.compile(r'^【律】[^，。]{0,24}戒。?$'),
     'zhichi': re.compile(r'釋[\u4e00-\u9fff]{2,6}篇'),
     'yichao': re.compile(r'^[\u4e00-\u9fff]{2,8}$'),
@@ -118,6 +119,10 @@ def toc_label(book, text):
     t = text.strip()
     if book == 'zhichi':
         m = re.search(r'釋[\u4e00-\u9fff]{2,6}篇', t)
+        if m:
+            return m.group(0)
+    if book == 'yeshu':
+        m = re.search(r'[\u4e00-\u9fff]{2,8}篇第[一二三四五六七八九十]+', t)
         if m:
             return m.group(0)
     if book == 'jieshu':
@@ -284,7 +289,9 @@ def build():
                 if re.match(r'^\d+\s*[\u4e00-\u9fff]{2,10}篇\(上[一二三四五六七八九十]?\)$', o):
                     continue
                 if toc_match(bk['out'], o):
-                    tt.append((len(tt) + 1, toc_label(bk['out'], o)))
+                    _lb = toc_label(bk['out'], o)
+                    if _lb not in [n for _, n in tt]:
+                        tt.append((len(tt) + 1, _lb))
             tmap[v] = tt
         bk['_toc'] = tmap
     search_idx = {}
@@ -326,9 +333,11 @@ def build():
                 anchor = ' id="' + sid_s + '"'
                 it['_id'] = sid_s
                 if toc_match(bk['out'], o):
-                    sid = len(toc) + 1
-                    toc.append((sid, toc_label(bk['out'], o)))
-                    anchor = ' id="p' + str(sid) + '"'
+                    _lb = toc_label(bk['out'], o)
+                    if _lb not in [n for _, n in toc]:
+                        sid = len(toc) + 1
+                        toc.append((sid, _lb))
+                        anchor = ' id="p' + str(sid) + '"'
                     it['_id'] = 'p' + str(sid)
                 body.append('<div class="pair"' + anchor + '><div class="o">' + html.escape(it['o']) + '</div>'
                             + '<div class="t">' + html.escape(it['t']) + '</div></div>')

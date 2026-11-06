@@ -342,6 +342,11 @@ def build(p, splits):
         for k in front:
             emit_ji_tagged('【記%03d】' % (k + 1), clean(zi[k][0]), zi[k][1])
 
+    if p == 10:
+        nq = doc.add_paragraph(); nq.paragraph_format.left_indent = Pt(14)
+        nq.paragraph_format.space_before = Pt(6)
+        sr(nq.add_run('〔編者按：記003–008 係元照釋篇首原注（布薩譯名）之文；此段原注諸本多脫，CBETA T40n1804 亦無，故暫無鈔文可配，待補底本。〕'), 9, color=RGBColor(0x88, 0x66, 0x33))
+
     EMIT = set()
     for cno, it in enumerate(chao, 1):
         qq = doc.add_paragraph(); qf = qq.paragraph_format

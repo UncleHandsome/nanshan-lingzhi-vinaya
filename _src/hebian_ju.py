@@ -94,6 +94,14 @@ def zitems_for(idx):
     return out
 
 
+import json as _json
+AIMAP = {}
+try:
+    AIMAP = _json.load(io.open(os.path.join(D, 'AI語譯', '_work', 'hb_align.json'), encoding='utf-8'))
+    print('AI 對齊表：篇', len(AIMAP), '記段', sum(len(v) for v in AIMAP.values()))
+except Exception as _e:
+    print('no AIMAP', _e)
+
 SKIP1=re.compile(r'^\d+\s*[\u4e00-\u9fff]{2,10}篇\(上[一二三四五六七八九十]?\)$')
 SKIP2=re.compile(r'^[\u4e00-\u9fff]{2,10}篇第[一二三四五六七八九十]+$')
 
@@ -109,6 +117,15 @@ for idx,sec in enumerate(secs):
             for ci,(co,ct,_v) in enumerate(sec['items']):
                 if qh in han(co):
                     anchors.setdefault(ci,[]).append(k); break
+    am = AIMAP.get(str(idx))
+    if am:
+        anchors = {}
+        lastc = 0
+        for k in range(len(zi)):
+            if k < len(am):
+                lastc = min(len(sec['items']) - 1, max(0, int(am[k])))
+            anchors.setdefault(lastc, []).append(k)
+        used = set(range(len(zi)))
     used=set(v for vs in anchors.values() for v in vs)
     n_i=max(1,len(sec['items']))
     clen=[max(1,len(han(o))) for o,t,*_ in sec['items']]
@@ -127,6 +144,16 @@ for idx,sec in enumerate(secs):
             if a<=mid<b:
                 ci=j; break
         anchors.setdefault(ci,[]).append(k)
+    # 把落在「標題行」上的記段改掛到最近的有效鈔段，避免漏印
+    valid = [i for i, (o, t, *_ ) in enumerate(sec['items'])
+             if not SKIP1.match(o.strip()) and not SKIP2.match(o.strip())]
+    if valid:
+        for ci in list(anchors):
+            if ci in valid:
+                continue
+            ks = anchors.pop(ci)
+            nxt = next((v for v in valid if v > ci), valid[-1])
+            anchors.setdefault(nxt, []).extend(ks)
     PLAN.append((idx, zi, anchors))
 
 

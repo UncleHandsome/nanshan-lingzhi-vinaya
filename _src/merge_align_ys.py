@@ -13,9 +13,9 @@ def main():
         of = os.path.join(AD, 'out_%s.json' % n)
         if not os.path.exists(of):
             continue
-        meta = json.load(io.open(bf, encoding='utf-8'))
+        meta = json.load(io.open(bf, encoding='utf-8-sig'))
         key = meta['key']
-        d = json.load(io.open(of, encoding='utf-8'))
+        d = json.load(io.open(of, encoding='utf-8-sig'))
         arr = {}
         for m in d.get('map', []):
             arr[int(m['i'])] = int(m['c'])

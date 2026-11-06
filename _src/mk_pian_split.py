@@ -31,20 +31,6 @@ def load_bounds(pp):
         return None
     return bs
 HDR = re.compile(r'(\d*\s*釋[\u4e00-\u9fff]{1,6}篇(?:\([^)）]*\))?)')
-# 篇9 白話前兩段重新切分：t2 同時涵蓋 記1 尾與 記2
-_o9b, _t9b = ZI[8][0]
-_o9c, _t9c = ZI[8][1]
-_i9b = _t9c.find('「資」是取受')
-if _i9b < 0:
-    _i9b = _t9c.find('取受、取法')
-if _i9b > 0:
-    _cut = _t9c.find('。', _i9b)
-    if _cut > 0:
-        ZI[8] = [(_o9b, _t9c[:_cut + 1]), (_o9c, _t9c[_cut + 1:])] + ZI[8][2:]
-_o9, _t9 = ZI[8][0]
-_i9 = _t9.find('在〈釋師資篇〉')
-if _i9 > 0:
-    ZI[8] = [(_o9, _t9[_i9:])] + ZI[8][1:]
 HEADS = {}
 _h2 = lambda x: len(re.findall(r'[\u4e00-\u9fff]', x))
 _s2 = lambda x: [y for y in re.findall(r'[^。！？；]*[。！？；]?', x) if y.strip()]
@@ -64,6 +50,18 @@ for _p in range(2, 11):
         _rest = _t[len(_htr):]
         _rest = re.sub(r'^.*?解釋[\u4e00-\u9fff]{1,8}篇(?:\([^)）]*\))?', '', _rest, count=1)
         ZI[_p - 1] = [(_o[_m.start():].strip(), _rest)] + ZI[_p - 1][1:]
+
+# 篇9：記1 取 記2 譯文前半（師通多種），記2 取後半
+_o1p, _t1p = ZI[8][0]
+_o2p, _t2p = ZI[8][1]
+_pp = _t2p.find('「資」是取受')
+if _pp < 0:
+    _pp = _t2p.find('資」是取受')
+if _pp > 0:
+    _kp = _t2p.find('學習德業')
+    _qp = _t2p.find('。', _kp) if _kp > 0 else _t2p.find('。', _pp)
+    if _qp > 0:
+        ZI[8] = [(_o1p, _t2p[:_qp + 1]), (_o2p, _t2p[_qp + 1:])] + ZI[8][2:]
 
 FONT = 'SimSun'; LATIN = 'Times New Roman'
 IN = os.path.join(B, 'AI語譯', '_work', 'pian_split_in')
@@ -136,6 +134,24 @@ def emit_ji_to(doc, tag, text, tr):
     b.paragraph_format.left_indent = Pt(14)
     b.paragraph_format.line_spacing = 1.28; b.paragraph_format.space_after = Pt(2)
     sr(b.add_run(tr), 10)
+
+
+def merge_qa8():
+    o26, t26 = ZI[7][25]
+    o27, t27 = ZI[7][26]
+    k = o27.find('得法中')
+    if k <= 0:
+        return
+    ZI[7][25] = (o26 + o27[:k], t26)
+    # 譯文：找到「得法」相關句，切在句號後
+    q = t27.find('得法')
+    if q > 0:
+        qe = t27.find('。', q)
+        if qe > 0:
+            ZI[7][25] = (o26 + o27[:k], t26 + t27[:qe + 1])
+            ZI[7][26] = (o27[k:], t27[qe + 1:])
+            return
+    ZI[7][26] = (o27[k:], t27)
 
 
 def move_siju():
@@ -371,6 +387,7 @@ if __name__ == '__main__':
             man = dm.get('splits', [])
             mn = {int(x['n']) for x in man}
             splits = man + [x for x in splits if int(x['n']) not in mn]
+        merge_qa8()
         move_siju()
         strip_dup_tail(p)
         out, nc, nz, used = build(p, splits)

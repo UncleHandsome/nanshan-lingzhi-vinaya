@@ -86,7 +86,33 @@ Z2S = [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 8, 9, 10, 11, 12, 13, 13, 13,
        14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
 
 
+RE_SLICE = True
+_ZI = {}
+
+
+def _build_zi():
+    for idx in range(30):
+        _ZI[idx] = []
+    for i, sec in enumerate(zsecs):
+        if i < len(Z2S):
+            _ZI[Z2S[i]] += sec['items']
+    # 依人工診斷重切：篇14 前 122 段實為篇13 的記文
+    if RE_SLICE and len(_ZI[13]) > 122:
+        _ZI[12] = _ZI[12] + _ZI[13][:122]
+        _ZI[13] = _ZI[13][122:]
+    # 篇12 最後一段是中卷卷頭題記，應歸篇13
+    if RE_SLICE and len(_ZI[11]) > 90:
+        _ZI[12] = [_ZI[11][-1]] + _ZI[12]
+        _ZI[11] = _ZI[11][:-1]
+
+
 def zitems_for(idx):
+    if not _ZI:
+        _build_zi()
+    return _ZI.get(idx, [])
+
+
+def _old_zitems_for(idx):
     out = []
     for zi, sec in enumerate(zsecs):
         if zi < len(Z2S) and Z2S[zi] == idx:

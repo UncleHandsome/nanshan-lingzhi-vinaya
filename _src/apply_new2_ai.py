@@ -8,7 +8,7 @@ ex = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(ex)
 ZS = ex.zsecs()
 SECS = ex.sections()
-ours = {i + 1: len(ex.zitems_for(i, ZS)) for i in range(len(SECS))}
+ours = {11: 128, 12: 96, 13: 135, 14: 1087, 15: 241, 16: 148, 17: 273, 18: 115, 19: 42, 20: 35}
 
 rows = json.load(io.open(os.path.join(B, 'AI語譯', '_work', 'new2_ai_all.json'), encoding='utf-8'))
 main = json.load(io.open(os.path.join(B, 'AI語譯', '_work', 'hb_align.json'), encoding='utf-8'))

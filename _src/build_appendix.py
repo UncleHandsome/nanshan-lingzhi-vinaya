@@ -101,17 +101,10 @@ def build_html(blocks):
              ('nicao', '四分比丘尼鈔'), ('yichao', '四分律拾毗尼義鈔')]
     nav = ['<nav><h1><a href="index.html">南山律典・白話對照</a></h1>',
            '<div class="grp"><b>全書</b><a href="index.html">目錄</a>'
-           '<a href="search.html">全文搜尋</a><a href="appendix.html">附錄</a></div>',
-           '<div class="grp"><b>分卷</b><div class="bklist">']
-    for out, title in books:
-        vols = sorted(os.path.basename(p)[:-5] for p in glob.glob(os.path.join(SITE, out, '*.html')))
-        if not vols:
-            continue
-        nav.append('<details class="navj"><summary>' + title + '</summary><ul>')
-        for v in vols:
-            nav.append('<li><a href="%s/%s.html">%s</a></li>' % (out, v, v))
-        nav.append('</ul></details>')
-    nav.append('</div></div></nav>')
+           '<a href="search.html">全文搜尋</a><a href="appendix.html">附錄</a>'
+           '<a href="untranslated.html">未譯清單</a></div>',
+           '<div class="grp"><b>書目</b><div class="tree" id="navtree" data-root="">'
+           '<noscript><a href="index.html">目錄</a></noscript></div></div></nav>']
     nav = ''.join(nav)
     footer = ('<footer style="margin:3.5rem 0 0;padding-top:1.2rem;border-top:1px solid var(--line);'
               'color:var(--fg2);font-size:12.5px;line-height:1.7">'
@@ -122,7 +115,7 @@ def build_html(blocks):
            '<meta name="viewport" content="width=device-width,initial-scale=1">'
            '<title>附錄：名相、音注與度量衡｜南山律典・白話對照</title>'
            '<meta name="DC.rights" content="CC BY-NC-SA 4.0">'
-           '<link rel="stylesheet" href="style.css?v=7"><style>' + CSS_EXTRA + '</style></head>'
+           '<link rel="stylesheet" href="style.css?v=8"><script defer src="nav.js"></script><style>' + CSS_EXTRA + '</style></head>'
            '<body><div class="wrap">' + nav + '<main>' + body +
            '<p class="intro" style="margin-top:2rem">回 <a href="index.html">目錄</a></p>'
            + footer + '</main></div></body></html>')

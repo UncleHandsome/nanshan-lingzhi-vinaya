@@ -176,7 +176,7 @@ HB_TOC = read_hb_toc()
 def nav_html(cur_book=None, prefix='', toc=None, prev=None, nxt=None):
     parts = ['<nav><h1><a href="INDEX">南山律典・白話對照</a></h1>']
     parts.append('<div class="grp"><b>全書</b><a href="INDEX">目錄</a><a href="SEARCH">全文搜尋</a>'
-                 '<a href="APPENDIX">附錄</a></div>')
+                 '<a href="APPENDIX">附錄</a><a href="UNTRANSLATED">未譯清單</a></div>')
     if (prev or nxt) and cur_book:
         parts.append('<div class="grp"><b>分卷</b>')
         if prev:
@@ -184,51 +184,8 @@ def nav_html(cur_book=None, prefix='', toc=None, prev=None, nxt=None):
         if nxt:
             parts.append('<a href="' + prefix + cur_book['out'] + '/' + nxt + '.html">' + html.escape(nxt) + ' →</a>')
         parts.append('</div>')
-    parts.append('<div class="grp"><b>書目</b><div class="tree">')
-    for bk in BOOKS:
-        vols = bk.get('_vols') or []
-        if not vols:
-            continue
-        here = cur_book and bk['out'] == cur_book['out']
-        parts.append('<details class="tk"' + (' open' if here else '') + '>'
-                     + '<summary>' + html.escape(bk['title']) + '</summary>')
-        toc_map = bk.get('_toc') or {}
-        for v, url in vols:
-            cur_vol = here and cur_book and v == cur_book.get('_curvol')
-            subs = toc_map.get(v) or []
-            parts.append('<details class="vk"' + (' open' if cur_vol else '') + '>'
-                         + '<summary' + (' class="cur"' if cur_vol else '') + '>' + html.escape(v) + '</summary>')
-            if subs:
-                parts.append('<ul>')
-                for sid, name in subs:
-                    parts.append('<li><a href="' + prefix + bk['out'] + '/' + v + '.html#p' + str(sid) + '">'
-                                 + html.escape(name) + '</a></li>')
-                parts.append('</ul>')
-            else:
-                parts.append('<ul><li><a href="' + prefix + bk['out'] + '/' + v + '.html">（全卷）</a></li></ul>')
-            parts.append('</details>')
-        parts.append('</details>')
-    # 合編
-    HB = ['卷上之一', '卷上之二', '卷上之三', '卷上之四', '卷中之一', '卷中之二', '卷中之三', '卷中之四',
-          '卷下之一', '卷下之二', '卷下之三', '卷下之四']
-    herehb = bool(cur_book and cur_book['out'] == 'hebian')
-    hbtoc = HB_TOC
-    parts.append('<details class="tk"' + (' open' if herehb else '') + '><summary>行事鈔資持記・句級合編</summary>')
-    for v in HB:
-        cur_vol = herehb and cur_book.get('_curvol') == v
-        subs = hbtoc.get(v) or []
-        parts.append('<details class="vk"' + (' open' if cur_vol else '') + '>'
-                     + '<summary' + (' class="cur"' if cur_vol else '') + '>' + html.escape(v) + '</summary>')
-        if subs:
-            parts.append('<ul>')
-            for sid, name in subs:
-                parts.append('<li><a href="' + prefix + 'hebian/' + v + '.html#p' + str(sid) + '">'
-                             + html.escape(name) + '</a></li>')
-            parts.append('</ul>')
-        else:
-            parts.append('<ul><li><a href="' + prefix + 'hebian/' + v + '.html">（全卷）</a></li></ul>')
-        parts.append('</details>')
-    parts.append('</details></div></div></nav>')
+    parts.append('<div class="grp"><b>書目</b><div class="tree" id="navtree" data-root="' + prefix + '">'
+                 '<noscript><a href="' + prefix + 'index.html">目錄</a></noscript></div></div></nav>')
     return ''.join(parts)
 
 
@@ -236,15 +193,16 @@ def page(title, body, cur_book=None, prefix='', toc=None, prev=None, nxt=None):
     nav = (nav_html(cur_book, prefix, toc, prev, nxt)
            .replace('INDEX', prefix + 'index.html')
            .replace('SEARCH', prefix + 'search.html')
-           .replace('APPENDIX', prefix + 'appendix.html'))
-    css = prefix + 'style.css?v=7'
+           .replace('APPENDIX', prefix + 'appendix.html')
+           .replace('UNTRANSLATED', prefix + 'untranslated.html'))
+    css = prefix + 'style.css?v=8'
     return ('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
             '<title>' + html.escape(title) + '｜南山律典・白話對照</title>'
             '<meta name="DC.rights" content="CC BY-NC-SA 4.0">'
             '<meta name="citation_author" content="UncleHandsome">'
             '<link rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">'
-            '<link rel="stylesheet" href="' + css + '"></head><body><div class="wrap">'
+            '<link rel="stylesheet" href="' + css + '"><script defer src="' + prefix + 'nav.js"></script></head><body><div class="wrap">'
             + nav + '<main>' + body + FOOTER.replace('ROOT', prefix) + '</main></div></body></html>')
 
 def build():
@@ -378,6 +336,31 @@ def build():
           '<p class="byline" id="count"></p><div id="hits"></div>'
           '<script>' + SEARCH_JS + '</script>')
     io.open(os.path.join(SITE, 'search.html'), 'w', encoding='utf-8').write(page('搜尋', sb))
+    # 側欄資料
+    nav_books = []
+    for bk in all_books:
+        vols = []
+        for v, _u in bk['_vols']:
+            secs = [[('p%d' % sid), nm] for sid, nm in (bk['_toc'].get(v) or [])]
+            vols.append(dict(v=v, secs=secs))
+        nav_books.append(dict(out=bk['out'], title=bk['title'], vols=vols))
+    try:
+        import glob as _g
+        hbv = []
+        for f in sorted(_g.glob(os.path.join(SITE, 'hebian', '*.html'))):
+            v = os.path.basename(f)[:-5]
+            h2s = re.findall(r'<h2 class="sec" id="(p\d+)">([^<]+)</h2>', io.open(f, encoding='utf-8').read())
+            hbv.append(dict(v=v, secs=[[a, b] for a, b in dict.fromkeys(h2s)]))
+        if hbv:
+            nav_books.append(dict(out='hebian', title='行事鈔資持記・句級合編', vols=hbv))
+    except Exception as _e:
+        print('hb nav', _e)
+    io.open(os.path.join(SITE, 'nav.json'), 'w', encoding='utf-8').write(
+        json.dumps(dict(books=nav_books), ensure_ascii=False))
+    import shutil as _sh
+    _sh.copyfile(os.path.join(B, '_src', 'nav.js'), os.path.join(SITE, 'nav.js'))
+    print('nav.json', len(nav_books), 'books')
+
     # 未譯段落清單頁（目前 0 段）
     try:
         import json as _json

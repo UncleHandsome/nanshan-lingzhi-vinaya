@@ -60,7 +60,8 @@ TOC = {out: book_toc(out) for out, _ in BOOKS}
 def nav(cur_vol, toc, prev, nxt):
     parts = ['<nav><h1><a href="../index.html">南山律典・白話對照</a></h1>']
     parts.append('<div class="grp"><b>全書</b><a href="../index.html">目錄</a>'
-                 '<a href="../search.html">全文搜尋</a><a href="../appendix.html">附錄</a></div>')
+                 '<a href="../search.html">全文搜尋</a><a href="../appendix.html">附錄</a>'
+                 '<a href="../untranslated.html">未譯清單</a></div>')
     if prev or nxt:
         parts.append('<div class="grp"><b>分卷</b>')
         if prev:
@@ -68,36 +69,14 @@ def nav(cur_vol, toc, prev, nxt):
         if nxt:
             parts.append('<a href="' + nxt + '.html">' + html.escape(nxt) + ' →</a>')
         parts.append('</div>')
-    parts.append('<div class="grp"><b>書目</b><div class="tree">')
-    for out, title in BOOKS:
-        tmap = TOC.get(out, {})
-        vols = sorted(tmap.keys(), key=vkey)
-        if not vols:
-            continue
-        parts.append('<details class="tk"><summary>' + html.escape(title) + '</summary>')
-        for v in vols:
-            parts.append('<details class="vk"><summary>' + html.escape(v) + '</summary><ul>')
-            for sid, name in tmap[v]:
-                parts.append('<li><a href="../%s/%s.html#p%d">%s</a></li>' % (out, v, sid, html.escape(name)))
-            parts.append('</ul></details>')
-        parts.append('</details>')
-    parts.append('<details class="tk" open><summary>行事鈔資持記・句級合編</summary>')
-    for v in HB:
-        cur = v == cur_vol
-        parts.append('<details class="vk"' + (' open' if cur else '') + '>'
-                     + '<summary' + (' class="cur"' if cur else '') + '>' + html.escape(v) + '</summary><ul>')
-        for sid, name in (toc if cur else []):
-            parts.append('<li><a href="%s.html#p%d">%s</a></li>' % (v, sid, html.escape(name)))
-        if not cur:
-            parts.append('<li><a href="%s.html">（全卷）</a></li>' % v)
-        parts.append('</ul></details>')
-    parts.append('</details></div></div></nav>')
+    parts.append('<div class="grp"><b>書目</b><div class="tree" id="navtree" data-root="../">'
+                 '<noscript><a href="../index.html">目錄</a></noscript></div></div></nav>')
     return ''.join(parts)
 
 
 TPL = '''<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>%s</title>
-<link rel="stylesheet" href="../style.css?v=7"></head><body><div class="wrap">
+<link rel="stylesheet" href="../style.css?v=8"><script defer src="../nav.js"></script></head><body><div class="wrap">
 %s<main><h1>%s</h1><p class="byline">鈔文（淺褐）與記文（淺藍）逐段並列，每段附白話</p>
 %s<div class="pager">%s</div></main></div></body></html>'''
 

@@ -29,22 +29,37 @@ def load_offsets():
         return {}
 
 
+def _off_for(off, i):
+    if isinstance(off, (int, float)):
+        return int(off)
+    for a, b, o in off:
+        if a <= i <= b:
+            return int(o)
+    return 0
+
+
 def main():
     OFF = load_offsets()
     rows_by_vol = {}
+    chunks = []
+    tt_all, pref = [], {}
     for f in sorted(os.listdir(S)):
         if not f.endswith('.txt'):
             continue
         k = f[:-4]
         sp = [x.strip() for x in io.open(os.path.join(S, f), encoding='utf-8').read().split('\n')[5:] if x.strip()]
         tt = [x.strip() for x in re.split(r'\r?\n\r?\n', io.open(os.path.join(T, k + '.txt'), encoding='utf-8').read()) if x.strip()]
+        pref[k] = len(tt_all)
+        tt_all += tt
+        chunks.append((k, sp, tt))
+    for k, sp, tt in chunks:
         v = vol_of(k)
         rows_by_vol.setdefault(v, [])
-        off = int(OFF.get(k, 0))
+        off = OFF.get(k, 0)
         for i, o in enumerate(sp, 1):
-            j = (i - 1) + off
-            t = tt[j] if 0 <= j < len(tt) else ''
-            rows_by_vol[v].append([k, v, i, o, t, j + 1])
+            g = pref[k] + (i - 1) + _off_for(off, i - 1)
+            t = tt_all[g] if 0 <= g < len(tt_all) else ''
+            rows_by_vol[v].append([k, v, i, o, t, g + 1])
 
     try:
         import openpyxl

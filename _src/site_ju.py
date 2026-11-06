@@ -139,14 +139,26 @@ _YS0_FIX = {
 }
 
 
+def _off_for(off, i):
+    """off 可為整數或 [[起,迄,位移],...]"""
+    if isinstance(off, (int, float)):
+        return int(off)
+    for a, b, o in off:
+        if a <= i <= b:
+            return int(o)
+    return 0
+
+
 def pairs_chunks(src_dir, tr_tag, ju_dir):
-    """業疏：句讀原文 ＋ 依 ye_new.txt 位移量取譯文"""
+    """業疏：句讀原文 ＋ 全域譯文流（逐塊位移，可正可負）"""
     chunks = load_chunks(src_dir, tr_tag)
+    tt_all, pref = [], {}
+    for key, sp, tt in chunks:
+        pref[key] = len(tt_all)
+        tt_all += tt
     res, entries, cur_vol = [], [], None
-    for ci, (key, sp, tt) in enumerate(chunks):
-        short = key
-        off = int(_YS_OFF.get(short, 0))
-        nxt = chunks[ci + 1][2] if ci + 1 < len(chunks) else []
+    for key, sp, tt in chunks:
+        off = _YS_OFF.get(key, 0)
         p = os.path.join(B, 'TXT_句讀', ju_dir, key + '.txt')
         o_lines = None
         if os.path.exists(p):
@@ -168,12 +180,8 @@ def pairs_chunks(src_dir, tr_tag, ju_dir):
         for i in range(len(sp)):
             if TITLE_RE.match(sp[i]):
                 continue
-            j = i + off
-            if j < len(tt):
-                t = tt[j]
-            else:
-                k = j - len(tt)
-                t = nxt[k] if 0 <= k < len(nxt) else ''
+            g = pref[key] + i + _off_for(off, i)
+            t = tt_all[g] if 0 <= g < len(tt_all) else ''
             if key.startswith('00_卷首') and i in _YS0_FIX:
                 t = _YS0_FIX[i]
             entries.append((o_lines[i], t))

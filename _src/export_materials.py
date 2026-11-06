@@ -76,9 +76,25 @@ def zitems_for(idx, zs):
     return out
 
 
+def build_zi(secs, zs):
+    ZI = {i: [] for i in range(len(secs))}
+    for i, sec in enumerate(zs):
+        if i < len(Z2S):
+            ZI[Z2S[i]] += sec['items']
+    # 與 hebian_ju 相同的重切：篇14 前 122 段歸篇13；篇12 末段（卷頭題記）歸篇13
+    if len(ZI[13]) > 122:
+        ZI[12] = ZI[12] + ZI[13][:122]
+        ZI[13] = ZI[13][122:]
+    if len(ZI[11]) > 90:
+        ZI[12] = [ZI[11][-1]] + ZI[12]
+        ZI[11] = ZI[11][:-1]
+    return ZI
+
+
 def main():
     secs = sections()
     zs = zsecs()
+    ZI = build_zi(secs, zs)
     try:
         AM = json.load(io.open(os.path.join(B, 'AI語譯', '_work', 'hb_align.json'), encoding='utf-8'))
     except Exception:
@@ -92,7 +108,7 @@ def main():
     total = 0
     for idx, sec in enumerate(secs):
         C = sec['items']
-        Z = zitems_for(idx, zs)
+        Z = ZI.get(idx, [])
         if not C:
             continue
         am = AM.get(str(idx)) or []

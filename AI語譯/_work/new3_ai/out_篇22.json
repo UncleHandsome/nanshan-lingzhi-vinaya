@@ -1,0 +1,19 @@
+{
+  "rows": [
+    {"chao": 1, "ji_from": 1, "ji_to": 6, "note": "1後半～6前半"},
+    {"chao": 2, "ji_from": 6, "ji_to": 7, "note": "6後半～7首句"},
+    {"chao": 3, "ji_from": 7, "ji_to": 7, "note": "7次句"},
+    {"chao": 4, "ji_from": 7, "ji_to": 14, "note": "7起～14前半"},
+    {"chao": 5, "ji_from": 14, "ji_to": 18, "note": "14後半～18前半"},
+    {"chao": 6, "ji_from": 18, "ji_to": 18, "note": "18中"},
+    {"chao": 7, "ji_from": 18, "ji_to": 30, "note": "18後半～30前半"},
+    {"chao": 8, "ji_from": 30, "ji_to": 44, "note": "30後半～44前半"},
+    {"chao": 9, "ji_from": 44, "ji_to": 47, "note": "44後半～47前半"},
+    {"chao": 10, "ji_from": 47, "ji_to": 54, "note": "47後半～54首句"},
+    {"chao": 11, "ji_from": 54, "ji_to": 54, "note": "54次句"},
+    {"chao": 12, "ji_from": 54, "ji_to": 68, "note": "54起～68前半"},
+    {"chao": 13, "ji_from": 68, "ji_to": 80, "note": "68後半～80前半"},
+    {"chao": 14, "ji_from": 80, "ji_to": 86, "note": "80後半～86前半"},
+    {"chao": 15, "ji_from": 86, "ji_to": 92, "note": "86後半～92；表23記1首句已收回，不計入"}
+  ]
+}

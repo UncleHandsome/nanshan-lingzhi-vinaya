@@ -1,0 +1,28 @@
+{
+  "rows": [
+    {"chao": 2, "ji_from": 1, "ji_to": 6},
+    {"chao": 3, "ji_from": 6, "ji_to": 8},
+    {"chao": 4, "ji_from": 8, "ji_to": 9},
+    {"chao": 5, "ji_from": 10, "ji_to": 11},
+    {"chao": 6, "ji_from": 11, "ji_to": 11},
+    {"chao": 7, "ji_from": 11, "ji_to": 14},
+    {"chao": 8, "ji_from": 15, "ji_to": 16},
+    {"chao": 9, "ji_from": 16, "ji_to": 16},
+    {"chao": 10, "ji_from": 16, "ji_to": 16},
+    {"chao": 11, "ji_from": 16, "ji_to": 17},
+    {"chao": 12, "ji_from": 17, "ji_to": 18},
+    {"chao": 13, "ji_from": 18, "ji_to": 18},
+    {"chao": 14, "ji_from": 18, "ji_to": 19},
+    {"chao": 15, "ji_from": 19, "ji_to": 19},
+    {"chao": 16, "ji_from": 19, "ji_to": 19},
+    {"chao": 17, "ji_from": 19, "ji_to": 19},
+    {"chao": 18, "ji_from": 19, "ji_to": 20},
+    {"chao": 19, "ji_from": 20, "ji_to": 21},
+    {"chao": 20, "ji_from": 21, "ji_to": 22},
+    {"chao": 21, "ji_from": 22, "ji_to": 22},
+    {"chao": 22, "ji_from": 22, "ji_to": 23},
+    {"chao": 23, "ji_from": 23, "ji_to": 25},
+    {"chao": 24, "ji_from": 25, "ji_to": 26},
+    {"chao": 25, "ji_from": 26, "ji_to": 28}
+  ]
+}

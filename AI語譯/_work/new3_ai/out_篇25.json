@@ -1,0 +1,13 @@
+{
+  "rows": [
+    {"chao": 1, "ji_from": 1, "ji_to": 2},
+    {"chao": 2, "ji_from": 2, "ji_to": 3},
+    {"chao": 3, "ji_from": 3, "ji_to": 3},
+    {"chao": 4, "ji_from": 3, "ji_to": 4},
+    {"chao": 5, "ji_from": 4, "ji_to": 5},
+    {"chao": 6, "ji_from": 5, "ji_to": 11},
+    {"chao": 7, "ji_from": 11, "ji_to": 12},
+    {"chao": 8, "ji_from": 12, "ji_to": 16},
+    {"chao": 9, "ji_from": 16, "ji_to": 16}
+  ]
+}

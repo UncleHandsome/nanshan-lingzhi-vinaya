@@ -81,10 +81,16 @@ MAP=[('標宗顯德','點明宗旨'),('集僧通局','集僧'),('足數眾相','
      ('瞻病送終','瞻病'),('諸雜要行','諸雜'),('沙彌別法','沙彌'),('尼眾別行','尼眾'),('諸部別行','諸部律')]
 
 
-def zitems(zname):
-    out=[]
-    for s in zsecs:
-        if s['name']==zname: out += s['items']
+# 記文分節（34 節）→ 鈔篇（30 篇）的對應；師資、戒相、篇首數節為多節併一篇
+Z2S = [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 8, 9, 10, 11, 12, 13, 13, 13,
+       14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+
+
+def zitems_for(idx):
+    out = []
+    for zi, sec in enumerate(zsecs):
+        if zi < len(Z2S) and Z2S[zi] == idx:
+            out += sec['items']
     return out
 
 
@@ -94,8 +100,7 @@ SKIP2=re.compile(r'^[\u4e00-\u9fff]{2,10}篇第[一二三四五六七八九十]+
 # 先為每一篇算好記文分配
 PLAN=[]
 for idx,sec in enumerate(secs):
-    zname=MAP[idx][1] if idx < len(MAP) else ''
-    zi=zitems(zname)
+    zi=zitems_for(idx)
     anchors={}
     for k,(zo,zt) in enumerate(zi):
         for q in re.findall(r'「([^」]{12,})」', zo):
@@ -106,9 +111,22 @@ for idx,sec in enumerate(secs):
                     anchors.setdefault(ci,[]).append(k); break
     used=set(v for vs in anchors.values() for v in vs)
     n_i=max(1,len(sec['items']))
+    clen=[max(1,len(han(o))) for o,t,*_ in sec['items']]
+    total_c=float(sum(clen)); edges=[]; acc=0.0
+    for L in clen:
+        edges.append((acc/total_c,(acc+L)/total_c)); acc+=L
+    zlen=[max(1,len(han(o))) for o,t in zi]
+    total_z=float(sum(zlen)) if zi else 1.0
+    accz=0.0
     for k in range(len(zi)):
+        mid=(accz+zlen[k]/2.0)/total_z
+        accz+=zlen[k]
         if k in used: continue
-        anchors.setdefault(min(n_i-1, k*n_i//max(1,len(zi))), []).append(k)
+        ci=n_i-1
+        for j,(a,b) in enumerate(edges):
+            if a<=mid<b:
+                ci=j; break
+        anchors.setdefault(ci,[]).append(k)
     PLAN.append((idx, zi, anchors))
 
 

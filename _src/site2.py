@@ -172,7 +172,7 @@ def page(title, body, cur_book=None, prefix='', toc=None, prev=None, nxt=None):
             '<meta name="DC.rights" content="CC BY-NC-SA 4.0">'
             '<meta name="citation_author" content="UncleHandsome">'
             '<link rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">'
-            '<link rel="stylesheet" href="' + css + '"><script defer src="' + prefix + 'nav.js?v=4"></script></head><body><div class="wrap">'
+            '<link rel="stylesheet" href="' + css + '"><script defer src="' + prefix + 'nav.js?v=5"></script></head><body><div class="wrap">'
             + nav + '<main>' + body + FOOTER.replace('ROOT', prefix) + '</main></div></body></html>')
 
 def build():

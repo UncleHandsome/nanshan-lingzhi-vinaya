@@ -21,7 +21,7 @@
     try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {}
   }
 
-  fetch(root + 'nav.json?v=4').then(function (r) { return r.json(); }).then(function (data) {
+  fetch(root + 'nav.json?v=5').then(function (r) { return r.json(); }).then(function (data) {
     var here = path;
     var html = '';
     (data.books || []).forEach(function (b) {
@@ -96,6 +96,26 @@
   function restoreHash() {
     [0, 120, 320, 700].forEach(function (ms) { setTimeout(jump, ms); });
   }
+
+  // 同頁錨點：自己處理，避免瀏覽器重新載入造成「重刷」
+  box.addEventListener('click', function (e) {
+    var a = e.target.closest ? e.target.closest('a') : null;
+    if (!a) return;
+    var href = a.getAttribute('href') || '';
+    var u;
+    try { u = new URL(a.href, location.href); } catch (err) { return; }
+    if (u.pathname !== location.pathname || !u.hash) return;
+    e.preventDefault();
+    var id = u.hash.slice(1);
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (history.pushState) history.pushState(null, '', u.hash);
+    else location.hash = u.hash;
+    var de = document.documentElement, old = de.style.scrollBehavior;
+    de.style.scrollBehavior = 'auto';
+    el.scrollIntoView({ block: 'start', behavior: 'instant' });
+    de.style.scrollBehavior = old;
+  });
   spy();
   restoreHash();
   window.addEventListener('load', restoreHash);

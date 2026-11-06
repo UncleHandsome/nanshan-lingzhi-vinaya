@@ -1,0 +1,13 @@
+)! Monks cannot dig raw earth!
+                So: if it is raw earth, have the jingren dig/know; if it's dead earth (already disturbed earth used for covering), the monk is permitted to dig!
+                The translator translated: "如果是在生土（未曾翻動之土）挖掘，應讓淨人知曉，若是掩蓋之處的死土（已翻動過之土），可讓比丘挖掘。" (OK, grasped the underlying Vinaya principle).
+
+        *   `若施主作金椀令比丘受用，為得福者；當持食來時，舒手示器，應言受受受，三說已食之。不得觸器四邊、讚歎、手捉，此是後九十中。`
+            *   Look at translation: `不得觸器四邊、讚歎、手捉，這是後面第九十戒中的規定。`
+            *   As noted earlier: "後九十中" is translated as "後面第九十戒中的規定". In the Vinaya, "九十" means the 90 Pacittiyas, not the 90th precept!
+
+        *   `《多論》五種受：一以手受，二以衣取，三以器取，四言著是中，五若言與是淨人。皆犯捨。下三眾亦不得畜，畜得吉羅。`
+            *   Trans: 《薩婆多論》說有五種受取方式：一是用手接受，二是用衣服去接取，三是用器皿盛取，四是口說「放在這裡面」，五是若說「給這個淨人」。這些全都犯捨墮。下三眾（沙彌、沙彌尼、式叉摩那）也不得蓄養，蓄養則結突吉羅罪。 (OK)
+
+        *   `《多論》五種長物：一重寶。二似寶。三若衣、衣財應量已上。四一切不應量衣，及衣財。五一切穀米。重寶捨與同意淨人，罪僧中悔。若錢寶，比丘不得畜；若僧中次行者說淨。餘似寶及百一物數，一切捨與同心淨人，罪作吉羅悔。`
+            *   Trans: 《薩婆多論》列出五種長物：一是重寶（金銀等），二是似寶，三是衣服或衣料超過應有數量的，四是一切不合規矩尺度的衣服及衣料，五是一切穀米。重寶應捨給同心意的淨人，罪過則在僧眾中懺悔。若是錢寶，比丘不得蓄養；若是僧眾中輪流執事的人（次行者）應當作說淨。其餘似寶以及百一物之數，一切都捨給同心意淨人，罪過作突吉羅悔

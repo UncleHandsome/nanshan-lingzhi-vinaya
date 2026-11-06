@@ -1,0 +1,19 @@
+成道，受乳糜，觀諸佛法，皆著淨衣，踞坐而食；若有出家弟子，應如是法，以能防眾戒故；踞坐為淨衣故；異俗法故；亦為草座食易故。因踞坐制九法：一脚前却，二闊脚，三搖動，四竪，五交，六垂三衣覆足，七翹，八累脚，九累髀；並犯吉羅。"
+        *   Check the 9 non-seated postures:
+            *   一脚前却 (one foot forward one back / shifting feet)
+            *   二闊脚 (feet spread wide)
+            *   三搖動 (shaking legs/body)
+            *   四竪 (knees raised up vertically)
+            *   五交 (legs crossed)
+            *   六垂三衣覆足 (draping robes over feet)
+            *   七翹 (raising/tilting foot)
+            *   八累脚 (crossing ankles/feet on top of each other)
+            *   九累髀 (crossing thighs / legs crossed at thighs)
+            *   Trans: "一是雙腳前後錯動不齊，二是兩腳過度張開，三是搖動身體肢腳，四是豎起單膝或雙膝，五是兩腿胡亂交疊交叉，六是垂下三衣蓋住雙足，七是翹起腳尖或腳掌，八是兩足重疊堆放，九是大腿疊壓在大腿上；凡有此等坐相者，皆犯突吉羅罪。" -> Pretty good.
+    *   "二明出眾生食。或在食前，唱等得已出之，或在食後。經論無文，隨情安置。"
+        *   Wait! Look at the original text: "二明出眾生食。"
+        *   Wait, where was "一"?
+        *   In Paragraph 12, the first section was "《三千威儀》所以淨衣踞坐食者..." - wait, did the original text have "一" or was it implicitly the first point?
+        *   The original says: "二明出眾生食。"
+        *   Trans: "其次說明施出眾生食（出生）之法。" -> Good.
+    *   "《涅槃》：因曠野鬼，為受不殺戒已，告鬼言：我今當勅聲聞弟子，隨有佛法處，悉施汝食；若有住處不能施者，即是天魔徒黨，非我弟子。《四分》：僧伽藍中，立鬼神廟屋。傳云：中國僧寺，設鬼廟、伽藍神廟、賓頭盧廟，每至二食，皆僧家送三處食，餘比丘不出。《愛道尼經》：令出如指甲大。

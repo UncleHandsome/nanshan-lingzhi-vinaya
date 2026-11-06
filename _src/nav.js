@@ -81,7 +81,15 @@
     }, { rootMargin: '-8% 0px -82% 0px' });
     heads.forEach(function (h) { io.observe(h); });
   }
+
+  // 目錄點擊後：等 nav 重建完再回到錨點，避免「重刷後跑掉」
+  function restoreHash() {
+    if (!location.hash) return;
+    var el = document.getElementById(location.hash.slice(1));
+    if (el) setTimeout(function () { el.scrollIntoView({ block: 'start' }); }, 60);
+  }
   spy();
+  restoreHash();
   }).catch(function () {
     box.innerHTML = '<a href="' + root + 'index.html">目錄</a>';
   });

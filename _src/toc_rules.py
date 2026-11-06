@@ -17,7 +17,7 @@ RULES = {
     # 戒疏：戒名（【律】…戒。）
     'jieshu': dict(
         kind='search',
-        pat=re.compile(r'^【律】[^，。]{0,24}戒。?$'),
+        pat=re.compile(r'^(?:【律】)?(?:[一二三四五六七八九十百]+、)?[\u4e00-\u9fff]{1,10}(?:戒|法|犍度)。?$'),
         label='strip', min_len=5),
     # 資持記：釋X篇
     'zhichi': dict(
@@ -33,7 +33,8 @@ RULES = {
     'yichao': dict(
         kind='line',
         pat=re.compile(r'^[\u4e00-\u9fff]{2,8}$'),
-        label='title', min_len=0),
+        label='title', min_len=0,
+        deny=re.compile(r'^(將講|唐法寶|附|以上)')),
 }
 
 DROP_HEAD = re.compile(r'^【[律註疏記]】\s*')
@@ -44,6 +45,13 @@ def match(book, text):
     if not r:
         return False
     t = text.strip()
+    if r.get('deny') is not None and r['deny'].search(t):
+        return False
+    if book == 'jieshu':
+        if t.startswith('【序】'):
+            return True
+        if t.startswith('【條目】'):
+            return True
     if not r['pat'].search(t):
         return False
     if r['min_len']:
@@ -59,6 +67,13 @@ def label(book, text):
     if r.get('label') == 'match':
         m = r['pat'].search(t)
         return m.group(0) if m else t
+    if book == 'jieshu':
+        if t.startswith('【序】'):
+            body = re.sub(r'^【序】\s*', '', t)
+            return '序文：' + body[:10] + ('…' if len(body) > 10 else '')
+        if t.startswith('【條目】'):
+            m = re.search(r'○([\u4e00-\u9fff]{2,8}法)', t)
+            return m.group(1) if m else '戒目'
     if r.get('label') == 'strip':
         t2 = DROP_HEAD.sub('', t).rstrip('。')
         return t2[:22] + ('…' if len(t2) > 22 else '')

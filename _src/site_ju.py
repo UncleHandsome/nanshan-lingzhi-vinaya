@@ -125,35 +125,27 @@ except Exception:
     _AI_YS = {}
 
 
+TITLE_RE = re.compile(r'^\s*No\.?\s*\d')
+
+
 def pairs_chunks(src_dir, tr_tag, ju_dir):
-    """業疏：逐塊用 TXT_句讀/<書>/<分塊>.txt。"""
-    res = []
-    cur_vol = None
-    entries = []
-    for key, sp, tt in load_chunks(src_dir, tr_tag):
-        n = min(len(sp), len(tt))
+    """業疏：句讀原文 ＋ 譯文（譯文開頭多 2 段說明，且原文有標題行無譯）"""
+    chunks = load_chunks(src_dir, tr_tag)
+    tt_all = []
+    for key, sp, tt in chunks:
+        tt_all += tt
+    res, entries, cur_vol = [], [], None
+    core = 0          # 已處理的非標題原文段數
+    for key, sp, tt in chunks:
         p = os.path.join(B, 'TXT_句讀', ju_dir, key + '.txt')
         o_lines = None
         if os.path.exists(p):
             ju = [x.strip() for x in io.open(p, encoding='utf-8').read().split('\n') if x.strip()]
-            # 去掉檔頭 5 行（若有標題列）
-            if ju and (ju[0].startswith('四分律') or ju[0].startswith('《')):
-                ju = ju[5:] if len(ju) > 5 else ju
-            try:
-                _am = _AI_YS.get(key)
-            except NameError:
-                _am = None
-            if _am:
-                buck = [[] for _ in sp]
-                for i, c in enumerate(_am):
-                    if i >= len(ju):
-                        break
-                    if 0 <= c < len(buck):
-                        buck[c].append(ju[i])
-                o_lines = ['　'.join(b) if b else sp[i] for i, b in enumerate(buck)]
-            if not _am:
+            while ju and (len(ju[0]) < 8 or ju[0].startswith(('=', '.', '四分律', '（', '南山三大部', '底本'))):
+                ju = ju[1:]
+            if ju:
                 hs, hd = len(han(''.join(ju))), len(han(''.join(sp)))
-                if hd and abs(hs - hd) / hd < 0.15:
+                if hd and abs(hs - hd) / hd < 0.30:
                     buckets, _ = assign(ju, sp)
                     o_lines = ['　'.join(b) if b else sp[i] for i, b in enumerate(buckets)]
         if o_lines is None:
@@ -162,10 +154,14 @@ def pairs_chunks(src_dir, tr_tag, ju_dir):
         if vol != cur_vol:
             if entries:
                 res.append((cur_vol, entries))
-            entries = []
-            cur_vol = vol
-        for i in range(n):
-            entries.append((o_lines[i], tt[i]))
+            entries, cur_vol = [], vol
+        for i in range(len(sp)):
+            if TITLE_RE.match(sp[i]):
+                continue          # 標題行沒有譯文，不顯示
+            g = 2 + core
+            t = tt_all[g] if g < len(tt_all) else ''
+            entries.append((o_lines[i], t))
+            core += 1
     if entries:
         res.append((cur_vol, entries))
     return res

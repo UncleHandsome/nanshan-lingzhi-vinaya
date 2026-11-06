@@ -12,13 +12,13 @@ NAME2IDX = {}
 for i, s in enumerate(SECS):
     NAME2IDX.setdefault(s['name'], i)
 
-DIRS = ['align_ai', 'align_ai2', 'align_last3', 'align_ys']
+DIRS = ['align_ai', 'align_fix', 'align_last3']
 
 
 def main():
     maps = {}
     by_name = {}
-    for d in DIRS[:3]:
+    for d in DIRS:
         p = os.path.join(B, 'AI語譯', '_work', d)
         if not os.path.isdir(p):
             continue

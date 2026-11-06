@@ -48,7 +48,7 @@ MARK = {
     83: ['指結法中'],
     85: ['解中'],
     86: ['次有場中'],
-    88: ['今準相翻', '雜相中', '三法起中'],
+    88: ['雜相中', '三法起中'],
     94: ['第四明非法中'],
     95: ['棄捨失中'],
     98: ['不失中'],
@@ -105,9 +105,10 @@ PLAN = {
     47: [(84, 0), (85, 0)],
     48: [(85, 1), (86, 0)],
     49: [(86, 1), (87, 0), (88, 0)],
-    50: [(88, 1)],
-    51: [(88, 2)],
-    52: [(88, 3), (89, 0), (90, 0), (91, 0), (92, 0), (93, 0), (94, 0)],
+    50: [],
+
+    51: [(88, 1)],
+    52: [(88, 2), (89, 0), (90, 0), (91, 0), (92, 0), (93, 0), (94, 0)],
     53: [(94, 1), (95, 0)],
     54: [(95, 1), (96, 0), (97, 0), (98, 0)],
     55: [(98, 1), (99, 0), (100, 0)],
@@ -189,7 +190,7 @@ def _align(ls, lt):
     return out
 
 
-def split_tr(tr, src_parts):
+def split_tr(tr, src_parts, n=0):
     """依原文段落切點，把白話切到同樣段數（句對句單調對齊）"""
     src_s, tr_s = [], _sents(tr)
     for part in src_parts:
@@ -206,6 +207,20 @@ def split_tr(tr, src_parts):
     cuts = sorted(set(max(1, min(j, len(tr_s))) for j in cuts))
     while len(cuts) < len(src_parts) - 1:
         cuts.append(min(len(tr_s) - 1, (cuts[-1] if cuts else 0) + 1))
+    SHIFT = {10: -1, 29: -1, 52: +1, 53: +1}
+    OVR = {58: ['比丘尼界', '僧界', '不接受與欲']}
+    if n in OVR:
+        idxs = []
+        for key in OVR[n]:
+            for k, sent in enumerate(tr_s):
+                if key in sent:
+                    idxs.append(k)
+                    break
+        if len(idxs) == len(OVR[n]):
+            cuts = idxs
+    else:
+        _sh = SHIFT.get(n, 0)
+        cuts = [max(1, min(c + _sh, len(tr_s) - 1)) for c in cuts]
     cuts = sorted(set(cuts))[:len(src_parts) - 1]
     parts, prev = [], 0
     for c in cuts:
@@ -228,7 +243,7 @@ for n in range(1, len(zi) + 1):
             miss.append(n)
             pieces[n] = [(o, t)]
             continue
-        ts = split_tr(t, ps)
+        ts = split_tr(t, ps, n)
         pieces[n] = list(zip(ps, ts))
     else:
         pieces[n] = [(o, t)]

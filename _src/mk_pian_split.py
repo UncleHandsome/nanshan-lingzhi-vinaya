@@ -283,47 +283,41 @@ def build(p, splits):
 
     if p == 1:
         sp0 = [x.strip() for x in io.open(os.path.join(B, 'TXT_分卷', '01_行事鈔', '00_卷首.txt'), encoding='utf-8').read().split('\n')[5:] if x.strip()]
-        tp0 = os.path.join(B, 'AI語譯', 'out', '01_行事鈔', '00_卷首.txt')
-        tt0 = [x.strip() for x in re.split(r'\r?\n\r?\n', io.open(tp0, encoding='utf-8').read()) if x.strip()]
-        q = doc.add_paragraph(); q.paragraph_format.space_before = Pt(12)
-        sr(q.add_run('〔鈔首〕序與十門'), 12, bold=True, color=RGBColor(0x6b, 0x5b, 0x4a))
-        _fl = list(front)
-        _tot = sum(max(1, len(re.findall(r'[\u4e00-\u9fff]', t))) for t in sp0) or 1
-        _acc = 0
-        _st = 0
+        tt0 = [x.strip() for x in re.split(r'\r?\n\r?\n', io.open(os.path.join(B, 'AI語譯', 'out', '01_行事鈔', '00_卷首.txt'), encoding='utf-8').read()) if x.strip()]
+        bz = []
+        bfp = os.path.join(B, 'AI語譯', '_work', 'pian_bounds', 'bounds_卷首.json')
+        if os.path.exists(bfp):
+            dd = json.load(io.open(bfp, encoding='utf-8-sig'))
+            bz = sorted((int(x['c']), int(x['n'])) for x in dd.get('bounds', []))
+        starts = {c: n for c, n in bz}
+        if not starts:
+            for k in front:
+                emit_ji_tagged('【記%03d】' % (k + 1), clean(zi[k][0]), zi[k][1])
+            front = []
+            starts = None
+        cvals = [c for c, n in bz]
+        ptr = bz[0][1] if bz else 1
         for i, ct in enumerate(sp0):
+            if starts is None:
+                break
+            cno = i + 1
             qq = doc.add_paragraph(); qf = qq.paragraph_format
             qf.space_before = Pt(6); qf.space_after = Pt(1); qf.line_spacing = 1.2; qf.keep_with_next = True
-            sr(qq.add_run('【鈔首%02d】' % (i + 1) + ct), 10, color=RGBColor(0x6b, 0x5b, 0x4a)); shade(qq, 'F4EFE2')
+            sr(qq.add_run('【鈔首%02d】' % cno + ct), 10, color=RGBColor(0x6b, 0x5b, 0x4a)); shade(qq, 'F4EFE2')
             if i < len(tt0):
                 a2 = doc.add_paragraph(); a2.paragraph_format.first_line_indent = Pt(20)
                 a2.paragraph_format.line_spacing = 1.3; a2.paragraph_format.space_after = Pt(2)
                 sr(a2.add_run(clean_tr(tt0[i])), 10.5)
-            _acc += max(1, len(re.findall(r'[\u4e00-\u9fff]', ct)))
-            _nx = int(round(len(_fl) * _acc / _tot)) if i < len(sp0) - 1 else len(_fl)
-            for k in _fl[_st:_nx]:
+            if cno in starts:
+                ptr = starts[cno]
+            # 下一個 c 的起點
+            nxts = [starts[x] for x in cvals if x > cno]
+            nxt = min(nxts) if nxts else len(zi) + 1
+            nxt = max(nxt, ptr)
+            for k in range(ptr - 1, min(nxt - 1, len(zi))):
                 emit_ji_tagged('【記%03d】' % (k + 1), clean(zi[k][0]), zi[k][1])
-            _st = _nx
+            ptr = nxt
         front = []
-
-    if p == 1:
-        MEN = [
-            '第一門：序教興意', '第二門：教網綱要意', '第三門：對事約教制處意',
-            '第四門：用諸部文意', '第五門：文義決通意', '第六門：教所詮意',
-            '第七門：道俗七部立教通局意', '第八門：僧尼二部行事通塞意',
-            '第九門：下三眾隨行異同意', '第十門：引用正文去濫傳真科酌意',
-        ]
-        q = doc.add_paragraph(); q.paragraph_format.space_before = Pt(8)
-        sr(q.add_run('【鈔首・十門】'), 11, bold=True, color=RGBColor(0x6b, 0x5b, 0x4a))
-        intro = ('然一部之文，義張三位：上卷則攝於眾務，成用有儀；中卷則遵於戒體，持犯立懺；'
-                 '下卷則隨機要行，託事而起。今取物類相從者，以標名首；更以十門例括：')
-        q2 = doc.add_paragraph(); q2.paragraph_format.first_line_indent = Pt(20)
-        q2.paragraph_format.line_spacing = 1.3; q2.paragraph_format.space_after = Pt(2)
-        sr(q2.add_run(intro), 10.5)
-        for i, m in enumerate(MEN):
-            qm = doc.add_paragraph(); qm.paragraph_format.left_indent = Pt(16)
-            qm.paragraph_format.space_before = Pt(1); qm.paragraph_format.space_after = Pt(1)
-            sr(qm.add_run(m), 10.5)
 
     if front:
         q = doc.add_paragraph(); q.paragraph_format.space_before = Pt(10)

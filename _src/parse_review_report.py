@@ -15,7 +15,7 @@ BOOKS = ['01_行事鈔', '02_戒疏', '03_業疏', '資持記', '04_比丘尼鈔
 SRCDIR = {'01_行事鈔': '01_行事鈔', '02_戒疏': '02_戒疏', '03_業疏': '03_業疏',
           '資持記': '資持記_細分', '04_比丘尼鈔': '04_比丘尼鈔', '05_拾毗尼義鈔': '05_拾毗尼義鈔'}
 HEAD = re.compile(r'^#{2,4}\s*(.*?)\s*段\s*(\d{1,4})\s*[｜|]\s*(P[012])\s*[｜|]\s*(.*)$')
-CHUNK = re.compile(r'((?:[0-9]{2}[a-z]?)_[^\s/｜|]+)')
+CHUNK = re.compile(r'((?:[0-9]{2}[a-z]?)_[^\s/｜|`（(]+)')
 FIELD = re.compile(r'^[-*]\s*\**\s*(原文|譯文|原譯|問題|依據|自證|建議|信心)\s*\**\s*[：:]\s*(.*)$')
 
 
@@ -36,9 +36,8 @@ def parse(path):
                 items.append(cur)
             raw = m.group(1).strip().rstrip('/')
             book = raw.split('/')[0] if '/' in raw else None
-            chunk = raw.split('/')[-1].strip()
-            if '段' in chunk:
-                chunk = chunk.split('段')[0].strip()
+            cm = CHUNK.search(raw)
+            chunk = cm.group(1) if cm else ''
             if book not in BOOKS:
                 book = None
             if not chunk:
@@ -46,6 +45,8 @@ def parse(path):
                 book = book or last_book
             if not chunk:
                 chunk = '?'
+            if chunk != '?':
+                last_chunk, last_book = chunk, book
             cur = dict(book=book, chunk=chunk, seg=int(m.group(2)), level=m.group(3),
                        cls=m.group(4).strip(), orig='', tr='', problem='', evid='',
                        suggestion='', conf='')
@@ -90,9 +91,12 @@ def main():
     out = []
     for it in items:
         key = norm(it['orig'])[:14]
-        cands = [it['book']] if it['book'] else [
-            b for b in BOOKS
-            if os.path.exists(os.path.join(B, 'TXT_分卷', SRCDIR[b], it['chunk'] + '.txt'))]
+        cands = [it['book']] if it['book'] else []
+        have = [b for b in BOOKS
+                if os.path.exists(os.path.join(B, 'TXT_分卷', SRCDIR[b], it['chunk'] + '.txt'))]
+        if it['book'] and it['book'] not in have:
+            cands = have          # 標錯書名：改以實際擁有此 chunk 的書為準
+        cands = cands + [b for b in have if b not in cands]
         if not cands:
             it['book'] = '01_行事鈔'
             out.append(dict(it, status='nofile', current=''))

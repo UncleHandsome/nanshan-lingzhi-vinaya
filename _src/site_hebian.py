@@ -3,6 +3,8 @@
 import io, os, re, glob, html, json
 from docx import Document
 
+import site_assets as SA
+
 D = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 SITE = os.path.join(D, 'docs')
 OUT = os.path.join(SITE, 'hebian')
@@ -54,32 +56,6 @@ def book_toc(out):
     return t
 
 
-TOC = {out: book_toc(out) for out, _ in BOOKS}
-
-
-def nav(cur_vol, toc, prev, nxt):
-    parts = ['<nav><h1><a href="../index.html">南山律典・白話對照</a></h1>']
-    parts.append('<div class="grp"><b>全書</b><a href="../index.html">目錄</a>'
-                 '<a href="../search.html">全文搜尋</a><a href="../appendix.html">附錄</a>'
-                 '<a href="../untranslated.html">未譯清單</a></div>')
-    if prev or nxt:
-        parts.append('<div class="grp"><b>分卷</b>')
-        if prev:
-            parts.append('<a href="' + prev + '.html">← ' + html.escape(prev) + '</a>')
-        if nxt:
-            parts.append('<a href="' + nxt + '.html">' + html.escape(nxt) + ' →</a>')
-        parts.append('</div>')
-    parts.append('<div class="grp"><b>書目</b><div class="tree" id="navtree" data-root="../">'
-                 '<noscript><a href="../index.html">目錄</a></noscript></div></div></nav>')
-    return ''.join(parts)
-
-
-TPL = '''<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>%s</title>
-<link rel="stylesheet" href="../style.css?v=9"><script defer src="../nav.js?v=5"></script></head><body><div class="wrap">
-%s<main><h1>%s</h1><p class="byline">鈔文（淺褐）與記文（淺藍）逐段並列，每段附白話</p>
-%s<div class="pager">%s</div></main></div></body></html>'''
-
 ENTRIES = []
 for vi, vol in enumerate(HB):
     src = os.path.join(D, '白話', '行事鈔資持記句級合編_%s.docx' % vol)
@@ -118,7 +94,13 @@ for vi, vol in enumerate(HB):
     if nxt:
         pager += '<a href="%s.html">%s →</a>' % (nxt, html.escape(nxt))
     ttl = '四分律行事鈔資持記　句級合編　' + vol
-    out = TPL % (html.escape(ttl), nav(vol, toc, prev, nxt), html.escape(ttl), '\n'.join(body), pager)
+    page_body = ('<h1>' + html.escape(ttl) + '</h1>'
+                 '<p class="byline">鈔文（淺褐）與記文（淺藍）逐段並列，每段附白話</p>'
+                 + '\n'.join(body) + '<div class="pager">' + pager + '</div>')
+    out = SA.page(ttl, page_body, prefix='../',
+                  prev_url=(prev + '.html' if prev else None),
+                  next_url=(nxt + '.html' if nxt else None),
+                  prev_label=prev, next_label=nxt, current_label=vol)
     io.open(os.path.join(OUT, vol + '.html'), 'w', encoding='utf-8').write(out)
     print(vol, '篇', len(toc), '段', len(body))
 

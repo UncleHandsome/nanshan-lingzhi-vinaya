@@ -1,6 +1,8 @@
 
 # -*- coding: utf-8 -*-
-import io, os, re, json, html
+import io, os, re, json, html, shutil
+
+import site_assets as SA
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 SITE = os.path.join(B, 'docs')
@@ -41,55 +43,6 @@ def vol_key(j):
     m = re.match(r'卷[一二三四五六七八九十]+', j)
     return m.group(0) if m else j
 
-FOOTER = ('<footer style="margin:3.5rem 0 0;padding-top:1.2rem;border-top:1px solid var(--line);'          'color:var(--fg2);font-size:12.5px;line-height:1.7">'
-          '原文：CBETA 電子佛典（大正藏／卍續藏）。白話語譯：本站自製。'
-          '兩者均採 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hant" rel="license">CC BY-NC-SA 4.0</a> 授權：'
-          '姓名標示－非商業性－相同方式分享。轉載請保留出處，且不得作商業使用。'
-          '<br><a href="ROOTLICENSE">授權全文</a></footer>')
-
-EXTRA_CSS = """
-/* 目錄頁：書籍卡片 */
-main .card{border:1px solid var(--line);border-radius:8px;padding:1.1rem 1.2rem;margin:1.2rem 0 1.6rem;background:#fff}
-main .card h2{margin:0 0 .2rem;border:0;padding:0;font-size:1.2rem}
-main .card .byline{margin:0 0 .9rem;color:var(--fg2);font-size:13px}
-main .card .grp{display:flex;flex-wrap:wrap;gap:.5rem}
-main .card .grp a{display:inline-block;padding:.32rem .8rem;border:1px solid var(--line);border-radius:999px;
-  text-decoration:none;color:var(--accent);font-size:14px;background:#faf8f2}
-main .card .grp a:hover{background:#efeade;border-color:var(--accent2)}
-main .intro{color:var(--fg2);font-size:14px;margin:0 0 1.4rem}
-
-nav details.navj>summary{display:block;padding:.32rem 1rem;cursor:pointer;color:var(--fg);font-size:13px;font-weight:600}
-nav details.navj>summary::-webkit-details-marker{display:none}
-nav details.navj>summary:before{content:"▸ ";color:var(--accent2);font-size:10px}
-nav details.navj[open]>summary:before{content:"▾ "}
-nav a.book{padding-left:1rem;font-weight:600;color:var(--fg);font-size:13.5px}
-nav .bklist .bk{margin:.15rem 0 .45rem}
-nav .bklist details.navj{margin:.1rem 0}
-nav .bklist details.navj>summary{display:block;padding:.34rem 1rem .18rem;cursor:pointer;color:var(--fg);font-size:13px;font-weight:600;line-height:1.45;list-style:none}
-nav .bklist details.navj>summary::-webkit-details-marker{display:none}
-nav .bklist details.navj>summary:before{content:"▸ ";color:var(--accent2);font-size:10px}
-nav .bklist details.navj[open]>summary:before{content:"▾ "}
-nav .bklist details.navj>summary.cur{color:var(--accent)}
-nav .bklist details.navj ul{list-style:none;margin:0;padding:0 1rem .25rem 1.75rem}
-nav .bklist details.navj li a{display:block;padding:.12rem 0;color:var(--fg2);font-size:13px;line-height:1.5;text-decoration:none}
-nav .bklist details.navj li a:hover{color:var(--accent);text-decoration:underline}
-nav .bklist details.navj li a.cur{color:var(--accent);font-weight:600}
-nav .toclist a{display:block;padding:.12rem 1rem;color:var(--fg2);font-size:13px;line-height:1.5;text-decoration:none}
-nav .toclist a:hover{color:var(--accent);text-decoration:underline}
-main h1{margin-bottom:.4rem}
-.byline{color:var(--fg2);font-size:13px;margin:0 0 1.4rem}
-.pair{margin:1.15rem 0;padding-bottom:.9rem;border-bottom:1px dotted var(--line)}
-.pair .o{background:#f4efe2;border-left:3px solid #cdbc9c;padding:.45rem .8rem;color:#5d4c3a;
-  font-size:15.5px;line-height:1.75;border-radius:0 4px 4px 0}
-.pair .t{margin:.45rem 0 0;font-size:17px;line-height:1.95;text-align:justify}
-.pager{display:flex;justify-content:space-between;margin:2.5rem 0 0;font-size:14px}
-mark{background:#ffe9a8;padding:0 .08em;border-radius:2px}
-#hits .hit{border-bottom:1px solid var(--line);padding:.8rem 0}
-#hits .meta{color:var(--fg2);font-size:12.5px;margin-bottom:.2rem}
-#hits .o{color:#5d4c3a;font-size:14px}
-#hits .t{font-size:15.5px}
-@media(max-width:820px){nav{display:none}main{padding:1.4rem}}
-"""
 
 import toc_rules as TR
 
@@ -143,44 +96,28 @@ def read_hb_toc():
 HB_TOC = read_hb_toc()
 
 
-def nav_html(cur_book=None, prefix='', toc=None, prev=None, nxt=None):
-    parts = ['<nav><h1><a href="INDEX">南山律典・白話對照</a></h1>']
-    parts.append('<div class="grp"><b>全書</b><a href="INDEX">目錄</a><a href="SEARCH">全文搜尋</a>'
-                 '<a href="APPENDIX">附錄</a><a href="UNTRANSLATED">未譯清單</a></div>')
-    if (prev or nxt) and cur_book:
-        parts.append('<div class="grp"><b>分卷</b>')
-        if prev:
-            parts.append('<a href="' + prefix + cur_book['out'] + '/' + prev + '.html">← ' + html.escape(prev) + '</a>')
-        if nxt:
-            parts.append('<a href="' + prefix + cur_book['out'] + '/' + nxt + '.html">' + html.escape(nxt) + ' →</a>')
-        parts.append('</div>')
-    parts.append('<div class="grp"><b>書目</b><div class="tree" id="navtree" data-root="' + prefix + '">'
-                 '<noscript><a href="' + prefix + 'index.html">目錄</a></noscript></div></div></nav>')
-    return ''.join(parts)
 
 
-def page(title, body, cur_book=None, prefix='', toc=None, prev=None, nxt=None):
-    nav = (nav_html(cur_book, prefix, toc, prev, nxt)
-           .replace('INDEX', prefix + 'index.html')
-           .replace('SEARCH', prefix + 'search.html')
-           .replace('APPENDIX', prefix + 'appendix.html')
-           .replace('UNTRANSLATED', prefix + 'untranslated.html'))
-    css = prefix + 'style.css?v=10'
-    return ('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">'
-            '<meta name="viewport" content="width=device-width,initial-scale=1">'
-            '<title>' + html.escape(title) + '｜南山律典・白話對照</title>'
-            '<meta name="DC.rights" content="CC BY-NC-SA 4.0">'
-            '<meta name="citation_author" content="UncleHandsome">'
-            '<link rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">'
-            '<link rel="stylesheet" href="' + css + '"><script defer src="' + prefix + 'nav.js?v=6"></script></head><body><div class="wrap">'
-            + nav + '<main>' + body + FOOTER.replace('ROOT', prefix) + '</main></div></body></html>')
+def page(title, body, cur_book=None, prefix='', toc=None, prev=None, nxt=None,
+         extra_scripts=None, extra_head=''):
+    prev_url = next_url = None
+    prev_label = next_label = None
+    if cur_book and prev:
+        prev_url = prefix + cur_book['out'] + '/' + prev + '.html'
+        prev_label = prev
+    if cur_book and nxt:
+        next_url = prefix + cur_book['out'] + '/' + nxt + '.html'
+        next_label = nxt
+    current_label = cur_book.get('_curvol') if cur_book else None
+    return SA.page(title, body, prefix=prefix, prev_url=prev_url, next_url=next_url,
+                   prev_label=prev_label, next_label=next_label,
+                   current_label=current_label, extra_scripts=extra_scripts,
+                   extra_head=extra_head)
+
 
 def build():
     os.makedirs(SITE, exist_ok=True)
-    css_path = os.path.join(SITE, 'style.css')
-    base_css = io.open(css_path, encoding='utf-8').read() if os.path.exists(css_path) else ''
-    if 'details.navj>summary.cur' not in base_css:
-        io.open(css_path, 'w', encoding='utf-8').write(base_css + '\n' + EXTRA_CSS)
+    shutil.copyfile(os.path.join(B, '_src', 'site.css'), os.path.join(SITE, 'style.css'))
     all_books = []
     for bk in BOOKS:
         pairs = read_pairs(bk['dir'], bk.get('srcdir'), bk.get('ju'))
@@ -334,6 +271,13 @@ def build():
     os.makedirs(os.path.join(SITE, 'search'), exist_ok=True)
     for out, data in search_idx.items():
         io.open(os.path.join(SITE, 'search', out + '.js'), 'w', encoding='utf-8').write('window.SIDX=window.SIDX||{};window.SIDX["' + out + '"]=' + json.dumps(data, ensure_ascii=False) + ';')
+    # 搜尋 manifest：書名／索引檔由建置端統一產生，search.js 不再硬編碼
+    search_books = [dict(id=bk['out'], title=bk['title'], file='search/' + bk['out'] + '.js') for bk in all_books]
+    if os.path.exists(os.path.join(SITE, 'search', 'hebian.js')):
+        search_books.append(dict(id='hebian', title='行事鈔資持記・句級合編', file='search/hebian.js'))
+    io.open(os.path.join(SITE, 'search', 'manifest.js'), 'w', encoding='utf-8').write(
+        'window.SEARCH_BOOKS=' + json.dumps(search_books, ensure_ascii=False) + ';')
+    shutil.copyfile(os.path.join(B, '_src', 'search.js'), os.path.join(SITE, 'search.js'))
     # 目錄
     cards = []
     for bk in all_books:
@@ -342,17 +286,28 @@ def build():
                      + '<p class="byline">' + html.escape(bk['by']) + '　·　' + str(len(bk['_groups'])) + ' 卷</p>'
                      + '<div class="grp">' + links + '</div></section>')
     idx_body = ('<h1>南山律典・白話對照</h1>'
+                '<form class="homefind" action="search.html" method="get" role="search">'
+                '<input type="search" name="q" placeholder="搜尋全站：羯磨、波羅夷、安居…" aria-label="全文搜尋">'
+                '<button type="submit">全文搜尋</button></form>'
+                '<p class="hint">站內全文：<code>Ctrl/⌘ K</code>；瀏覽器尋找仍用 <code>Ctrl/⌘ F</code>。</p>'
                 '<section class="card"><h2>行事鈔資持記・句級合編</h2><p class="byline">鈔文與記文逐段並列　·　12 卷</p><div class="grp"><a href="hebian/卷上之一.html">卷上之一</a><a href="hebian/卷上之二.html">卷上之二</a><a href="hebian/卷上之三.html">卷上之三</a><a href="hebian/卷上之四.html">卷上之四</a><a href="hebian/卷中之一.html">卷中之一</a><a href="hebian/卷中之二.html">卷中之二</a><a href="hebian/卷中之三.html">卷中之三</a><a href="hebian/卷中之四.html">卷中之四</a><a href="hebian/卷下之一.html">卷下之一</a><a href="hebian/卷下之二.html">卷下之二</a><a href="hebian/卷下之三.html">卷下之三</a><a href="hebian/卷下之四.html">卷下之四</a></div></section>' + '<p class="intro">道宣律師三大部與相關鈔疏的白話對照本，逐段原文與白話並列；原文採 CBETA 電子佛典（大正藏／卍續藏）。</p>' + '<p class="intro"><a href="appendix.html">附錄：名相與度量衡</a></p>'
                 + ''.join(cards) + '<p class="byline"><a href="search.html">→ 全文搜尋</a></p>')
     io.open(os.path.join(SITE, 'index.html'), 'w', encoding='utf-8').write(page('目錄', idx_body))
     # 搜尋頁
+    opts = ''.join('<option value="' + html.escape(b['id']) + '">' + html.escape(b['title']) + '</option>'
+                   for b in search_books)
     sb = ('<h1>全文搜尋</h1>'
-          '<div class="searchbox"><input id="q" type="search" placeholder="輸入關鍵字，例如：羯磨、波羅夷、安居" autocomplete="off" autofocus>'
-          '<kbd>/</kbd></div>'
-          '<p class="byline">可用 ↑↓ 選擇結果、Enter 開啟；結果依原文起始、卷名、白話加權排序。</p>'
-          '<p class="byline" id="count"></p><div id="hits"></div>'
-          '<script>' + SEARCH_JS + '</script>')
-    io.open(os.path.join(SITE, 'search.html'), 'w', encoding='utf-8').write(page('搜尋', sb))
+          '<p class="byline">站內全文：<code>Ctrl/⌘ K</code>；瀏覽器尋找仍用 <code>Ctrl/⌘ F</code>。'
+          '可用 ↑↓ 選擇結果、Enter 開啟。</p>'
+          '<div class="searchbar"><input id="q" type="search" placeholder="輸入關鍵字，例如：羯磨、波羅夷、安居" autocomplete="off" autofocus aria-label="全文搜尋">'
+          '<select id="bookfilter" aria-label="限定書籍"><option value="">全部書籍</option>' + opts + '</select></div>'
+          '<p class="byline" id="count"></p>'
+          '<p id="searchstatus" class="sr-only" role="status" aria-live="polite"></p>'
+          '<div id="searcherror" hidden></div>'
+          '<div id="quickhits" hidden></div>'
+          '<div id="hits"></div>')
+    io.open(os.path.join(SITE, 'search.html'), 'w', encoding='utf-8').write(
+        page('搜尋', sb, extra_scripts=['search/manifest.js', 'search.js']))
     # 側欄資料
     nav_books = []
     for bk in all_books:
@@ -374,9 +329,22 @@ def build():
         print('hb nav', _e)
     io.open(os.path.join(SITE, 'nav.json'), 'w', encoding='utf-8').write(
         json.dumps(dict(books=nav_books), ensure_ascii=False))
-    import shutil as _sh
-    _sh.copyfile(os.path.join(B, '_src', 'nav.js'), os.path.join(SITE, 'nav.js'))
+    shutil.copyfile(os.path.join(B, '_src', 'nav.js'), os.path.join(SITE, 'nav.js'))
     print('nav.json', len(nav_books), 'books')
+
+    # 附錄目前是唯一未由主生成器產生的靜態頁：只重包頁殼，正文原樣保留
+    ap = os.path.join(SITE, 'appendix.html')
+    if os.path.exists(ap):
+        raw = io.open(ap, encoding='utf-8').read()
+        m = re.search(r'<main\b[^>]*>(.*)</main>', raw, re.S)
+        if m:
+            body = re.sub(r'<footer\b.*?</footer>', '', m.group(1), flags=re.S)
+            styles = ''.join(re.findall(r'<style\b[^>]*>.*?</style>', raw, re.S))
+            styles = re.sub(r'#f4efe2', 'var(--surface-3)', styles, flags=re.I)
+            io.open(ap, 'w', encoding='utf-8').write(
+                SA.page('附錄：名相、音注與度量衡', body, prefix='', extra_head=styles))
+            print('appendix shell rebuilt')
+
 
     # 未譯段落清單頁（目前 0 段）
     try:
@@ -396,76 +364,5 @@ def build():
         page('未譯段落清單', ''.join(ub)))
     print('untranslated page, segs', nseg)
     print('books', len(all_books), 'vols', sum(len(b['_groups']) for b in all_books))
-
-SEARCH_JS = """
-var BOOKS=[['xingshichao','四分律刪繁補闕行事鈔'],['yeshu','四分律刪補隨機羯磨疏'],['jieshu','四分律含注戒本疏'],['zhichi','四分律行事鈔資持記'],['nicao','四分比丘尼鈔'],['yichao','四分律拾毗尼義鈔'],['hebian','行事鈔資持記・句級合編']];
-var loaded={}, ACTIVE=-1;
-function loadBook(id){ if(loaded[id]) return Promise.resolve(loaded[id]);
-  return new Promise(function(res){ var s=document.createElement('script'); s.src='search/'+id+'.js';
-    s.onload=function(){ loaded[id]=window.SIDX[id]; res(loaded[id]); }; s.onerror=function(){ res({entries:[]}); }; document.head.appendChild(s); }); }
-function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
-function escq(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
-function hl(s,q){ if(!q) return esc(s); var re=new RegExp('('+escq(q)+')','gi');
-  return esc(s).replace(re,'<mark>$1</mark>'); }
-function snip(s,q,n){ if(!q) return esc(s.slice(0,n));
-  var i=s.toLowerCase().indexOf(q.toLowerCase()); if(i<0) return esc(s.slice(0,n));
-  var a=Math.max(0,i-30), b=Math.min(s.length,i+q.length+70);
-  return (a>0?'…':'')+hl(s.slice(a,b),q)+(b<s.length?'…':''); }
-function score(e,q){ var s=0; if(e.o.indexOf(q)===0) s+=6; if(e.o.indexOf(q)>=0) s+=3;
-  if(e.t.indexOf(q)>=0) s+=2; if((e.v||'').indexOf(q)>=0) s+=4; return s; }
-async function run(q){
-  var c=document.getElementById('count'), h=document.getElementById('hits');
-  if(!q){ c.textContent=''; h.innerHTML=''; return; }
-  c.textContent='搜尋中…'; var t0=Date.now(); var out=[];
-  for(var i=0;i<BOOKS.length;i++){
-    var b=await loadBook(BOOKS[i][0]); var es=(b&&b.entries)||[];
-    for(var j=0;j<es.length;j++){ var e=es[j];
-      if(e.o.indexOf(q)>=0||e.t.indexOf(q)>=0){
-        out.push({book:BOOKS[i][1],bid:BOOKS[i][0],v:e.v,o:e.o,t:e.t,i:e.i||'',sc:score(e,q)});
-      }
-    }
-  }
-  out.sort(function(a,b){ return b.sc-a.sc; });
-  var total=out.length; out=out.slice(0,300);
-  c.textContent = total? ('找到 '+total+' 筆'+(total>300?'（顯示前 300 筆）':'')+'　·　'+(Date.now()-t0)+' ms') : '沒有結果';
-  if(!total){
-    h.innerHTML='<div class="empty">查無「'+esc(q)+'」。可試：<a href="?q=羯磨">羯磨</a>、<a href="?q=波羅夷">波羅夷</a>、<a href="?q=安居">安居</a>，或較短的關鍵字。</div>';
-    return;
-  }
-  var parts=[], lastBook='';
-  for(var k=0;k<out.length;k++){ var x=out[k];
-    if(x.book!==lastBook){ parts.push('<h3 class="hitbook">'+esc(x.book)+'</h3>'); lastBook=x.book; }
-    parts.push('<div class="hit" data-idx="'+k+'"><div class="meta">'+esc(x.v)
-      +'　<a href="'+x.bid+'/'+x.v+'.html'+(x.i?'#'+x.i:'')+'">前往 →</a></div>'
-      +'<div class="o">'+snip(x.o,q,110)+'</div><div class="t">'+snip(x.t,q,110)+'</div></div>');
-  }
-  h.innerHTML=parts.join('');
-  ACTIVE=-1;
-}
-function setActive(i){
-  var hs=document.querySelectorAll('#hits .hit'); if(!hs.length) return;
-  if(ACTIVE>=0&&hs[ACTIVE]) hs[ACTIVE].classList.remove('active');
-  ACTIVE=(i+hs.length)%hs.length; hs[ACTIVE].classList.add('active');
-  hs[ACTIVE].scrollIntoView({block:'nearest'});
-}
-document.addEventListener('DOMContentLoaded',function(){
-  var inp=document.getElementById('q'); if(!inp) return; var t;
-  var m=(location.search.match(/[?&]q=([^&]*)/)||[]); if(m[1]){ inp.value=decodeURIComponent(m[1].replace(/\+/g,' ')); run(inp.value.trim()); }
-  inp.addEventListener('input',function(e){ clearTimeout(t); t=setTimeout(function(){
-    var q=e.target.value.trim();
-    if(history.replaceState) history.replaceState(null,'', q?('?q='+encodeURIComponent(q)):'search.html');
-    run(q); },200); });
-  inp.addEventListener('keydown',function(e){
-    if(e.key==='ArrowDown'){ e.preventDefault(); setActive(ACTIVE+1); }
-    else if(e.key==='ArrowUp'){ e.preventDefault(); setActive(ACTIVE-1); }
-    else if(e.key==='Enter'){ var a=document.querySelector('#hits .hit.active a'); if(a) location.href=a.href; }
-    else if(e.key==='Escape'){ inp.value=''; run(''); }
-  });
-  document.addEventListener('keydown',function(e){
-    if(e.target&&/input|textarea|select/i.test(e.target.tagName)) return;
-    if(e.key==='/'){ e.preventDefault(); inp.focus(); }
-  });
-});
-"""
 
 build()

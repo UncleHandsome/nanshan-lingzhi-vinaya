@@ -3,6 +3,9 @@ import os, io, json
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 need = [
     ('_src/site2.py', 'site2'),
+    ('_src/site_assets.py', 'site_assets'),
+    ('_src/site.css', 'site.css source'),
+    ('_src/search.js', 'search.js source'),
     ('_src/site_ju.py', 'site_ju'),
     ('_src/site_hebian.py', 'site_hebian'),
     ('_src/toc_rules.py', 'toc_rules'),
@@ -17,6 +20,8 @@ need = [
     ('_src/dedup_yeshu_docx.py', 'dedup_yeshu_docx'),
     ('docs/style.css', 'style.css'),
     ('docs/nav.js', 'docs/nav.js'),
+    ('docs/search.js', 'docs/search.js'),
+    ('docs/search/manifest.js', 'docs/search/manifest.js'),
     ('AI語譯/_work/hb_align.json', 'hb_align'),
     ('AI語譯/_work/hb_align_ys.json', 'hb_align_ys'),
     ('AI語譯/_work/ys_offsets_final.json', 'ys_offsets_final'),

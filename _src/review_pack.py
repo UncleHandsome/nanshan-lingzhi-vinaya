@@ -143,41 +143,42 @@ def main():
               ('尼鈔', book_items('04_比丘尼鈔', '04_比丘尼鈔')),
               ('義鈔', book_items('05_拾毗尼義鈔', '05_拾毗尼義鈔'))]
 
-    rows, buf, cur, seg = [], [], 0, 0
-    nfile = 0
+    # 先全部展開，再依大小切檔，最後配全域編號 NN-NNNN
+    flat = []
     for gname, items in groups:
         for book, ch, i, orig, trans in items:
-            block = '【段%03d】%s/%s#%d\n【原文】%s\n【譯文】%s\n\n' % (seg + 1, book, ch, i, orig, trans)
-            b = len(block)
-            if cur + b > size and buf:
-                nfile += 1
-                name = '校閱_%02d.txt' % nfile
-                head = '# 校閱材料（%s 段%d–%d）\n\n' % (gname, 1, seg)
-                io.open(os.path.join(OUT, name), 'w', encoding='utf-8').write(head + ''.join(buf))
-                rows.append((name, gname, seg, cur))
-                buf, cur, seg = [], 0, 0
-            seg += 1
-            buf.append('【段%03d】%s/%s#%d\n【原文】%s\n【譯文】%s\n\n' % (seg, book, ch, i, orig, trans))
-            cur += b
-        # 每組結束強制收檔，避免下一組的標頭裝到上一組的內容
-        if buf:
-            nfile += 1
-            name = '校閱_%02d.txt' % nfile
-            head = '# 校閱材料（%s 段%d–%d）\n\n' % (gname, 1, seg)
-            io.open(os.path.join(OUT, name), 'w', encoding='utf-8').write(head + ''.join(buf))
-            rows.append((name, gname, seg, cur))
-            buf, cur, seg = [], 0, 0
-    if buf:
-        nfile += 1
-        name = '校閱_%02d.txt' % nfile
-        head = '# 校閱材料（%s 段%d–%d）\n\n' % (gname, 1, seg)
-        io.open(os.path.join(OUT, name), 'w', encoding='utf-8').write(head + ''.join(buf))
-        rows.append((name, gname, seg, cur))
+            flat.append((gname, book, ch, i, orig, trans))
+
+    files = []
+    curf, cursz = [], 0
+    for gname, book, ch, i, orig, trans in flat:
+        est = len('【00-0000】%s/%s#%d\n【原文】%s\n【譯文】%s\n\n' % (book, ch, i, orig, trans))
+        if cursz + est > size and curf:
+            files.append(curf)
+            curf, cursz = [], 0
+        curf.append((gname, book, ch, i, orig, trans))
+        cursz += est
+    if curf:
+        files.append(curf)
+
+    rows = []
+    for n, f in enumerate(files, 1):
+        head = '# 校閱材料　第%02d檔（%s）\n' % (n, f[0][0])
+        head += '# 本檔編號一律為 %02d-NNNN，回報時整串照抄，不可自行重編。\n\n' % n
+        out = [head]
+        csz = 0
+        for k, (gname, book, ch, i, orig, trans) in enumerate(f, 1):
+            blk = '【%02d-%04d】%s/%s#%d\n【原文】%s\n【譯文】%s\n\n' % (n, k, book, ch, i, orig, trans)
+            out.append(blk)
+            csz += len(blk.encode('utf-8'))
+        name = '校閱_%02d.txt' % n
+        io.open(os.path.join(OUT, name), 'w', encoding='utf-8').write(''.join(out))
+        rows.append((name, f[0][0], len(f), csz))
 
     io.open(os.path.join(OUT, '..', 'index.tsv'), 'w', encoding='utf-8').write(
         'file\tgroup\tsegs\tbytes\n' + '\n'.join('\t'.join(map(str, r)) for r in rows) + '\n')
     print('files', len(rows), 'segs', sum(r[2] for r in rows))
-    for r in rows:
+    for r in rows[:3]:
         print(r)
 
 

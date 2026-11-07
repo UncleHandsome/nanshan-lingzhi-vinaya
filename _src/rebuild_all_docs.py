@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-"""一次重建全部成品：六部白話（對照本／全白話本）、句讀本、合編、網站。
+"""（舊版，僅供追溯）一次重建全部成品的早期腳本。
 
-用法：
+**現在請照 交接/交接_2026-11-07.md 第二節的順序重建**，本檔引用的
+build_book.py / hebian_ju.py / chk_all_counts.py 已改由新流程取代，
+直接執行會失敗。保留原因：說明 戒疏／資持記 對照本 的 build_book.py 參數。
+
+用法（歷史）：
     python _src/rebuild_all.py            # 全部重建（含 PDF）
     python _src/rebuild_all.py --no-pdf   # 只重建 docx 與網站
-
-重點：
-  * 先跑 _src/chk_all_counts.py 檢查段數，段數不合會中止。
-  * 業疏（03_業疏）目前分段與譯文未對齊，預設跳過重建（--with-yeshu 可強制）。
 """
 import os, io, re, subprocess, sys, glob, shutil
 
@@ -77,12 +77,8 @@ def main():
                             '-env:UserInstallation=file:///C:/Temp/lo_profile_rebuild',
                             '--convert-to', 'pdf', '--outdir', os.path.join(B, '白話'), d],
                            capture_output=True)
-        # 對照本／純白話歸位
-        for sub, pat in (('對照本', '*_白話對照本.pdf'), ('純白話', '*_全白話本.pdf')):
-            dst = os.path.join(B, '白話', sub)
-            os.makedirs(dst, exist_ok=True)
-            for p in glob.glob(os.path.join(B, '白話', pat)):
-                shutil.move(p, os.path.join(dst, os.path.basename(p)))
+        # 注意：PDF 一律留在 白話/，不要再搬到子資料夾（2026-11-07 曾因搬到
+        # 白話/對照本/ 而被清理程序整批移出專案，導致 26 個對照本 PDF 消失）。
 
     # 網站
     run([PY, os.path.join(B, '_src', 'site2.py')])

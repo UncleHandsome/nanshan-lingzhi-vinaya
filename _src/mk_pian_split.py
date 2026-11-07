@@ -39,15 +39,24 @@ for _p in range(2, len(SECS)):
     _m = HDR.search(_o[:160])
     if _m and 4 < _m.start() < 120:
         _head = _o[:_m.start()].strip()
+        if '四分律行事鈔資持記' in _head and ('卷下' in _head or '卷上' in _head or '卷中' in _head):
+            continue          # 卷頭題記，不搬到前篇
+        if _p == 22 and _head.endswith('昭'):
+            _head += '然'
         _ts = _s2(_t)
         _need = _h2(_head)
         _htr = ''
         for _sx in _ts:
-            if _h2(_htr) >= _need + 4:
+            if _h2(_htr) >= _need + 12:
                 break
             _htr += _sx
+        # 對齊：若 _t 開頭不是 _htr，找它在前面出現的位置
+        if _htr and not _t.startswith(_htr):
+            _pos = _t[:400].find(_htr[:12]) if len(_htr) >= 12 else -1
+            if _pos > 0:
+                _htr = _t[:_pos] + _htr
         HEADS[_p] = (_head, _htr)
-        _rest = _t[len(_htr):]
+        _rest = _t[len(_htr):] if _t.startswith(_htr) else _t
         _rest = re.sub(r'^.*?解釋[\u4e00-\u9fff]{1,8}篇(?:\([^)）]*\))?', '', _rest, count=1)
         ZI[_p - 1] = [(_o[_m.start():].strip(), _rest)] + ZI[_p - 1][1:]
 
@@ -62,6 +71,18 @@ if _pp > 0:
     _qp = _t2p.find('。', _kp) if _kp > 0 else _t2p.find('。', _pp)
     if _qp > 0:
         ZI[8] = [(_o1p, _t2p[:_qp + 1]), (_o2p, _t2p[_qp + 1:])] + ZI[8][2:]
+
+# 篇19：清掉記001 譯文殘留的篇18 尾巴
+_o19, _t19 = ZI[18][0]
+if _t19 and '鉢' in _t19[:_t19.find('。', 0) + 200]:
+    _ps = _s2(_t19)
+    _st = 0
+    for _i, _x in enumerate(_ps):
+        if '鉢' in _x:
+            _st = _i
+            break
+    if _st:
+        ZI[18] = [(_o19, ''.join(_ps[_st:]))] + ZI[18][1:]
 
 FONT = 'SimSun'; LATIN = 'Times New Roman'
 IN = os.path.join(B, 'AI語譯', '_work', 'pian_split_in')
@@ -431,6 +452,6 @@ if __name__ == '__main__':
         exist = any(probe and probe in ''.join(x.text.split()) for x in d.paragraphs)
         if exist:
             continue
-        emit_ji_to(d, '【記%03d】（續前篇）' % (len(ZI[p - 2]) + 1), head, htr)
+        emit_ji_to(d, '【記%03d】（接前文）' % (len(ZI[p - 2]) + 1), head, htr)
         d.save(fp)
         print('  已補前篇尾巴到 篇%02d' % (p - 1))

@@ -105,8 +105,8 @@ nav#sidebar {
   display: flex; align-items: flex-start; justify-content: space-between;
   gap: .5rem; padding: 0 .6rem 0 1rem;
 }
-nav h1 { font-size: 15px; margin: 0 0 1rem; letter-spacing: .06em; font-weight: 600; }
-nav h1 a { color: var(--fg); text-decoration: none; }
+nav .brand { font-size: 15px; margin: 0 0 1rem; letter-spacing: .06em; font-weight: 600; line-height: 1.5; }
+nav .brand a { color: var(--fg); text-decoration: none; }
 #navclose { display: none; }
 nav .grp { margin: .45rem 0 .75rem; }
 nav .grp > b {

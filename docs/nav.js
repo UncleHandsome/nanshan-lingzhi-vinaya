@@ -195,8 +195,8 @@
     });
     box.innerHTML = html;
     bindDetails();
-    restoreScroll();
-    focusCurrent();
+    var restored = restoreScroll();
+    focusCurrent(restored);
     spy();
     jumpToHash();
   }
@@ -212,23 +212,34 @@
   }
 
   function restoreScroll() {
-    if (!nav) return;
-    try {
-      var top = parseInt(sessionStorage.getItem(SCROLL_KEY) || '0', 10);
-      if (top > 0) nav.scrollTop = top;
-    } catch (e) {}
+    if (!nav) return false;
+    var top = 0;
+    try { top = parseInt(sessionStorage.getItem(SCROLL_KEY) || '0', 10); } catch (e) {}
     nav.addEventListener('scroll', function () {
       try { sessionStorage.setItem(SCROLL_KEY, String(nav.scrollTop)); } catch (e) {}
     }, { passive: true });
+    if (top > 0) { nav.scrollTop = top; return true; }
+    return false;
   }
 
-  function focusCurrent() {
+  // keepScroll：本次載入已還原使用者上次的位置，就不要把它拉回「所在卷」
+  function focusCurrent(keepScroll) {
     var cur = box.querySelector('summary.cur');
     if (!cur || !nav) return;
     var book = cur.closest('details.tk');
     if (book) book.open = true;
+    if (keepScroll) return;
     var top = cur.getBoundingClientRect().top - nav.getBoundingClientRect().top + nav.scrollTop - 24;
     nav.scrollTop = Math.max(0, top);
+  }
+
+  // 行動版頂欄是 fixed，錨點捲動要讓開它的高度
+  function topGap() {
+    var bar = document.querySelector('.mobilebar');
+    if (!bar) return 14;
+    var cs = window.getComputedStyle(bar);
+    if (cs.display === 'none' || cs.position !== 'fixed') return 14;
+    return bar.getBoundingClientRect().height + 12;
   }
 
   function loadTree() {
@@ -296,7 +307,7 @@
     catch (e) { id = location.hash.slice(1); }
     var el = document.getElementById(id);
     if (!el) return;
-    var top = el.getBoundingClientRect().top + window.pageYOffset - 14;
+    var top = el.getBoundingClientRect().top + window.pageYOffset - topGap();
     window.scrollTo(0, Math.max(0, top));
   }
 
@@ -357,15 +368,19 @@
   function globalKey(e) {
     if (e.key === 'Escape') {
       if (drawerOpen) { e.preventDefault(); closeDrawer(true); return; }
-      if (filter && filter.value) { e.preventDefault(); clearFilter(); filter.blur(); return; }
+      // 只在焦點確實落在側欄篩選框時才清它，避免在站內搜尋框按 Esc 誤清目錄篩選
+      if (filter && document.activeElement === filter) {
+        e.preventDefault(); clearFilter(); filter.blur(); return;
+      }
     }
-    if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    // 修飾鍵快捷鍵：焦點在輸入框裡也要生效，否則邊篩選邊按 Ctrl+K 會沒反應
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && String(e.key || '').toLowerCase() === 'k') {
       e.preventDefault();
       if (siteSearch) { siteSearch.focus(); siteSearch.select(); }
       else location.href = root + 'search.html';
       return;
     }
+    if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
     if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
       e.preventDefault();
       if (siteSearch) { siteSearch.focus(); siteSearch.select(); return; }

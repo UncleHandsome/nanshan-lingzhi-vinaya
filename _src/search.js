@@ -118,7 +118,10 @@
   function setUrl(q) {
     if (!history.replaceState) return;
     var base = location.pathname;
-    history.replaceState(null, '', q ? base + '?q=' + encodeURIComponent(q) : base);
+    // file:// 或沙箱環境呼叫 replaceState 會丟 SecurityError，不能讓它中斷搜尋
+    try {
+      history.replaceState(null, '', q ? base + '?q=' + encodeURIComponent(q) : base);
+    } catch (e) {}
   }
 
   function getQuery() {
@@ -135,8 +138,10 @@
   function quickResults(q) {
     if (!navData || !q) return [];
     var out = [], needle = norm(q);
+    var only = bookFilter ? bookFilter.value : '';
     (navData.books || []).forEach(function (book) {
       if (out.length >= 8) return;
+      if (only && book.out !== only) return;   // 跟「限定書籍」保持一致
       if (norm(book.title).indexOf(needle) >= 0) {
         var first = (book.vols || [])[0];
         if (first) out.push({ bid: book.out, v: first.v, i: '', title: book.title, kind: '書' });
@@ -177,7 +182,7 @@
       hitsEl.innerHTML = '<div class="empty">查無「' + esc(q) + '」。可試：' +
         '<a href="?q=羯磨">羯磨</a>、<a href="?q=波羅夷">波羅夷</a>、' +
         '<a href="?q=安居">安居</a>，或較短的關鍵字。</div>';
-      countEl.textContent = '沒有結果';
+      if (countEl) countEl.textContent = '沒有結果';
       if (statusEl) statusEl.textContent = '沒有結果';
       return;
     }
@@ -213,7 +218,7 @@
     activeIndex = -1;
     var note = failed ? '（' + failed + ' 本書索引載入失敗）' : '';
     var cap = shown < total ? '（顯示 ' + shown + ' 筆）' : '';
-    countEl.textContent = '找到 ' + total + ' 筆' + cap + note + '　·　' + elapsed + ' ms';
+    if (countEl) countEl.textContent = '找到 ' + total + ' 筆' + cap + note + '　·　' + elapsed + ' ms';
     if (statusEl) statusEl.textContent = '找到 ' + total + ' 筆結果' + note;
   }
 

@@ -5,7 +5,7 @@
 """
 import html
 
-ASSET_VERSION = '11'
+ASSET_VERSION = '12'
 
 FOOTER = (
     '<footer class="sitefoot">'
@@ -36,7 +36,7 @@ def nav_html(prefix='', prev_url=None, next_url=None,
         '<div class="navscrim" id="navscrim" hidden></div>',
         '<div class="wrap">',
         '<nav id="sidebar" aria-label="全書目錄">',
-        '<div class="navhead"><h1><a href="' + prefix + 'index.html">南山律典・白話對照</a></h1>'
+        '<div class="navhead"><p class="brand"><a href="' + prefix + 'index.html">南山律典・白話對照</a></p>'
         '<button id="navclose" class="iconbtn" type="button" aria-label="關閉目錄">×</button></div>',
         '<div class="grp"><b>全書</b>'
         '<a href="' + prefix + 'index.html">目錄</a>'

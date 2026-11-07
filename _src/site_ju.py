@@ -8,7 +8,7 @@
 
 輸出結構：[('卷名', [(原文, 譯文), ...]), ...]
 """
-import os, io, re, bisect, json
+import os, io, re, glob, bisect, json
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 VAR = {'牀': '床', '説': '說', '衆': '眾', '爲': '為', '敎': '教', '卽': '即', '旣': '既', '竝': '並'}
@@ -313,7 +313,30 @@ def pairs_simple(src_dir, tr_tag):
     return res
 
 
+def _yeshu_direct():
+    """業疏：用「分卷＋標點」直接 1:1 配白話，不經句讀對照表。"""
+    sd = os.path.join(B, 'TXT_分卷_標點', '03_業疏')
+    td = os.path.join(B, 'AI語譯', 'out', '03_業疏')
+    vols = {}
+    for f in sorted(glob.glob(os.path.join(sd, '*.txt'))):
+        ch = os.path.splitext(os.path.basename(f))[0]
+        vol = ch.split('_')[1][:2]          # 卷一 / 卷二 / 卷三 / 卷四 / 卷首
+        if vol == '卷首':
+            vol = '卷首'
+        src = [x.strip() for x in io.open(f, encoding='utf-8').read().split('\n') if x.strip()]
+        tp = os.path.join(td, ch + '.txt')
+        if not os.path.exists(tp):
+            continue
+        tr = [x for x in re.split(r'\r?\n\r?\n', io.open(tp, encoding='utf-8').read()) if x.strip()]
+        pairs = list(zip(src, tr))
+        vols.setdefault(vol, []).extend(pairs)
+    order = ['卷首', '卷一', '卷二', '卷三', '卷四']
+    return [(v, vols[v]) for v in order if vols.get(v)]
+
+
 def get(tag):
+    if tag == '03_業疏' and os.path.isdir(os.path.join(B, 'TXT_分卷_標點', '03_業疏')):
+        return _yeshu_direct()
     cfg = BOOKS[tag]
     if cfg['mode'] == 'simple':
         return pairs_simple(cfg['src'], cfg['tr'])

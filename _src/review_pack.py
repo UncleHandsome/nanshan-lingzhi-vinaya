@@ -114,6 +114,21 @@ def yeshu_docx_items():
     return items
 
 
+
+def yeshu_items():
+    items = []
+    sd = os.path.join(B, 'TXT_分卷_標點', '03_業疏')
+    for f in sorted(glob.glob(os.path.join(sd, '*.txt'))):
+        ch = os.path.splitext(os.path.basename(f))[0]
+        src = [x.strip() for x in io.open(f, encoding='utf-8').read().split('\n') if x.strip()]
+        tp = os.path.join(B, 'AI語譯', 'out', '03_業疏', ch + '.txt')
+        if not os.path.exists(tp):
+            continue
+        tr = [x for x in re.split(r'\r?\n\r?\n', io.open(tp, encoding='utf-8').read()) if x.strip()]
+        for i in range(min(len(src), len(tr))):
+            items.append(('03_業疏', ch, i + 1, src[i], tr[i]))
+    return items
+
 def main():
     size = 325000
     if '--size' in sys.argv:
@@ -124,7 +139,7 @@ def main():
 
     groups = [('鈔記', maoji_items()),
               ('戒疏', book_items('02_戒疏', '02_戒疏')),
-              # ('業疏', yeshu_docx_items()),  # 業疏對齊待修，暫不列入
+              ('業疏', yeshu_items()),
               ('尼鈔', book_items('04_比丘尼鈔', '04_比丘尼鈔')),
               ('義鈔', book_items('05_拾毗尼義鈔', '05_拾毗尼義鈔'))]
 

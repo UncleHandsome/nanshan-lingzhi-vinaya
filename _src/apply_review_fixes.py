@@ -106,7 +106,7 @@ def main():
                 # 整段替換只有在「整段很短」或「整段就是原文照抄」時才安全；
                 # 長段落裡的單句建議交給修訂者處理，否則會吃掉前半段。
                 r_ov = _ratio(r['orig'], cur)
-                if len(cur) > 300 and r_ov < 0.5:
+                if len(cur) > 300 and r_ov < 0.85:
                     # 先試「原文尾巴照抄」：把被照抄的尾段換成建議譯文
                     n = common_suffix(cur, r['orig'])
                     if n >= 15:
@@ -116,7 +116,7 @@ def main():
                         continue
                     skipped.append((r, 'clause in long para (overlap %.2f, len %d)' % (r_ov, len(cur))))
                     continue
-                if len(b) < 0.4 * len(cur):
+                if len(b) < 0.7 * len(cur):
                     skipped.append((r, 'short replacement %d/%d' % (len(b), len(cur))))
                     continue
                 new = b

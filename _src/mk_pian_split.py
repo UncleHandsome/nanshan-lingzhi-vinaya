@@ -149,6 +149,23 @@ def _sents(x):
     return [y for y in out if y.strip()]
 
 
+def split_tr_cuts(tr, n_parts, cuts):
+    """依指定句子（含該句）強制切出各片；cuts 長度 = n_parts-1。"""
+    ss = [x for x in _sents(tr) if x.strip()]
+    parts, cur, k = [], '', 0
+    for x in ss:
+        cur += x
+        if k < len(cuts) and all(c in cur for c in [cuts[k]]):
+            parts.append(cur)
+            cur = ''
+            k += 1
+    if cur:
+        parts.append(cur)
+    while len(parts) < n_parts:
+        parts.append('')
+    return parts[:n_parts]
+
+
 def split_tr(tr, src_parts):
     """句子級單調對齊：以句長比例做 DP，切點落在譯文句界。"""
     if len(src_parts) <= 1:
@@ -379,7 +396,10 @@ def build(p, splits):
         parts.append(cur)
         if not ok or len(parts) != len(tg):
             continue
-        ts = split_tr(t, parts)
+        if 'tr_cuts' in e:
+            ts = split_tr_cuts(t, len(tg), list(e['tr_cuts']))
+        else:
+            ts = split_tr(t, parts)
         PARTS[n] = len(tg)
         for idx2, (part, tr, c) in enumerate(zip(parts, ts, tg)):
             pieces.setdefault(c, []).append((n, idx2, part, tr))

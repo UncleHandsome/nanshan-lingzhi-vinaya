@@ -123,36 +123,45 @@ def _sents(x):
 
 
 def split_tr(tr, src_parts):
-    src_s, tr_s = [], _sents(tr)
-    for part in src_parts:
-        src_s += _sents(part)
     if len(src_parts) <= 1:
         return [tr]
-    # 依字數比例定位（此處不細修，AI 審校時再標）
-    total = sum(max(1, han(x)) for x in src_parts)
-    cuts, acc = [], 0
+    tr_s = _sents(tr)
+    if not tr_s:
+        return [''] * len(src_parts)
+    total_src = sum(max(1, han(x)) for x in src_parts) or 1
+    cum_tr, acc = [], 0
+    for x in tr_s:
+        acc += max(1, han(x))
+        cum_tr.append(acc)
+    total_tr = cum_tr[-1] if cum_tr else 1
+    cuts, accs, prev = [], 0, 0
     for part in src_parts[:-1]:
-        acc += han(part)
-        idx = int(round(acc / total * len(tr_s)))
-        cuts.append(max(1, min(idx, len(tr_s) - 1)))
-    cuts = sorted(set(cuts))
-    while len(cuts) < len(src_parts) - 1:
-        cuts.append(min(len(tr_s) - 1, cuts[-1] + 1))
-    cuts = cuts[:len(src_parts) - 1]
+        accs += max(1, han(part))
+        target = accs / total_src
+        best, bj = 1e9, prev
+        for j in range(prev, len(tr_s)):
+            r = cum_tr[j] / total_tr
+            d = abs(r - target)
+            if d < best:
+                best, bj = d, j + 1
+            if r > target + 0.15:
+                break
+        cuts.append(max(prev + 1, min(bj, len(tr_s) - (len(src_parts) - len(cuts) - 1))))
+        prev = cuts[-1]
     parts, prev = [], 0
     for c in cuts:
-        parts.append(''.join(tr_s[prev:c])); prev = c
+        parts.append(''.join(tr_s[prev:c]))
+        prev = c
     parts.append(''.join(tr_s[prev:]))
     while len(parts) < len(src_parts):
         parts.append('')
-    # 修正：若某片譯文最後一句是「下一科的導語」，移到下一片開頭
+    # 尾句守衛：下一科導語不留在前片
     for i in range(len(parts) - 1):
         ss = [x for x in _sents(parts[i]) if x.strip()]
         if len(ss) >= 2:
-            last = ss[-1]
-            body = last.strip()
-            if han(body) < 22 and ('部分' in body or body.rstrip('。').endswith('中')
-                                   or body.rstrip('。').endswith('科')):
+            last = ss[-1].strip()
+            if han(last) < 22 and ('部分' in last or last.rstrip('。').endswith('中')
+                                   or last.rstrip('。').endswith('科')):
                 parts[i] = ''.join(ss[:-1])
                 parts[i + 1] = last + parts[i + 1]
     return parts

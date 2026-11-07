@@ -1,0 +1,30 @@
+P0 rows=16  emitted=16  fails=0
+[0] 02_戒疏 01c_卷一上之一 23 base=current len 411 -> 418  OK
+
+[1] 02_戒疏 01d_卷一上之一 1 base=current len 373 -> 373  OK
+
+[2] 02_戒疏 02b_卷一上之二 24 base=current len 74 -> 81  OK
+
+[3] 02_戒疏 02c_卷一上之二 100 base=current len 451 -> 447  OK
+
+[4] 02_戒疏 01d_卷一上之一 32 base=current len 245 -> 239  OK
+
+[5] 02_戒疏 01d_卷一上之一 32 base=current len 245 -> 239  OK
+
+[6] 02_戒疏 06a_卷二上之二 105 base=out len 183 -> 193  OK
+
+[7] 02_戒疏 06c_卷二上之二 30 base=out len 301 -> 304  OK
+
+[8] 02_戒疏 07a_卷二上之三 91 base=current len 220 -> 216  OK
+
+[9] 02_戒疏 07a_卷二上之三 11 base=out len 211 -> 211  OK
+
+[10] 02_戒疏 08c_卷二下之一 39 WHOLE (base=current len 40 -> 45)
+[11] 02_戒疏 09a_卷二下之二 107 base=out len 132 -> 131  OK
+
+[12] 02_戒疏 09b_卷二下之二 65 WHOLE (base=current len 150 -> 265)
+[13] 02_戒疏 07b_卷二上之三 129 base=current len 156 -> 143  OK
+
+[14] 02_戒疏 08c_卷二下之一 57 base=out len 284 -> 283  OK
+
+[15] 02_戒疏 08c_卷二下之一 77 WHOLE (base=current len 80 -> 63)

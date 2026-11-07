@@ -43,7 +43,7 @@ body = []
 for k, idx, txt, prev in items:
     body.append('### %s 第 %d 段' % (k, idx))
     if prev:
-        body.append('- 前一段（僅供理解，不必翻）：%s' % prev[:60])
+        body.append('- 前一段（完整，僅供理解，不必翻）：%s' % prev)
     body.append('- 原文：%s' % txt)
     body.append('')
 

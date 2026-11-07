@@ -51,18 +51,22 @@ for p, label in need:
         miss.append(p)
 
 # 成品 PDF 必須與 docx 一對一（2026-11-07 曾整批遺失，見 交接 第十一節）
+# Word 在 白話/，PDF 在 白話/PDF/。
 import glob
+PDFD = os.path.join(B, '白話', 'PDF')
 docxs = [f for f in glob.glob(os.path.join(B, '白話', '*.docx'))
          if not os.path.basename(f).startswith('~$')]
-no_pdf = [os.path.basename(f) for f in docxs
-          if not os.path.exists(os.path.splitext(f)[0] + '.pdf')]
+def pdf_of(f):
+    return os.path.join(PDFD, os.path.splitext(os.path.basename(f))[0] + '.pdf')
+no_pdf = [os.path.basename(f) for f in docxs if not os.path.exists(pdf_of(f))]
 stale = [os.path.basename(f) for f in docxs
-         if os.path.exists(os.path.splitext(f)[0] + '.pdf')
-         and os.path.getmtime(os.path.splitext(f)[0] + '.pdf') < os.path.getmtime(f)]
-ok = not no_pdf and not stale
-print(('OK  ' if ok else 'WARN'), 'pdf parity', '%d docx / 缺 %d / 舊 %d'
-      % (len(docxs), len(no_pdf), len(stale)))
-for m in (no_pdf + stale)[:10]:
+         if os.path.exists(pdf_of(f))
+         and os.path.getmtime(pdf_of(f)) < os.path.getmtime(f)]
+stray = [os.path.basename(f) for f in glob.glob(os.path.join(B, '白話', '*.pdf'))]
+ok = not no_pdf and not stale and not stray
+print(('OK  ' if ok else 'WARN'), 'pdf parity', '%d docx / 缺 %d / 舊 %d / 根目錄殘留 %d'
+      % (len(docxs), len(no_pdf), len(stale), len(stray)))
+for m in (no_pdf + stale + stray)[:10]:
     print('      ', m)
 if not ok:
     miss.append('pdf parity')

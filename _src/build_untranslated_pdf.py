@@ -5,7 +5,7 @@ import os, io, json, subprocess
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 DATA = os.path.join(B, 'AI語譯', '_work', 'untranslated.json')
 DOCX = os.path.join(B, '白話', '未譯段落清單.docx')
-PDF = os.path.join(B, '白話', '未譯段落清單.pdf')
+PDF = os.path.join(B, '白話', 'PDF', '未譯段落清單.pdf')
 SOFFICE = r'C:\Program Files\LibreOffice\program\soffice.exe'
 FONT = 'DFKai-SB'
 LATIN = 'Times New Roman'
@@ -148,9 +148,10 @@ def build():
 
     doc.save(DOCX)
     print('docx', DOCX)
+    os.makedirs(os.path.dirname(PDF), exist_ok=True)
     subprocess.run([SOFFICE, '--headless', '--norestore',
                     '-env:UserInstallation=file:///C:/Temp/lo_profile_untrans',
-                    '--convert-to', 'pdf', '--outdir', os.path.join(B, '白話'), DOCX],
+                    '--convert-to', 'pdf', '--outdir', os.path.dirname(PDF), DOCX],
                    capture_output=True)
     print('pdf', PDF)
 

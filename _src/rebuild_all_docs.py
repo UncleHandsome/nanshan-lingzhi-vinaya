@@ -71,14 +71,16 @@ def main():
     if not no_pdf:
         docxs = sorted(glob.glob(os.path.join(B, '白話', '*.docx')))
         docxs = [d for d in docxs if not os.path.basename(d).startswith('~$')]
+        pdfdir = os.path.join(B, '白話', 'PDF')
+        os.makedirs(pdfdir, exist_ok=True)
         for d in docxs:
             print('convert', os.path.basename(d))
             subprocess.run([SOFFICE, '--headless', '--norestore',
                             '-env:UserInstallation=file:///C:/Temp/lo_profile_rebuild',
-                            '--convert-to', 'pdf', '--outdir', os.path.join(B, '白話'), d],
+                            '--convert-to', 'pdf', '--outdir', pdfdir, d],
                            capture_output=True)
-        # 注意：PDF 一律留在 白話/，不要再搬到子資料夾（2026-11-07 曾因搬到
-        # 白話/對照本/ 而被清理程序整批移出專案，導致 26 個對照本 PDF 消失）。
+        # 注意：PDF 一律放 白話/PDF/，不要再搬到子資料夾（2026-11-07 曾因搬到
+        # 白話/對照本/ 而被清理程序整批移出專案，導致 49 個 PDF 消失）。
 
     # 網站
     run([PY, os.path.join(B, '_src', 'site2.py')])

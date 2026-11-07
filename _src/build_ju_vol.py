@@ -142,11 +142,13 @@ def main():
                 print('%s %s %d 段 %d paras' % (name, label, len(pairs), n))
     if no_pdf:
         return
+    pdfdir = os.path.join(OUT, 'PDF')
+    os.makedirs(pdfdir, exist_ok=True)
     for d in docxs:
         subprocess.run([SOFFICE, '--headless', '--norestore',
                         '-env:UserInstallation=file:///C:/Temp/lo_profile_juvol',
-                        '--convert-to', 'pdf', '--outdir', OUT, d], capture_output=True)
-    # PDF 一律留在 白話/ 根目錄。舊版會把 *_白話對照本.pdf 搬進 白話/對照本/，
+                        '--convert-to', 'pdf', '--outdir', pdfdir, d], capture_output=True)
+    # Word 在 白話/，PDF 在 白話/PDF/。舊版會把 PDF 搬進 白話/對照本/，
     # 2026-11-07 該子夾被當成「重複檔」移出專案，導致 49 個 PDF 從成品消失；
     # 搬移邏輯已移除，不要再加回來。
     print('converted', len(docxs))

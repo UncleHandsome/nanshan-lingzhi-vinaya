@@ -331,13 +331,13 @@ def build(p, splits):
         if 'markers' not in e:
             continue
         n = int(e['n']); marks = e['markers']; tg = [int(x) for x in e['targets']]
-        base = (int(e['base']) if ('base' in e and p != 14) else (cmap.get(n, 0) if BS else (int(am[n - 1]) if n - 1 < len(am) else 0)))
+        base = (int(e['base']) if 'base' in e else (cmap.get(n, 0) if BS else (int(am[n - 1]) if n - 1 < len(am) else 0)))
         if p != 10 and not e.get('flex') and tg != list(range(base, base + len(tg))):
             continue
         if p == 10 and (tg != sorted(tg) or len(set(tg)) != len(tg)):
             continue
         # 尾片不得越過下一記段的鈔號，否則會造成記號逆序
-        if p != 10 and (p == 14 or 'base' not in e) and not e.get('flex'):
+        if p != 10 and (p == 14 and 'base' not in e) or (p not in (10, 14) and 'base' not in e) and not e.get('flex'):
             nxt = (cmap.get(n + 1, 0) if BS else (int(am[n]) if n < len(am) and int(am[n]) > 0 else 0)) or tg[-1]
             if tg[-1] > nxt:
                 continue

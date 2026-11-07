@@ -229,6 +229,13 @@ def build(p, splits):
     by_c = {}
     BS = load_bounds(p)
     if BS:
+        _last = 1
+        _bs2 = []
+        for _c, _n in BS:
+            _n = max(_n, _last)
+            _last = _n
+            _bs2.append((_c, _n))
+        BS = _bs2
         cmap = {}
         for i2, (c2, n2) in enumerate(BS):
             end2 = BS[i2 + 1][1] - 1 if i2 + 1 < len(BS) else len(zi)
@@ -284,13 +291,13 @@ def build(p, splits):
         if 'markers' not in e:
             continue
         n = int(e['n']); marks = e['markers']; tg = [int(x) for x in e['targets']]
-        base = (int(e['base']) if 'base' in e else (cmap.get(n, 0) if BS else (int(am[n - 1]) if n - 1 < len(am) else 0)))
+        base = (int(e['base']) if ('base' in e and p != 14) else (cmap.get(n, 0) if BS else (int(am[n - 1]) if n - 1 < len(am) else 0)))
         if p != 10 and not e.get('flex') and tg != list(range(base, base + len(tg))):
             continue
         if p == 10 and (tg != sorted(tg) or len(set(tg)) != len(tg)):
             continue
         # 尾片不得越過下一記段的鈔號，否則會造成記號逆序
-        if p != 10 and 'base' not in e and not e.get('flex'):
+        if p != 10 and (p == 14 or 'base' not in e) and not e.get('flex'):
             nxt = (cmap.get(n + 1, 0) if BS else (int(am[n]) if n < len(am) and int(am[n]) > 0 else 0)) or tg[-1]
             if tg[-1] > nxt:
                 continue

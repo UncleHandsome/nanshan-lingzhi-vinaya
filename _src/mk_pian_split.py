@@ -34,7 +34,7 @@ HDR = re.compile(r'(\d*\s*釋[\u4e00-\u9fff]{1,6}篇(?:\([^)）]*\))?)')
 HEADS = {}
 _h2 = lambda x: len(re.findall(r'[\u4e00-\u9fff]', x))
 _s2 = lambda x: [y for y in re.findall(r'[^。！？；]*[。！？；]?', x) if y.strip()]
-for _p in range(2, len(SECS)):
+for _p in range(2, len(SECS)):  # 停用跨篇頭部搬移：篇題與記001 留在本篇
     _o, _t = ZI[_p - 1][0]
     _m = HDR.search(_o[:160])
     if _m and 4 < _m.start() < 120:

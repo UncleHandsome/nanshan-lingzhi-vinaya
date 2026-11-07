@@ -56,6 +56,15 @@ for _p in range(2, len(SECS)):
             _pos = _t[:400].find(_htr[:12]) if len(_htr) >= 12 else -1
             if _pos > 0:
                 _htr = _t[:_pos] + _htr
+        # 去掉尾巴多帶的「釋X篇」卷頭譯文
+        _ss = [x for x in _s2(_htr) if x.strip()]
+        while len(_ss) > 1:
+            _last = _ss[-1]
+            if ('篇' in _last and ('釋' in _last or '解釋' in _last)) and len(_last) < 60:
+                _ss.pop()
+            else:
+                break
+        _htr = ''.join(_ss)
         HEADS[_p] = (_head, _htr)
         _rest = _t[len(_htr):] if _t.startswith(_htr) else _t
         _rest = re.sub(r'^.*?解釋[\u4e00-\u9fff]{1,8}篇(?:\([^)）]*\))?', '', _rest, count=1)

@@ -34,9 +34,20 @@ HDR = re.compile(r'(\d*\s*釋[\u4e00-\u9fff]{1,6}篇(?:\([^)）]*\))?)')
 HEADS = {}
 _h2 = lambda x: len(re.findall(r'[\u4e00-\u9fff]', x))
 _s2 = lambda x: [y for y in re.findall(r'[^。！？；]*[。！？；]?', x) if y.strip()]
+BOUND = {22: '題中，上二字', 24: '導，謂能化之法', 28: '沙彌，如注', 30: '題標諸部'}
 for _p in range(2, len(SECS)):  # 停用跨篇頭部搬移：篇題與記001 留在本篇
     _o, _t = ZI[_p - 1][0]
-    _m = HDR.search(_o[:160])
+    _m = None
+    if _p in BOUND and BOUND[_p] in _o:
+        _k = _o.find(BOUND[_p])
+        class _M:
+            def __init__(self, k):
+                self._k = k
+            def start(self):
+                return self._k
+        _m = _M(_k) if 4 < _k < 120 else None
+    if _m is None:
+        _m = HDR.search(_o[:160])
     if _m and 4 < _m.start() < 120:
         _head = _o[:_m.start()].strip()
         if _head.startswith('四分律行事鈔資持記') or ('四分律行事鈔資持記' in _head and len(_head) < 40):
@@ -56,6 +67,16 @@ for _p in range(2, len(SECS)):  # 停用跨篇頭部搬移：篇題與記001 留
             _pos = _t[:400].find(_htr[:12]) if len(_htr) >= 12 else -1
             if _pos > 0:
                 _htr = _t[:_pos] + _htr
+        # 若頭部譯文吃掉整段，按比例退回一部分
+        if _h2(_htr) > 0.85 * max(1, _h2(_t)):
+            _ss0 = [x for x in _s2(_t) if x.strip()]
+            _cap, _acc = 0.55 * _h2(_t), ''
+            for _x in _ss0:
+                if _h2(_acc) + _h2(_x) > _cap:
+                    break
+                _acc += _x
+            if _acc:
+                _htr = _acc
         # 去掉尾巴多帶的「釋X篇」卷頭譯文
         _ss = [x for x in _s2(_htr) if x.strip()]
         while len(_ss) > 1:
@@ -69,6 +90,12 @@ for _p in range(2, len(SECS)):  # 停用跨篇頭部搬移：篇題與記001 留
         _rest = _t[len(_htr):] if _t.startswith(_htr) else _t
         _rest = re.sub(r'^.*?解釋[\u4e00-\u9fff]{1,8}篇(?:\([^)）]*\))?', '', _rest, count=1)
         ZI[_p - 1] = [(_o[_m.start():].strip(), _rest)] + ZI[_p - 1][1:]
+        if _p == 24:
+            _rr = [x for x in _s2(ZI[23][0][1]) if x.strip()]
+            while _rr and not any(k in _rr[0] for k in ('導', '能化', '所化')):
+                _rr.pop(0)
+            if _rr:
+                ZI[23] = [(ZI[23][0][0], ''.join(_rr))] + ZI[23][1:]
 
 # 篇9：記1 取 記2 譯文前半（師通多種），記2 取後半
 _o1p, _t1p = ZI[8][0]

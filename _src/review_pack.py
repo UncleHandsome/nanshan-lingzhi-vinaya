@@ -115,7 +115,7 @@ def yeshu_docx_items():
 
 
 def main():
-    size = 650000
+    size = 325000
     if '--size' in sys.argv:
         size = int(sys.argv[sys.argv.index('--size') + 1])
     os.makedirs(OUT, exist_ok=True)

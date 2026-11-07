@@ -39,10 +39,10 @@ for _p in range(2, len(SECS)):
     _m = HDR.search(_o[:160])
     if _m and 4 < _m.start() < 120:
         _head = _o[:_m.start()].strip()
-        if '四分律行事鈔資持記' in _head and ('卷下' in _head or '卷上' in _head or '卷中' in _head):
+        if _head.startswith('四分律行事鈔資持記') or ('四分律行事鈔資持記' in _head and len(_head) < 40):
             continue          # 卷頭題記，不搬到前篇
-        if _p == 22 and _head.endswith('昭'):
-            _head += '然'
+        if _p == 23 and '世事昭' in _head and not _head.endswith('昭然'):
+            _head = _head.rstrip('。') + '然'
         _ts = _s2(_t)
         _need = _h2(_head)
         _htr = ''

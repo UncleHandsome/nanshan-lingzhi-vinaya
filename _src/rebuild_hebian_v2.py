@@ -74,8 +74,9 @@ for v in HB:
                 if t.startswith('第14篇'):
                     name = t
                     break
-            if name and v == '卷中之一':
-                p = d.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER; p.add_run(name)
+            if name:
+                p = d.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                p.add_run(name if v == '卷中之一' else name + '（續）')
             add_pairs(d, seg)
             continue
         name = ''

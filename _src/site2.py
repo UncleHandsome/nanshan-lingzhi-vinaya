@@ -319,7 +319,8 @@ def build():
     try:
         import glob as _g
         hbv = []
-        for f in sorted(_g.glob(os.path.join(SITE, 'hebian', '*.html'))):
+        for f in sorted(_g.glob(os.path.join(SITE, 'hebian', '*.html')),
+                        key=lambda p: vol_order_key(os.path.basename(p)[:-5])):
             v = os.path.basename(f)[:-5]
             h2s = re.findall(r'<h2 class="sec" id="(p\d+)">([^<]+)</h2>', io.open(f, encoding='utf-8').read())
             hbv.append(dict(v=v, secs=[[a, b] for a, b in dict.fromkeys(h2s)]))

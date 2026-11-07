@@ -5,7 +5,7 @@
 """
 import html
 
-ASSET_VERSION = '12'
+ASSET_VERSION = '14'
 
 FOOTER = (
     '<footer class="sitefoot">'
@@ -51,10 +51,9 @@ def nav_html(prefix='', prev_url=None, next_url=None,
         if next_url:
             parts.append('<a href="' + next_url + '">' + e(next_label or '下一卷') + ' →</a>')
         parts.append('</div>')
-    parts.append('<div class="grp navbookgrp"><b>書目</b>'
-                 '<div class="tree" id="navtree" data-root="' + prefix + '" '
+    parts.append('<div id="navtree" data-root="' + prefix + '" '
                  'data-nav-version="' + ASSET_VERSION + '">'
-                 '<noscript><a href="' + prefix + 'index.html">目錄</a></noscript></div></div>')
+                 '<noscript><a href="' + prefix + 'index.html">目錄</a></noscript></div>')
     parts.append('</nav>')
     return ''.join(parts)
 

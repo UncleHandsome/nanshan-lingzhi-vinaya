@@ -144,6 +144,14 @@ def main():
             seg += 1
             buf.append('【段%03d】%s/%s#%d\n【原文】%s\n【譯文】%s\n\n' % (seg, book, ch, i, orig, trans))
             cur += b
+        # 每組結束強制收檔，避免下一組的標頭裝到上一組的內容
+        if buf:
+            nfile += 1
+            name = '校閱_%02d.txt' % nfile
+            head = '# 校閱材料（%s 段%d–%d）\n\n' % (gname, 1, seg)
+            io.open(os.path.join(OUT, name), 'w', encoding='utf-8').write(head + ''.join(buf))
+            rows.append((name, gname, seg, cur))
+            buf, cur, seg = [], 0, 0
     if buf:
         nfile += 1
         name = '校閱_%02d.txt' % nfile

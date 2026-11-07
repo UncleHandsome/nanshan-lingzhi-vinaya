@@ -44,10 +44,11 @@ for _p in range(2, len(SECS)):
         if _p == 23 and '世事昭' in _head and not _head.endswith('昭然'):
             _head = _head.rstrip('。') + '然'
         _ts = _s2(_t)
-        _need = _h2(_head)
+        _ratio = len(_t) / max(1, _h2(_o))
+        _need = int(_h2(_head) * _ratio * 1.05)
         _htr = ''
         for _sx in _ts:
-            if _h2(_htr) >= _need + 12:
+            if _h2(_htr) >= _need:
                 break
             _htr += _sx
         # 對齊：若 _t 開頭不是 _htr，找它在前面出現的位置

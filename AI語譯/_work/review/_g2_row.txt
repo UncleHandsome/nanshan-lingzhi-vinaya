@@ -1,0 +1,19 @@
+﻿python.exe : Traceback (most recent call last):
+位於 線路:2 字元:1
++ & $py -c @"
++ ~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "<string>", line 7, in <module>
+book = ����O
+chunk = 01c_�W�@�W
+seg = 18
+cls = �N�y�P�������ѡ]���ѫߨ�^
+--- orig len 132
+�a�������A�o���L�١A���Ʃw�]�C�m�|���n�G�٪��u�óq�A�����ұo�F���U���СA���s�͵��A�G�D���w�C�|�s�k�L�ǡA��U�H�k���ǡC���v�H�����P�A���L�t���F�p�L�M�|�o�����١F�άɤ��@�H�|�B���ơF�@�ɤ����A�h�B�@�k�A���ۨ����A���H�L�Ǥ]�C�T�ؽ~�i�A�[�h�����A��h�����A�Y�k�L�Ǥ]�C
+--- tr len 295
+�a�M���������Φ��A�]�u����o�@�U�������ӵL�k���N�u��������A�o�O�u�ټƤW���T�w�v�C�m�|���ߡn���o��ا٦b�ɶ����u�W���i�q�ġA�H�����Υ����]����o�١F�䱵�ަb�U���H���ФơA�º�H�P�����ͥͰ_���߬��ت��A�ҥH�ëD���ƪ��T�w�k���C�ĥ|���O�u�s�k�βz�ʥF�q�W�v�A�o����ӵۤU��һ��u���H�P��k�Ҧ��Y�㦸�ǡv�C���@�����b���H������w�ƤW���M�ݦ��ۦP�A�o���K�h���ıi�ʥ��F�Ҧp�S���M�|���b���~�M�ন�N���٪����y�F�H�ε��ɤ��P�@�H�~�M�i�H�b�|�B�R��k�w�H�ơF�b�P�@�ӵ��ɤ����A�٥i�H�h�B�P�ɧ@�k�B���Ǩ�������A�o�N�s���u�H�L�ǫh�v�C�T�ؽ~�i�@�k�A�H�ƼW�[�h�U���A�H�ƴ�֫h���ন�N�A�o�N�s���u�k�L�ǫh�v�C
+--- current len 295
+�a�M���������Φ��A�]�u����o�@�U�������ӵL�k���N�u��������A�o�O�u�ټƤW���T�w�v�C�m�|���ߡn���o��ا٦b�ɶ����u�W���i�q�ġA�H�����Υ����]����o�١F�䱵�ަb�U���H���ФơA�º�H�P�����ͥͰ_���߬��ت��A�ҥH�ëD���ƪ��T�w�k���C�ĥ|���O�u�s�k�βz�ʥF�q�W�v�A�o����ӵۤU��һ��u���H�P��k�Ҧ��Y�㦸�ǡv�C���@�����b���H������w�ƤW���M�ݦ��ۦP�A�o���K�h���ıi�ʥ��F�Ҧp�S���M�|���b���~�M�ন�N���٪����y�F�H�ε��ɤ��P�@�H�~�M�i�H�b�|�B�R��k�w�H�ơF�b�P�@�ӵ��ɤ����A�٥i�H�h�B�P�ɧ@�k�B���Ǩ�������A�o�N�s���u�H�L�ǫh�v�C�T�ؽ~�i�@�k�A�H�ƼW�[�h�U���A�H�ƴ�֫h���ন�N�A�o�N�s���u�k�L�ǫh�v�C
+KeyError: 'book'

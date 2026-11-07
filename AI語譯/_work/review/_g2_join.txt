@@ -1,0 +1,3 @@
+﻿sel 96 recovered 96 problems 0
+quote hit 41 no-hit 55
+wrote dump2

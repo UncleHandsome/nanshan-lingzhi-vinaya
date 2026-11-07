@@ -1,0 +1,137 @@
+=== 1 | 資持記 | 01c_上一上 | 18 | CHANGED ===
+insert: OLD[] NEW[對於單白、白二、白四這]
+replace: OLD[人數增] NEW[多]
+insert: OLD[] NEW[宣告番次]
+replace: OLD[愈] NEW[認為更]
+delete: OLD[人數] NEW[]
+insert: OLD[] NEW[番次]
+=== 2 | 資持記 | 01d_上一上 | 16 | CHANGED ===
+replace: OLD[；又如《僧祇律》仍採用了已被廢除之教（牒事說欲），《四分律》則採用了後興之正制（不牒事）之類。] NEW[。]
+=== 3 | 資持記 | 01d_上一上 | 27 | CHANGED ===
+replace: OLD[這在] NEW[本宗雖無明文，但具有此人不具備受捨資格（不足數）的]
+delete: OLD[上顯然有所不足] NEW[]
+=== 4 | 資持記 | 01d_上一上 | 61 | CHANGED ===
+replace: OLD[個] NEW[種]
+delete: OLD[自然] NEW[]
+replace: OLD[界] NEW[標]
+delete: OLD[標記] NEW[]
+delete: OLD[個] NEW[]
+delete: OLD[自然] NEW[]
+=== 5 | 資持記 | 01e_上一上 | 40 | CHANGED ===
+replace: OLD[第二] NEW[在戒條有無互缺之中有兩種：第一是三十捨墮中比丘尼缺少二條戒（一是雨季前提早索求雨衣，二是住阿蘭若處離衣宿）；第二是九十]
+=== 6 | 01_行事鈔 | 01a_卷上之一 | 38 | same ===
+=== 7 | 資持記 | 02c_上一下 | 47 | CHANGED ===
+insert: OLD[] NEW[受]
+replace: OLD[能作] NEW[治罰]
+insert: OLD[] NEW[處分]
+=== 8 | 資持記 | 02c_上一下 | 60 | CHANGED ===
+replace: OLD[遙相] NEW[施]
+replace: OLD[持，能理] NEW[與癡狂羯磨處置，必須待僧團行羯磨]
+replace: OLD[之時] NEW[除處分後]
+=== 9 | 資持記 | 02d_上一下 | 4 | CHANGED ===
+insert: OLD[] NEW[這是]
+insert: OLD[] NEW[只有]
+replace: OLD[的人也必] NEW[僧眾才]
+replace: OLD[其實兩位戒] NEW[而誤認二]
+insert: OLD[] NEW[與]
+replace: OLD[作的事本來都] NEW[為之人並]
+replace: OLD[這樣] NEW[，所以鈔文特予指明]
+=== 10 | 資持記 | 02d_上一下 | 8 | CHANGED ===
+insert: OLD[] NEW[五分律》、《十誦律》、《]
+delete: OLD[的五人僧與十人僧受戒] NEW[]
+replace: OLD[人數] NEW[十人]
+delete: OLD[在] NEW[]
+insert: OLD[] NEW[受戒十人僧]
+replace: OLD[中印度] NEW[已含和尚]
+delete: OLD[必須十人] NEW[]
+=== 11 | 01_行事鈔 | 01b_卷上之一 | 22 | CHANGED ===
+delete: OLD[代受之] NEW[]
+insert: OLD[] NEW[法]
+replace: OLD[未] NEW[文辭與受託之欲不相]
+replace: OLD[說與欲人的姓名] NEW[符]
+=== 12 | 01_行事鈔 | 01b_卷上之一 | 61 | CHANGED ===
+delete: OLD[面] NEW[]
+replace: OLD[面的心念] NEW[首]
+=== 13 | 資持記 | 01a_上一上 | 26 | CHANGED ===
+delete: OLD[）] NEW[]
+=== 14 | 資持記 | 01b_上一上 | 15 | CHANGED ===
+replace: OLD[兩] NEW[三]
+replace: OLD[手] NEW[守]
+replace: OLD[陳棄] NEW[與]
+insert: OLD[] NEW[物]
+=== 15 | 資持記 | 01d_上一上 | 52 | same ===
+=== 16 | 資持記 | 02a_上一下 | 16 | same ===
+=== 17 | 01_行事鈔 | 01a_卷上之一 | 41 | CHANGED ===
+insert: OLD[] NEW[四]
+replace: OLD[圍的] NEW[的圍]
+insert: OLD[] NEW[相狀，與律中聚落的四種界相並無分別（皆有]
+replace: OLD[界標，如果與聚落的界標無法分開，就] NEW[垣圍繞），因此便同於村界，]
+insert: OLD[] NEW[蘭若]
+delete: OLD[所有] NEW[]
+=== 18 | 資持記 | 02c_上一下 | 38 | CHANGED ===
+replace: OLD[、] NEW[（即]
+replace: OLD[、] NEW[），加上]
+insert: OLD[] NEW[僧]
+replace: OLD[使用] NEW[執行]
+=== 19 | 資持記 | 02d_上一下 | 1 | same ===
+=== 20 | 01_行事鈔 | 01b_卷上之一 | 67 | CHANGED ===
+replace: OLD[四個] NEW[界內明明已有五]
+delete: OLD[便可主持眾僧法] NEW[]
+insert: OLD[] NEW[四人秉法、第]
+delete: OLD[個] NEW[]
+replace: OLD[中一人] NEW[給]
+replace: OLD[而] NEW[意來]
+insert: OLD[] NEW[自恣（界滿五人應作眾法]
+insert: OLD[] NEW[且對首法不開受欲）；]
+delete: OLD[並非] NEW[]
+replace: OLD[律清] NEW[行不]
+delete: OLD[卻] NEW[]
+=== 21 | 01_行事鈔 | 01a_卷上之一 | 15 | same ===
+=== 22 | 資持記 | 01a_上一上 | 2 | same ===
+=== 23 | 資持記 | 01a_上一上 | 3 | same ===
+=== 24 | 資持記 | 01a_上一上 | 6 | same ===
+=== 25 | 資持記 | 01a_上一上 | 11 | same ===
+=== 26 | 資持記 | 01a_上一上 | 16 | same ===
+=== 27 | 資持記 | 01a_上一上 | 34 | same ===
+=== 28 | 資持記 | 01c_上一上 | 4 | same ===
+=== 29 | 資持記 | 02a_上一下 | 26 | same ===
+=== 30 | 資持記 | 02a_上一下 | 29 | same ===
+=== 31 | 資持記 | 01e_上一上 | 10 | same ===
+=== 32 | 資持記 | 01e_上一上 | 50 | same ===
+=== 33 | 資持記 | 01f_上一上 | 14 | same ===
+=== 34 | 資持記 | 01a_上一上 | 8 | same ===
+=== 35 | 資持記 | 01a_上一上 | 29 | same ===
+=== 36 | 資持記 | 01a_上一上 | 31 | same ===
+=== 37 | 資持記 | 01b_上一上 | 43 | same ===
+=== 38 | 資持記 | 01b_上一上 | 61 | same ===
+=== 39 | 資持記 | 02b_上一下 | 12 | same ===
+=== 40 | 資持記 | 02c_上一下 | 52 | same ===
+=== 41 | 資持記 | 02a_上一下 | 39 | same ===
+=== 42 | 資持記 | 01b_上一上 | 43 | same ===
+=== 43 | 資持記 | 01b_上一上 | 48 | same ===
+=== 44 | 資持記 | 02b_上一下 | 48 | same ===
+=== 45 | 資持記 | 02b_上一下 | 53 | same ===
+=== 46 | 01_行事鈔 | 01a_卷上之一 | 45 | same ===
+=== 47 | 資持記 | 01a_上一上 | 52 | same ===
+=== 48 | 資持記 | 01c_上一上 | 58 | same ===
+=== 49 | 資持記 | 02c_上一下 | 45 | same ===
+=== 50 | 資持記 | 02d_上一下 | 1 | same ===
+=== 51 | 資持記 | 01d_上一上 | 33 | same ===
+=== 52 | 資持記 | 01b_上一上 | 55 | same ===
+=== 53 | 資持記 | 01c_上一上 | 32 | same ===
+=== 54 | 01_行事鈔 | 01a_卷上之一 | 89 | same ===
+=== 55 | 資持記 | 02a_上一下 | 40 | same ===
+=== 56 | 資持記 | 01b_上一上 | 3 | same ===
+=== 57 | 資持記 | 01a_上一上 | 1 | same ===
+=== 58 | 資持記 | 01a_上一上 | 31 | same ===
+=== 59 | 資持記 | 01b_上一上 | 23 | same ===
+=== 60 | 資持記 | 01b_上一上 | 63 | same ===
+=== 61 | 資持記 | 01c_上一上 | 34 | same ===
+=== 62 | 資持記 | 01e_上一上 | 18 | same ===
+=== 63 | 資持記 | 01e_上一上 | 49 | same ===
+=== 64 | 資持記 | 02b_上一下 | 62 | same ===
+=== 65 | 資持記 | 01a_上一上 | 36 | same ===
+=== 66 | 資持記 | 01e_上一上 | 11 | same ===
+=== 67 | 資持記 | 02b_上一下 | 38 | same ===
+=== 68 | 資持記 | 01f_上一上 | 2 | same ===
+=== 69 | 資持記 | 02d_上一下 | 54 | same ===

@@ -1,0 +1,16 @@
+﻿AI�yĶ/_work/review/report_all.tsv
+  cols=11 rows=316
+  header: ['pack', 'book', 'chunk', 'seg', 'level', 'cls', 'problem', 'suggestion', 'orig', 'tr', 'current']
+
+AI�yĶ/_work/review/report_t1pack.tsv
+  cols=10 rows=73
+  header: ['book', 'chunk', 'seg', 'level', 'cls', 'problem', 'suggestion', 'orig', 'tr', 'current']
+
+AI�yĶ/_work/review/located_all.tsv
+  cols=11 rows=308
+  header: ['pack', 'votes', 'book', 'chunk', 'seg', 'level', 'cls', 'problem', 'suggestion', 'orig', 'current']
+
+AI�yĶ/_work/review/applied_t1_located.tsv
+  cols=7 rows=14
+  header: ['book', 'chunk', 'seg', 'level', 'src', 'old', 'new']
+

@@ -1,10 +1,11 @@
-/* 側欄樹：由 nav.json 產生，記住展開狀態、標示所在卷 */
+/* 側欄樹 v6：nav.json 產生、展開記憶、所在卷標示、篩選、快捷鍵 */
 (function () {
   var box = document.getElementById('navtree');
   if (!box) return;
   var root = box.getAttribute('data-root') || '';
   var path = decodeURIComponent(location.pathname);
   var KEY = 'dsh-nav-open';
+  var SKEY = 'dsh-nav-scroll';
   var saved = {};
   try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { saved = {}; }
 
@@ -12,16 +13,17 @@
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
   function keyOf(t) { return t.replace(/\s+/g, ''); }
-  function isOpen(t) {
-    var k = keyOf(t);
-    return (k in saved) ? saved[k] : false;
-  }
-  function setOpen(t, v) {
-    saved[keyOf(t)] = v;
-    try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {}
-  }
+  function isOpen(t) { var k = keyOf(t); return (k in saved) ? saved[k] : false; }
+  function setOpen(t, v) { saved[keyOf(t)] = v; try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {} }
 
-  fetch(root + 'nav.json?v=5').then(function (r) { return r.json(); }).then(function (data) {
+  // 工具列（篩選 + 展開/收合）
+  var tools = document.createElement('div');
+  tools.className = 'navtools';
+  tools.innerHTML = '<input id="navfilter" type="search" placeholder="篩選篇目（按 / 聚焦）" autocomplete="off">'
+    + '<div class="navbtns"><button type="button" id="navopen">展開</button><button type="button" id="navclose">收合</button></div>';
+  box.parentNode.insertBefore(tools, box);
+
+  fetch(root + 'nav.json?v=6').then(function (r) { return r.json(); }).then(function (data) {
     var here = path;
     var html = '';
     (data.books || []).forEach(function (b) {
@@ -39,7 +41,7 @@
           html += '<li><a href="' + root + b.out + '/' + v.v + '.html">（全卷）</a></li>';
         } else {
           secs.forEach(function (s) {
-            html += '<li><a href="' + root + b.out + '/' + v.v + '.html#' + s[0] + '">' + esc(s[1]) + '</a></li>';
+            html += '<li><a data-t="' + esc(s[1]) + '" href="' + root + b.out + '/' + v.v + '.html#' + s[0] + '">' + esc(s[1]) + '</a></li>';
           });
         }
         html += '</ul></details>';
@@ -47,7 +49,8 @@
       html += '</details>';
     });
     box.innerHTML = html;
-    box.querySelectorAll('details').forEach(function (d) {
+    var all = box.querySelectorAll('details');
+    all.forEach(function (d) {
       d.addEventListener('toggle', function () {
         if (d.classList.contains('tk')) setOpen(d.querySelector('summary').textContent, d.open);
         else {
@@ -56,8 +59,60 @@
         }
       });
     });
+    // 還原側欄捲動位置
+    try { var sc = parseInt(localStorage.getItem(SKEY) || '0', 10); if (sc) box.parentNode.scrollTop = sc; } catch (e) {}
+    box.parentNode.addEventListener('scroll', function () {
+      try { localStorage.setItem(SKEY, String(box.parentNode.scrollTop)); } catch (e) {}
+    }, { passive: true });
+    // 所在卷高亮
+    var curSum = box.querySelector('summary.cur');
+    if (curSum) { var t = curSum.closest('details.tk'); if (t) t.open = true; curSum.scrollIntoView({ block: 'nearest' }); }
+    spy();
+  }).catch(function () {
+    box.innerHTML = '<a href="' + root + 'index.html">目錄</a>';
+  });
 
-  // 捲動時高亮所在篇目
+  // 篩選
+  var filter = document.getElementById('navfilter');
+  function applyFilter() {
+    var q = (filter.value || '').trim();
+    box.querySelectorAll('li').forEach(function (li) {
+      var a = li.querySelector('a');
+      var hit = !q || (a && (a.getAttribute('data-t') || '').indexOf(q) >= 0);
+      li.style.display = hit ? '' : 'none';
+    });
+    if (q) {
+      box.querySelectorAll('details').forEach(function (d) { if (d.querySelector('li:not([style*="none"])')) d.open = true; });
+    }
+  }
+  if (filter) {
+    filter.addEventListener('input', applyFilter);
+    filter.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { filter.value = ''; applyFilter(); filter.blur(); }
+      if (e.key === 'Enter') {
+        var a = box.querySelector('li:not([style*="none"]) a');
+        if (a) { a.click(); filter.blur(); }
+      }
+    });
+  }
+  var bopen = document.getElementById('navopen'), bclose = document.getElementById('navclose');
+  if (bopen) bopen.addEventListener('click', function () {
+    box.querySelectorAll('details').forEach(function (d) { d.open = true; });
+  });
+  if (bclose) bclose.addEventListener('click', function () {
+    box.querySelectorAll('details').forEach(function (d) { d.open = false; });
+  });
+
+  // 全域快捷鍵：/ 篩選、Ctrl/Cmd+K 搜尋
+  document.addEventListener('keydown', function (e) {
+    if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
+    if (e.key === '/' && filter) { e.preventDefault(); filter.focus(); }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      location.href = root + 'search.html';
+    }
+  });
+
   function spy() {
     var heads = [].slice.call(document.querySelectorAll('h2.sec'));
     if (!heads.length || !('IntersectionObserver' in window)) return;
@@ -82,7 +137,6 @@
     heads.forEach(function (h) { io.observe(h); });
   }
 
-  // 目錄點擊後：等 nav 重建完再回到錨點，避免「重刷後跑掉」
   function jump() {
     if (!location.hash) return;
     var el = document.getElementById(location.hash.slice(1));
@@ -93,15 +147,11 @@
     el.scrollIntoView({ block: 'start', behavior: 'instant' });
     de.style.scrollBehavior = old;
   }
-  function restoreHash() {
-    [0, 120, 320, 700].forEach(function (ms) { setTimeout(jump, ms); });
-  }
+  function restoreHash() { [0, 120, 320, 700].forEach(function (ms) { setTimeout(jump, ms); }); }
 
-  // 同頁錨點：自己處理，避免瀏覽器重新載入造成「重刷」
   box.addEventListener('click', function (e) {
     var a = e.target.closest ? e.target.closest('a') : null;
     if (!a) return;
-    var href = a.getAttribute('href') || '';
     var u;
     try { u = new URL(a.href, location.href); } catch (err) { return; }
     if (u.pathname !== location.pathname || !u.hash) return;
@@ -116,11 +166,16 @@
     el.scrollIntoView({ block: 'start', behavior: 'instant' });
     de.style.scrollBehavior = old;
   });
-  spy();
   restoreHash();
   window.addEventListener('load', restoreHash);
   window.addEventListener('hashchange', function () { setTimeout(jump, 0); setTimeout(jump, 200); });
-  }).catch(function () {
-    box.innerHTML = '<a href="' + root + 'index.html">目錄</a>';
-  });
+
+  // 回到頂端
+  var top = document.createElement('button');
+  top.id = 'toTop'; top.type = 'button'; top.textContent = '↑ 回頂端';
+  top.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  document.body.appendChild(top);
+  window.addEventListener('scroll', function () {
+    top.classList.toggle('show', window.scrollY > 600);
+  }, { passive: true });
 })();

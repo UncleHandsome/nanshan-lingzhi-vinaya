@@ -1,0 +1,36 @@
+rows=9
+### 04_比丘尼鈔 01b_卷上之上 85 old=688 new=689
+replace: OLD[除] NEW[經]
+insert: OLD[] NEW[作]
+insert: OLD[] NEW[之]
+replace: OLD[及取] NEW[、捉持]
+replace: OLD[之外；第五、式叉摩那] NEW[、以及]
+insert: OLD[] NEW[行]
+insert: OLD[] NEW[處]
+replace: OLD[；第六] NEW[這幾種情況除外；第五]
+replace: OLD[式叉摩那] NEW[其]
+replace: OLD[七] NEW[六]
+replace: OLD[語之云] NEW[告知「]
+replace: OLD[，如是] NEW[」]
+insert: OLD[] NEW[，]
+replace: OLD[八] NEW[七]
+replace: OLD[九] NEW[八]
+### 04_比丘尼鈔 03b_卷中之上 3 old=73 new=87
+replace: OLD[列數] NEW[標題作]
+replace: OLD[而名目舉] NEW[項，實列]
+insert: OLD[] NEW[項，疑為古抄脫漏或併項所致]
+### 03_業疏 04a_卷一之四 95 old=230 new=210
+replace: OLD[There are sayings that: ] NEW[有人說：]
+### 02_戒疏 14a_卷三下之二 9 old=175 new=175
+insert: OLD[] NEW[同類]
+replace: OLD[不同且] NEW[但]
+### 02_戒疏 14b_卷三下之二 21 old=123 new=221
+insert: OLD[] NEW[珍寶玉璧等貴重精華之物，是世俗人情所看重的，蓄存它們會滋長貪念、妨礙修道，引生過患極深，特別不是出世修道之人所適宜蓄存的。然而施主誠心布施，作為購買僧衣的價款，比丘唯恐犯下蓄寶之戒，不宜親自接受，]
+### 02_戒疏 14b_卷三下之二 79 old=128 new=153
+insert: OLD[] NEW[因此《薩婆多論》說：「所謂敷具，就是衣服的名稱。」]
+### 02_戒疏 14b_卷三下之二 87 old=63 new=101
+insert: OLD[] NEW[不犯的情況：若是得到他人已做成的成品，應當用斧頭砍碎、和在泥中用來塗抹牆壁。]
+### 02_戒疏 14b_卷三下之二 102 old=77 new=119
+insert: OLD[] NEW[在第三點中，第一科。古人認為《四分律》注文列在不犯條款，所以說「與《十誦律》相同」。]
+### 02_戒疏 14b_卷三下之二 171 old=144 new=229
+insert: OLD[] NEW[之所以制戒的原因：沙門脫離世俗修道，當以知足為首要。既然已經有了舊衣，就足以維持生命、長養道業。如今反而放縱情欲廣肆蓄存、大量積聚，滋長貪念敗壞道業，沒有比這更嚴重的了。]

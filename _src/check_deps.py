@@ -17,7 +17,14 @@ need = [
     ('_src/export_materials.py', 'export_materials'),
     ('_src/chk_11_30.py', 'chk_11_30'),
     ('_src/chk_pian_docs.py', 'chk_pian_docs'),
+    ('_src/chk_all_counts.py', 'chk_all_counts'),
     ('_src/dedup_yeshu_docx.py', 'dedup_yeshu_docx'),
+    ('_src/build_book.py', 'build_book'),
+    ('_src/build_appendix.py', 'build_appendix'),
+    ('_src/build_untranslated_pdf.py', 'build_untranslated_pdf'),
+    ('_src/mk_pdfs.py', 'mk_pdfs'),
+    ('附錄_名相與度量衡.md', '附錄 md'),
+    ('AI語譯/_work/untranslated.json', 'untranslated.json'),
     ('docs/style.css', 'style.css'),
     ('docs/nav.js', 'docs/nav.js'),
     ('docs/search.js', 'docs/search.js'),
@@ -42,4 +49,22 @@ for p, label in need:
     print(('OK  ' if ok else 'MISS'), label, p)
     if not ok:
         miss.append(p)
+
+# 成品 PDF 必須與 docx 一對一（2026-11-07 曾整批遺失，見 交接 第十一節）
+import glob
+docxs = [f for f in glob.glob(os.path.join(B, '白話', '*.docx'))
+         if not os.path.basename(f).startswith('~$')]
+no_pdf = [os.path.basename(f) for f in docxs
+          if not os.path.exists(os.path.splitext(f)[0] + '.pdf')]
+stale = [os.path.basename(f) for f in docxs
+         if os.path.exists(os.path.splitext(f)[0] + '.pdf')
+         and os.path.getmtime(os.path.splitext(f)[0] + '.pdf') < os.path.getmtime(f)]
+ok = not no_pdf and not stale
+print(('OK  ' if ok else 'WARN'), 'pdf parity', '%d docx / 缺 %d / 舊 %d'
+      % (len(docxs), len(no_pdf), len(stale)))
+for m in (no_pdf + stale)[:10]:
+    print('      ', m)
+if not ok:
+    miss.append('pdf parity')
+
 print('missing:', len(miss))

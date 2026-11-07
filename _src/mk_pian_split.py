@@ -203,7 +203,9 @@ def build(p, splits):
     chao = [it for it in sec['items'] if not SKIP.match(it[0].strip())]
     if p == 30:
         chao = chao[42:]
-        am = [max(1, int(x) - 42) if int(x) > 0 else 0 for x in am]
+        am = [max(1, min(23, int(x) - 42)) if int(x) > 42 else (23 if int(x) > 0 else 0) for x in am]
+        for _k in range(24, min(28, len(am))):
+            am[_k] = 23
     by_c = {}
     BS = load_bounds(p)
     if BS:

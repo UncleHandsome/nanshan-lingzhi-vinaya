@@ -124,7 +124,7 @@ def main():
 
     groups = [('鈔記', maoji_items()),
               ('戒疏', book_items('02_戒疏', '02_戒疏')),
-              ('業疏', yeshu_docx_items()),
+              # ('業疏', yeshu_docx_items()),  # 業疏對齊待修，暫不列入
               ('尼鈔', book_items('04_比丘尼鈔', '04_比丘尼鈔')),
               ('義鈔', book_items('05_拾毗尼義鈔', '05_拾毗尼義鈔'))]
 

@@ -256,6 +256,9 @@ def strip_dup_tail(p):
 
 
 def build(p, splits):
+    if p == 6:
+        print('篇6 使用精修版（mk_p6_huiben.py），此處跳過')
+        return
     idx = p - 1
     sec = SECS[idx]; zi = ZI[idx]
     am = AM.get(str(idx), [])

@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 import json, io, sys
+from collections import defaultdict
 
 rows = json.load(io.open('AI語譯/_work/review/_g2_rows.json', encoding='utf-8'))
 by_idx = {d['idx']: d for d in rows}
 
-# full replacements (idx -> new paragraph)
 FULL = {}
-
 FULL[3] = "三、正式說明說戒的儀軌。這一門的陳設布置，依據律典所載並不完備；現今實行時，是通盤採納各部律典，共同構成一套完整的儀軌法則。而古來諸家的陳設安排，也各有不同。現今以普照律師與道安法師兩位大德所定的儀軌為根本；其餘則引用律典的真實誠信之文，刪繁補缺，取其折衷合宜者。"
 
-# (idx, old, new, count_expected)
 EDITS = [
 (0, "如果個別犯了下四篇（僧殘、波逸提、提舍尼、突吉羅），屬於別眾所攝。如果個別犯了初篇",
  "若別眾之人犯了下四篇（僧殘、波逸提、提舍尼、突吉羅），仍屬於別眾所攝（構成別眾）。若別眾之人犯了初篇", 1),
@@ -108,46 +106,48 @@ EDITS = [
  "若有在家人（惡剎利、惡居士）處分四方僧物、田宅、淨人時，不供與持戒之人，反而給予破戒之人；或者自己恣意受用，並與在家人共同吃喝食用；因為這個緣故，這些剎帝利與居士命終全都墮入阿鼻地獄", 1),
 ]
 
-# group edits by idx
-from collections import defaultdict
-per_idx = defaultdict(list)
-for idx, old, new, cnt in EDITS:
-    per_idx[idx].append((old, new, cnt))
+SKIP = {11,12,15,17,28,30,32,34,39,49,60,61,62}
+
+# group rows by (chunk, seg), preserving order
+groups = []
+key_pos = {}
+for d in rows:
+    k = (d['chunk'], d['seg'])
+    if k not in key_pos:
+        key_pos[k] = len(groups)
+        groups.append({'key': k, 'rows': []})
+    groups[key_pos[k]]['rows'].append(d)
 
 errors = []
-new_text = {}
-for d in rows:
-    idx = d['idx']
-    txt = d['current']
-    if idx in FULL:
-        txt = FULL[idx]
-    for old, new, cnt in per_idx.get(idx, []):
-        c = txt.count(old)
-        if c != cnt:
-            errors.append((idx, cnt, c, old[:40]))
+result = {}
+for g in groups:
+    base = g['rows'][0]
+    txt = base['current']
+    idxs = [d['idx'] for d in g['rows']]
+    if 3 in idxs:
+        txt = FULL[3]
+    for idx in idxs:
+        if idx in SKIP:
             continue
-        txt = txt.replace(old, new)
-    new_text[idx] = txt
+        for old, new, cnt in [e[1:] for e in EDITS if e[0] == idx]:
+            c = txt.count(old)
+            if c != cnt:
+                errors.append((idx, cnt, c, old[:40]))
+                continue
+            txt = txt.replace(old, new)
+    result[g['key']] = txt
 
 if errors:
     for e in errors:
         print('ERR', e)
     sys.exit(1)
 
-# verify byte-exactness of untouched prefixes/suffixes not needed; report lengths
-# build output, merge rows with same chunk+seg
+# one output row per edited report row (duplicate segs carry the same merged text)
 out = []
-seen = {}
-skipped = {11,12,15,17,28,30,32,34,39,49,60,61,62}
 for d in rows:
-    idx = d['idx']
-    key = (d['chunk'], d['seg'])
-    if key in seen:
-        # replace earlier entry with merged text (edits already applied to same source)
-        out[seen[key]][2] = new_text[idx]
+    if d['idx'] in SKIP:
         continue
-    seen[key] = len(out)
-    out.append([d['book'], d['chunk'], d['seg'], new_text[idx]])
+    out.append([d['book'], d['chunk'], d['seg'], result[(d['chunk'], d['seg'])]])
 
 with io.open('AI語譯/_work/review/fix_re2_g2.tsv', 'w', encoding='utf-8', newline='\n') as f:
     for b, c, s, t in out:
@@ -156,5 +156,5 @@ with io.open('AI語譯/_work/review/fix_re2_g2.tsv', 'w', encoding='utf-8', newl
 
 print('rows_in', len(rows))
 print('rows_out', len(out))
-print('skipped_cnt', len([d for d in rows if d['idx'] in skipped]))
-print('edited_idx', len(set([d['idx'] for d in rows]) - skipped))
+print('skipped', len([d for d in rows if d['idx'] in SKIP]))
+print('groups', len(groups))

@@ -15,7 +15,7 @@
 import os, io, re, sys, glob, json, importlib.util
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
-OUT = os.path.join(B, 'AI語譯', '_work', 'review', 'pack', 'in')
+OUT = os.environ.get('REVIEW_OUT') or os.path.join(B, 'AI語譯', '_work', 'review', 'pack', 'in')
 BD = os.path.join(B, 'AI語譯', '_work', 'pian_bounds')
 
 spec = importlib.util.spec_from_file_location('ex', os.path.join(B, '_src', 'export_materials.py'))
@@ -131,6 +131,9 @@ def yeshu_items():
 
 def main():
     size = 325000
+    per = 0
+    if '--per-segs' in sys.argv:
+        per = int(sys.argv[sys.argv.index('--per-segs') + 1])
     if '--size' in sys.argv:
         size = int(sys.argv[sys.argv.index('--size') + 1])
     os.makedirs(OUT, exist_ok=True)
@@ -179,6 +182,10 @@ def main():
 
     files = []
     for gname, items in groups:
+        if per:
+            for k in range(0, len(items), per):
+                files.append([(gname,) + x for x in items[k:k + per]])
+            continue
         curf, cursz = [], 0
         for book, ch, i, orig, trans in items:
             est = len('【00-0000】%s/%s#%d\n【原文】%s\n【譯文】%s\n\n' % (book, ch, i, orig, trans))

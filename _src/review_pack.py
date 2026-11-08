@@ -178,16 +178,17 @@ def main():
               ensure_ascii=False)
 
     files = []
-    curf, cursz = [], 0
-    for gname, book, ch, i, orig, trans in flat:
-        est = len('【00-0000】%s/%s#%d\n【原文】%s\n【譯文】%s\n\n' % (book, ch, i, orig, trans))
-        if cursz + est > size and curf:
+    for gname, items in groups:
+        curf, cursz = [], 0
+        for book, ch, i, orig, trans in items:
+            est = len('【00-0000】%s/%s#%d\n【原文】%s\n【譯文】%s\n\n' % (book, ch, i, orig, trans))
+            if cursz + est > size and curf:
+                files.append(curf)
+                curf, cursz = [], 0
+            curf.append((gname, book, ch, i, orig, trans))
+            cursz += est
+        if curf:
             files.append(curf)
-            curf, cursz = [], 0
-        curf.append((gname, book, ch, i, orig, trans))
-        cursz += est
-    if curf:
-        files.append(curf)
 
     rows = []
     for n, f in enumerate(files, 1):

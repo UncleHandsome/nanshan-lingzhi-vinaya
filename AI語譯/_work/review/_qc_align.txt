@@ -1,0 +1,12 @@
+== 06-0046 04d_上三 seg 26 nparas 55
+   report current head: 「百歲猶須依止」，是用極大者來比況微小者。「甚至通 -> ordinal [26]
+   tr head: 「百歲猶須依止」，是用極大者來比況微小者 -> ordinal [26]
+== 06-0048 04d_上三 seg 27 nparas 55
+   report current head: 如今將其中相同的部分歸納合併，只擷取各別不同的相狀 -> ordinal [27]
+   tr head: 如今將其中相同的部分歸納合併，只擷取各別 -> ordinal [27]
+== 06-0067 04d_上三 seg 43 nparas 55
+   report current head: 「若」字以下，第二部分說明勸諫諍論。「叫你來」，在 -> ordinal [43]
+   tr head: 只因師長不勤於訓導教誨，所以才想改隨他人 -> ordinal [42]
+== 06-0068 04d_上三 seg 44 nparas 55
+   report current head: 在「辭別離去」（辭去）中分為兩部分，前半部說明受到 -> ordinal [44]
+   tr head: 「若」字以下，第二部分說明勸諫諍論。「叫 -> ordinal [43]

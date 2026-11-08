@@ -149,6 +149,34 @@ def main():
         for book, ch, i, orig, trans in items:
             flat.append((gname, book, ch, i, orig, trans))
 
+    # 只送「未審過或譯文改過」的段
+    import hashlib, json
+    state_fp = os.path.join(B, 'AI語譯', '_work', 'review_state.json')
+    state = json.load(io.open(state_fp, encoding='utf-8')) if os.path.exists(state_fp) else {}
+    force = '--all' in sys.argv
+
+    def h(s):
+        return hashlib.md5((s or '').strip().encode('utf-8')).hexdigest()[:12]
+
+    sent = {}
+    if not force and state:
+        keep = []
+        for x in flat:
+            gname, book, ch, i, orig, trans = x
+            sid = '%s/%s#%s' % (book, ch, i)
+            if state.get(sid) == h(trans):
+                continue
+            keep.append(x)
+            sent[sid] = h(trans)
+        print('狀態檔已審 %d，本次送出 %d（原 %d）' % (len(state), len(keep), len(flat)))
+        flat = keep
+    else:
+        for gname, book, ch, i, orig, trans in flat:
+            sent['%s/%s#%s' % (book, ch, i)] = h(trans)
+
+    json.dump(sent, io.open(os.path.join(B, 'AI語譯', '_work', 'review_sent.json'), 'w', encoding='utf-8'),
+              ensure_ascii=False)
+
     files = []
     curf, cursz = [], 0
     for gname, book, ch, i, orig, trans in flat:

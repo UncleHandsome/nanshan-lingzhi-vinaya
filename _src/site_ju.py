@@ -314,7 +314,17 @@ def pairs_simple(src_dir, tr_tag):
 
 
 def _yeshu_direct():
-    """業疏：用「分卷＋標點」直接 1:1 配白話，不經句讀對照表。"""
+    """業疏：優先讀 ys_pairs_fixed.json（已修正 chunk 旋轉位移），否則用分卷＋標點 1:1。"""
+    fp = os.path.join(B, 'AI語譯', '_work', 'ys_pairs_fixed.json')
+    vols = {}
+    if os.path.exists(fp):
+        data = _json.load(io.open(fp, encoding='utf-8'))
+        for ch, pairs in data.items():
+            vol = ch.split('_')[1][:2] if '_' in ch else '卷首'
+            vols.setdefault(vol, []).extend([(s, t) for s, t in pairs])
+        order = ['卷首', '卷一', '卷二', '卷三', '卷四']
+        return [(v, vols[v]) for v in order if vols.get(v)]
+
     sd = os.path.join(B, 'TXT_分卷_標點', '03_業疏')
     td = os.path.join(B, 'AI語譯', 'out', '03_業疏')
     vols = {}

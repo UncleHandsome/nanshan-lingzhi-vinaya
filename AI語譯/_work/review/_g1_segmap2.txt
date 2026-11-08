@@ -1,0 +1,72 @@
+ROW  0 seg= 30 pagehits=[29]  有人問：有人說「罪相與不罪之相皆不可得（
+ROW  1 seg= 34 pagehits=[33]  《四分律》文中說：應當鋪設座席，敲擊揵稚
+ROW  2 seg= 62 pagehits=[61]  第一門說明自體本是清淨僧人，因與法事相違
+ROW  3 seg=  5 pagehits=[4]  所謂威儀相同，例如《僧祇律》說：行走著做
+ROW  4 seg= 39 pagehits=[38]  《五分律》記載：評斷事務時，如果在屋舍內
+ROW  5 seg= 18 pagehits=[17]  維那隨後擊打靜槌一下，說：「接下來分發沙
+ROW  6 seg=  2 pagehits=[1]  二結時前後。由於夏季中敗壞行門的因緣甚多
+ROW  7 seg= 18 pagehits=[17]  以上說明了六人以上的僧法，詳細敘述如上。
+ROW  8 seg= 24 pagehits=[23]  四、說明略說戒等雜法。《四分律》說：如果
+ROW  9 seg= 10 pagehits=[9]  掘地戒十。《多論》說：不掘地、不破壞生草
+ROW 10 seg= 27 pagehits=[26]  律中不犯開七緣：第一、患病之時，輕微者乃
+ROW 11 seg= 30 pagehits=[29]  《十誦律》所列的五種正食中，「糒」是指曬
+ROW 12 seg= 80 pagehits=[79]  不得穿著皮鞋走在佛塔周邊階道之下（著革屣
+ROW 13 seg= 20 pagehits=[19]  若就普遍通用的懺悔而言，有「理」與「事」
+ROW 14 seg= 34 pagehits=[33]  二明眾多人捨，有三：初對四人捨法。捨除財
+ROW 15 seg= 42 pagehits=[41]  第二、說明透過作法結界來收攝衣服的結界法
+ROW 16 seg=  2 pagehits=[1]  三漉水袋法。物品雖然輕小，所起的作用卻極
+ROW 17 seg= 45 pagehits=[44]  問：此手、口二受，防護何罪？答：現在分四
+ROW 18 seg= 44 pagehits=[43]  《十誦律》記載：沒有和尚的人，受戒仍能得
+ROW 19 seg= 25 pagehits=[24]  【記文】下一科段。最初列舉展示世俗的法令
+ROW 20 seg= 27 pagehits=[26]  【記文】第三段中。「《增一》七種律」，就
+ROW 21 seg= 84 pagehits=[83]  【疏文】然而「涯」這一個字，在世間混淆誤
+ROW 22 seg=141 pagehits=[140]  【記文】接著下一段文，首先依據佛教義理來
+ROW 23 seg= 97 pagehits=[96]  【疏文】第二、與各種地獄苦報相互對應，這
+ROW 24 seg= 89 pagehits=[88]  【記文】在接下來說明安置處所的段落中。「
+ROW 25 seg=100 pagehits=[99]  【疏文】義理疏文說：第一種、遠方便。例如
+ROW 26 seg=104 pagehits=[103]  【疏文】義理疏文說：若是依據《十誦律》與
+ROW 27 seg=148 pagehits=[147]  【疏文】義理疏文說：有人解釋道：「凡是一
+ROW 28 seg=154 pagehits=[153]  【記文】最初的問難，文義易明。回答之中：
+ROW 29 seg= 69 pagehits=[68]  【疏文】如果從內心毫無染污的角度來說明止
+ROW 30 seg= 85 pagehits=[84]  【記文】所謂單意業。如果心念已經延伸牽動
+ROW 31 seg= 50 pagehits=[49]  【記文】分別言之當中，先辨淫戒。所謂「無
+ROW 32 seg= 71 pagehits=[70]  【記文】在取捨諸說的科判中，這是第一小科
+ROW 33 seg= 67 pagehits=[66]  【疏文】第一種、業行單一但境緣各異。判結
+ROW 34 seg= 74 pagehits=[73]  【記文】第四句。在多罪的情況中，正如《大
+ROW 35 seg= 83 pagehits=[82]  【疏文】大凡論述妄語罪相，可用四種句型來
+ROW 36 seg= 85 pagehits=[84]  【疏文】「若問不問」。「若問」，當時如來
+ROW 37 seg= 28 pagehits=[27]  【記文】個別解釋中，探討二種粗語。教唆者
+ROW 38 seg=125 pagehits=[124]  【記文】解釋其餘言詞之中。「言詞非染」，
+ROW 39 seg= 72 pagehits=[71]  【疏文】我們現在認為並非如此。一戶人家的
+ROW 40 seg= 95 pagehits=[94]  【註文】是指有老虎、豺狼、獅子等各種猛獸
+ROW 41 seg= 64 pagehits=[63]  【記文】在大門第三「探討重立與單立」中。
+ROW 42 seg= 77 pagehits=[76]  【記文】其次是關於有無「舉法」處分的辨析
+ROW 43 seg=  1 pagehits=[0]  【記文】接續上一科段。首先總體提示兩種粗
+ROW 44 seg=  8 pagehits=[7]  【記文】第九條中引用《明了論》。首先說明
+ROW 45 seg= 29 pagehits=[28]  【疏文】第八、止善與作惡的性質不同來區分
+ROW 46 seg=132 pagehits=[131]  【疏文】現在列舉出這些具體戒相。例如坐臥
+ROW 47 seg=134 pagehits=[133]  【疏文】而且同時也缺少了第三個條件，因為
+ROW 48 seg=126 pagehits=[125]  【記文】在解釋問難中。因為比丘尼長衣戒同
+ROW 49 seg= 79 pagehits=[78]  因此《薩婆多論》說：「所謂敷具，就是衣服
+ROW 50 seg= 87 pagehits=[86]  自己親自製作、指使他人製作，做成了都犯捨
+ROW 51 seg=102 pagehits=[101]  在第三點中，第一科。古人認為《四分律》注
+ROW 52 seg=126 pagehits=[125]  如果比丘，使用未經混雜的全新純黑小羔羊毛
+ROW 53 seg=137 pagehits=[136]  【記文】第四、第五兩個文句，如同上面所解
+ROW 54 seg=144 pagehits=[143]  第一、三種毛料按比例混合製作；第二、意圖
+ROW 55 seg=171 pagehits=[170]  之所以制戒的原因：沙門脫離世俗修道，當以
+ROW 56 seg= 70 pagehits=[69]  【疏文】如果依照《明了論》，藥物則分為五
+ROW 57 seg= 25 pagehits=[24]  【疏文】回答：「過量的衣服受持可以成立，
+ROW 58 seg= 36 pagehits=[35]  【疏文】提前使用具備四種條件構成犯戒：一
+ROW 59 seg=138 pagehits=[137]  【註文】佛在舍衛國時。有居士供養僧眾齋飯
+ROW 60 seg=120 pagehits=[119]  【記文】解釋注文之中，這是第一個子目。言
+ROW 61 seg=  5 pagehits=[4]  【疏文】如果真是這樣，《四分》何必廣泛列
+ROW 62 seg= 96 pagehits=[95]  【註文】佛在羅閱祇。迦羅坐禪，覺得乞食疲
+ROW 63 seg= 97 pagehits=[96]  【疏文】在緣起中，這條戒所說的「不受（而
+ROW 64 seg= 80 pagehits=[79, 94]  【律文】若比丘在「食家」（有飲食的人家）
+ROW 65 seg= 95 pagehits=[79, 94]  【律文】若比丘在「食家」（有飲食的人家）
+ROW 66 seg=113 pagehits=[112]  答覆中：若是勸諫『止犯（不肯學戒）』，是
+ROW 67 seg=120 pagehits=[119]  【疏文】然而遮與難不只一種，全都不允許受
+ROW 68 seg=124 pagehits=[123]  【疏文】《多論》有年齡的限制：「六十歲以
+ROW 69 seg= 53 pagehits=[52]  不犯的情況是：如果前來勸諫的人愚蠢無知、
+ROW 70 seg=128 pagehits=[127]  【譯文】【律文】若有比丘，在共同參與羯磨
+ROW 71 seg=  6 pagehits=[]  第三部分、犯罪招感業報的輕重程度：⏎佛經

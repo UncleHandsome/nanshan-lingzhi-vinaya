@@ -131,6 +131,9 @@ def yeshu_items():
 
 def main():
     size = 325000
+    maxb = 0
+    if '--max-bytes' in sys.argv:
+        maxb = int(sys.argv[sys.argv.index('--max-bytes') + 1])
     per = 0
     if '--per-segs' in sys.argv:
         per = int(sys.argv[sys.argv.index('--per-segs') + 1])
@@ -183,8 +186,16 @@ def main():
     files = []
     for gname, items in groups:
         if per:
-            for k in range(0, len(items), per):
-                files.append([(gname,) + x for x in items[k:k + per]])
+            curf, cursz = [], 0
+            for x in items:
+                est = len(('【00-0000】%s/%s#%d\n【原文】%s\n【譯文】%s\n\n' % (x[0], x[1], x[2], x[3], x[4])).encode('utf-8'))
+                if curf and (len(curf) >= per or (maxb and cursz + est > maxb)):
+                    files.append(curf)
+                    curf, cursz = [], 0
+                curf.append((gname,) + x)
+                cursz += est
+            if curf:
+                files.append(curf)
             continue
         curf, cursz = [], 0
         for book, ch, i, orig, trans in items:

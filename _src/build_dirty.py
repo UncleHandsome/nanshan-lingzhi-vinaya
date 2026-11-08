@@ -45,7 +45,7 @@ def main():
         '01_行事鈔': [os.path.join(B, 'AI語譯', 'out', '01_行事鈔')],
         '資持記': [os.path.join(B, 'AI語譯', 'out', '資持記')],
         '02_戒疏': [os.path.join(B, 'AI語譯', 'out', '02_戒疏')],
-        '03_業疏': [os.path.join(B, 'AI語譯', 'out', '03_業疏')],
+        '03_業疏': [os.path.join(B, 'AI語譯', 'out', '03_業疏'), os.path.join(B, 'TXT_分卷_標點', '03_業疏'), os.path.join(B, 'AI語譯', '_work')],
         '04_比丘尼鈔': [os.path.join(B, 'AI語譯', 'out', '04_比丘尼鈔')],
         '05_拾毗尼義鈔': [os.path.join(B, 'AI語譯', 'out', '05_拾毗尼義鈔')],
     }

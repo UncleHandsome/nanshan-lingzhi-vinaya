@@ -1,0 +1,9 @@
+﻿real suspicious: 8
+(40, '05b_�W�|', '22', ['period-in-quote'])
+(108, '11b_���|�W', '44', ['period-in-quote'])
+(125, '12b_���|�U', '60', ['period-in-quote'])
+(126, '12c_���|�U', '2', ['period-in-quote'])
+(159, '15b_�U�T', '57', ['period-in-quote'])
+(170, '15d_�U�T', '46', ['period-in-quote'])
+(171, '15d_�U�T', '48', ['period-in-quote'])
+(190, '16c_�U�|', '9', ['period-in-quote'])

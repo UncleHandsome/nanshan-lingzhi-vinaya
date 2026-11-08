@@ -4,7 +4,7 @@
 用途：讓 AI 跑一次，看它能抓到幾段已知錯誤（召回率），以及對乾淨段誤報多少（誤報率）。
 答案存在 key.tsv，不要給 AI。
 """
-import os, io, re, glob, csv, random, collections
+import os, io, re, glob, csv, random, collections, sys
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 RV = os.path.join(B, 'AI語譯', '_work', 'review')
@@ -47,7 +47,9 @@ def main():
     by_book = collections.defaultdict(list)
     for (b, ch, s), t in dirty.items():
         by_book[b].append((b, ch, s, t))
-    random.seed(20261108)
+    seed = int(sys.argv[sys.argv.index("--seed")+1]) if "--seed" in sys.argv else 20261108
+    prefix = sys.argv[sys.argv.index("--prefix")+1] if "--prefix" in sys.argv else "T"
+    random.seed(seed)
     picked = []
     for b, lst in by_book.items():
         random.shuffle(lst)
@@ -79,10 +81,10 @@ def main():
         src = source(b, ch)
         cur = paras(b, ch)
         tr = dirty.get((b, ch, s), cur[s - 1]) if kind == 'dirty' else cur[s - 1]
-        lines.append('【T-%04d】%s/%s#%d\n【原文】%s\n【譯文】%s\n\n' % (n, b, ch, s, src[s - 1], tr))
+        lines.append('【%s-%04d】%s/%s#%d\n【原文】%s\n【譯文】%s\n\n' % (prefix, n, b, ch, s, src[s - 1], tr))
         key.append((n, b, ch, s, kind))
-    io.open(os.path.join(OUT, '測試_100段.txt'), 'w', encoding='utf-8').write(''.join(lines))
-    with io.open(os.path.join(OUT, 'key.tsv'), 'w', encoding='utf-8', newline='') as fh:
+    io.open(os.path.join(OUT, '測試_%s.txt' % prefix), 'w', encoding='utf-8').write(''.join(lines))
+    with io.open(os.path.join(OUT, 'key_%s.tsv' % prefix), 'w', encoding='utf-8', newline='') as fh:
         w = csv.writer(fh, delimiter='\t')
         w.writerow(['id', 'book', 'chunk', 'seg', 'kind'])
         for r in key:

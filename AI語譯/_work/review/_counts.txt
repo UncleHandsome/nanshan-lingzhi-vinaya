@@ -1,0 +1,5 @@
+﻿scope rows: 123
+fixed rows: 55
+skipped rows: 68
+output lines: 36
+fixed by book: {'05_�B�s���q�r': 55, '03_�~��': 0}

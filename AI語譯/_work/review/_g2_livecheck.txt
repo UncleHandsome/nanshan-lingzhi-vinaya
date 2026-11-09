@@ -1,0 +1,58 @@
+[1] 02_戒疏 15a_卷三下之三#143 same=True liveLen=97 curLen=97
+[2] 02_戒疏 15a_卷三下之三#143 same=True liveLen=97 curLen=97
+[3] 02_戒疏 15b_卷三下之三#19 same=True liveLen=76 curLen=76
+[4] 02_戒疏 17c_卷四上之二#33 same=True liveLen=555 curLen=555
+[5] 02_戒疏 17c_卷四上之二#34 same=True liveLen=204 curLen=204
+[6] 02_戒疏 17c_卷四上之二#42 same=True liveLen=233 curLen=233
+[7] 02_戒疏 17c_卷四上之二#53 same=True liveLen=103 curLen=103
+[8] 02_戒疏 17c_卷四上之二#73 same=True liveLen=167 curLen=167
+[9] 02_戒疏 17c_卷四上之二#74 same=True liveLen=345 curLen=345
+[10] 02_戒疏 17c_卷四上之二#91 same=True liveLen=190 curLen=190
+[11] 02_戒疏 18b_卷四上之三#94 same=True liveLen=76 curLen=76
+[12] 02_戒疏 18b_卷四上之三#114 same=True liveLen=38 curLen=38
+[13] 02_戒疏 18b_卷四上之三#132 same=True liveLen=77 curLen=77
+[14] 02_戒疏 19c_卷四下之一#2 same=True liveLen=129 curLen=129
+[15] 02_戒疏 19c_卷四下之一#3 same=True liveLen=73 curLen=73
+[16] 02_戒疏 20a_卷四下之二#81 same=True liveLen=151 curLen=151
+[17] 02_戒疏 20a_卷四下之二#93 same=True liveLen=182 curLen=182
+[18] 02_戒疏 20a_卷四下之二#94 same=True liveLen=344 curLen=344
+[19] 02_戒疏 20a_卷四下之二#133 same=True liveLen=83 curLen=83
+[20] 01_行事鈔 11b_卷下之三#2 same=True liveLen=2747 curLen=2747
+[21] 01_行事鈔 11b_卷下之三#2 same=True liveLen=2747 curLen=2747
+[22] 資持記 15b_下三#59 same=True liveLen=230 curLen=230
+[23] 資持記 15b_下三#60 same=True liveLen=256 curLen=256
+[24] 資持記 15c_下三#1 same=True liveLen=276 curLen=276
+[25] 資持記 15c_下三#16 same=True liveLen=351 curLen=351
+[26] 資持記 15c_下三#17 same=True liveLen=302 curLen=302
+[27] 01_行事鈔 11b_卷下之三#8 same=True liveLen=1902 curLen=1902
+[28] 資持記 15e_下三#57 same=True liveLen=282 curLen=282
+[29] 01_行事鈔 12a_卷下之四#6 same=True liveLen=1293 curLen=1293
+[30] 資持記 16a_下四#13 same=True liveLen=260 curLen=260
+[31] 01_行事鈔 12a_卷下之四#9 same=False liveLen=1322 curLen=1318
+    live: ...沓婆摩羅子雖出身王族且證得羅漢果，仍捨其羅漢（無學）之身，發心為僧團擔任知事職務，以求取堅固善法；乃至大迦葉尊者親自踏泥...
+    cur : ...沓婆摩羅子雖出身王族且證得羅漢果，仍捨其清閒之身，發心為僧團擔任知事職務，以求取堅固善法；乃至大迦葉尊者親自踏泥建造五所...
+[32] 01_行事鈔 12a_卷下之四#12 same=True liveLen=609 curLen=609
+[33] 01_行事鈔 12a_卷下之四#12 same=True liveLen=609 curLen=609
+[34] 資持記 16a_下四#33 same=True liveLen=294 curLen=294
+[35] 01_行事鈔 12a_卷下之四#16 same=True liveLen=824 curLen=824
+[36] 資持記 16a_下四#34 same=True liveLen=292 curLen=292
+[37] 資持記 16a_下四#36 same=True liveLen=285 curLen=285
+[38] 資持記 16a_下四#36 same=True liveLen=285 curLen=285
+[39] 資持記 16a_下四#38 same=True liveLen=125 curLen=125
+[40] 資持記 16a_下四#40 same=True liveLen=224 curLen=224
+[41] 資持記 16a_下四#43 same=True liveLen=342 curLen=342
+[42] 資持記 16a_下四#50 same=True liveLen=286 curLen=286
+[43] 資持記 16a_下四#52 same=True liveLen=221 curLen=221
+[44] 資持記 16a_下四#52 same=True liveLen=221 curLen=221
+[45] 資持記 16a_下四#52 same=True liveLen=221 curLen=221
+[46] 資持記 16a_下四#52 same=True liveLen=221 curLen=221
+[47] 資持記 16a_下四#53 same=True liveLen=211 curLen=211
+[48] 資持記 16a_下四#60 same=False liveLen=291 curLen=296
+    live: ...一阿含經》中，經中列出的前面五種過咎中，（鈔文）主要採取前兩種，其餘三種都只是順帶引述以作警惕。所謂「垢圿」，就是污垢不...
+    cur : ...一阿含經》中，經中列出的前面五種過咎中，正律所要說明的核心純粹在於前兩種，其餘三種都只是順帶引述以作警惕。所謂「垢圿」，...
+[49] 資持記 16a_下四#60 same=False liveLen=291 curLen=296
+    live: ...一阿含經》中，經中列出的前面五種過咎中，（鈔文）主要採取前兩種，其餘三種都只是順帶引述以作警惕。所謂「垢圿」，就是污垢不...
+    cur : ...一阿含經》中，經中列出的前面五種過咎中，正律所要說明的核心純粹在於前兩種，其餘三種都只是順帶引述以作警惕。所謂「垢圿」，...
+[50] 資持記 16a_下四#62 same=True liveLen=301 curLen=301
+[51] 資持記 16a_下四#57 same=True liveLen=300 curLen=300
+[52] 01_行事鈔 12a_卷下之四#38 same=True liveLen=86 curLen=86

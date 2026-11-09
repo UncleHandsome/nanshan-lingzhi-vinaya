@@ -1,34 +1,38 @@
-import io, json, difflib
+# -*- coding: utf-8 -*-
+import json, re
 
-rows = json.load(open(r"AI語譯/_work/review/_g1_rows.json", encoding="utf-8"))
-by_seg = {}
-for r in rows:
-    by_seg[(r["book"], r["chunk"], r["seg"])] = r
+ns = {}
+exec(open('AI語譯/_work/review/_g1_build.py', encoding='utf-8').read(), ns)
+D = ns['D']
+M = ns['M']
+NP_EDITS = ns['NP_EDITS']
+out = {('02_戒疏', ch, sg): t for b, ch, sg, t in ns['out_rows']}
 
-fix = [l.split("\t") for l in io.open(r"AI語譯/_work/review/fix_dir_g1.tsv", encoding="utf-8").read().split("\n") if l]
-out = []
-assert len(fix) == 67, len(fix)
-keys = set()
-for f in fix:
-    assert len(f) == 4, f
-    k = (f[0], f[1], f[2])
-    assert k not in keys, k
-    keys.add(k)
-    r = by_seg[k]
-    cur, new = r["current"], f[3]
-    assert "\n" not in new and "\t" not in new
-    assert new != cur
-    sm = difflib.SequenceMatcher(None, cur, new)
-    ops = []
-    for tag, i1, i2, j1, j2 in sm.get_opcodes():
-        if tag == "equal":
+missing = []
+for r in D:
+    gid = r['gid']
+    if gid in M:
+        ops = M[gid]
+        src = 'manual'
+    elif gid in NP_EDITS:
+        ops = NP_EDITS[gid]
+        src = 'np'
+    elif r['status'] == 'auto':
+        ops = [('rep', p[0][0], ns['deq'](ns['strip_alt'](p[1]))) for p in r['pairs']]
+        src = 'auto'
+    else:
+        continue
+    t = out.get(('02_戒疏', r['chunk'], r['seg']))
+    if t is None:
+        continue
+    for op in ops:
+        new = op[2]
+        if new == '【疏文】':
             continue
-        ops.append("[%s] %r -> %r" % (tag, cur[i1:i2], new[j1:j2]))
-    out.append("ROW gid=%s %s/%s seg=%s  len %d->%d" % (r["gid"], f[0], f[1], f[2], len(cur), len(new)))
-    for o in ops:
-        out.append("   " + o)
-    out.append("")
+        if new not in t:
+            # maybe the row was a duplicate and edit was different -> report
+            missing.append((gid, src, new[:40], r['chunk'], r['seg']))
 
-out.append("=== unmatched report rows: %s" % sorted(set(by_seg) - keys))
-io.open(r"AI語譯/_work/review/_g1_verify.txt", "w", encoding="utf-8").write("\n".join(out))
-print("ok", len(fix))
+print('missing', len(missing))
+for m in missing:
+    print(m)

@@ -1,30 +1,78 @@
-import csv, json, io
+# -*- coding: utf-8 -*-
+import re, json, collections
 
-SRC = r"AI語譯/_work/review/report_dir.tsv"
-rows = []
-with open(SRC, "r", encoding="utf-8", newline="") as f:
-    r = csv.reader(f, delimiter="\t")
-    hdr = next(r)
-    for rec in r:
-        if not rec or rec == [""]:
+SRC = 'AI語譯/_work/review/report_re6.tsv'
+rows = [l.split('\t') for l in open(SRC, encoding='utf-8').read().split('\n')[1:] if l.strip()]
+sel = [r for r in rows if len(r) == 10 and r[1] == '02_戒疏']
+
+Q = re.compile(r'[「『]([^「」『』]+)[」』]')
+
+
+def pairs_from_suggestion(sug):
+    """Return list of (sources(list), target) from 改為 constructs."""
+    out = []
+    for m in re.finditer(r'(改為|修改為|改作|改譯為|應改為)', sug):
+        start = m.start()
+        end = m.end()
+        # text before (limit 60 chars)
+        before = sug[max(0, start - 60):start]
+        after = sug[end:]
+        # target: first quoted string right after, allowing ：，、 and space
+        mt = re.match(r'[：:，,、\s]*[「『]([^「」『』]+)[」』]', after)
+        if not mt:
             continue
-        if len(rec) != len(hdr):
-            raise SystemExit("bad field count %d: %r" % (len(rec), rec[:3]))
-        rows.append(dict(zip(hdr, rec)))
+        target = mt.group(1)
+        # sources: quoted strings in `before`, split by separators; take trailing run
+        srcs = Q.findall(before)
+        if not srcs:
+            continue
+        # keep only the trailing consecutive quoted items (e.g. 將「A」、「B」皆)
+        # simple heuristic: use last one, plus any earlier ones if separated only by 、,，且兩處
+        srcs = [srcs[-1]]
+        out.append((srcs, target))
+    return out
 
-print("header:", hdr)
-print("total rows:", len(rows))
-target = {"02_戒疏", "01_行事鈔", "04_比丘尼鈔"}
-sel = [x for x in rows if x["book"] in target]
-print("selected:", len(sel))
-from collections import Counter
-print(Counter(x["book"] for x in sel))
-print(Counter(x["level"] for x in sel))
-print(Counter(x["cls"] for x in sel))
-for i, x in enumerate(sel):
-    print(i, x["gid"], x["book"], x["chunk"], "seg=" + x["seg"],
-          "cur=%d" % len(x["current"]), "prob=%d" % len(x["problem"]),
-          "sug=%d" % len(x["suggestion"]),
-          "same" if x["current"] == x["tr"] else "diff")
-with open(r"AI語譯/_work/review/_g1_rows.json", "w", encoding="utf-8") as f:
-    json.dump(sel, f, ensure_ascii=False, indent=1)
+
+def apply_pairs(text, pairs):
+    log = []
+    for srcs, tgt in pairs:
+        ok = False
+        for s in srcs:
+            if s in text:
+                text = text.replace(s, tgt)
+                ok = True
+        log.append((srcs, tgt, ok))
+    return text, log
+
+
+data = []
+for i, r in enumerate(sel):
+    gid, book, chunk, seg, level, cls, prob, sug, orig, cur = r
+    data.append(dict(idx=i, gid=gid, chunk=chunk, seg=seg, level=level, cls=cls,
+                     prob=prob, sug=sug, orig=orig, cur=cur))
+
+results = []
+for d in data:
+    sug = d['sug'].strip()
+    if not sug:
+        d['status'] = 'nosug'
+        results.append(d)
+        continue
+    pairs = pairs_from_suggestion(sug)
+    if not pairs:
+        d['status'] = 'nopair'
+        results.append(d)
+        continue
+    new, log = apply_pairs(d['cur'], pairs)
+    d['pairs'] = pairs
+    d['new'] = new
+    if all(x[2] for x in log):
+        d['status'] = 'auto'
+    else:
+        d['status'] = 'partial'
+    results.append(d)
+
+json.dump(results, open('AI語譯/_work/review/_g1_data.json', 'w', encoding='utf-8'),
+          ensure_ascii=False, indent=1)
+
+print(collections.Counter(d['status'] for d in results))

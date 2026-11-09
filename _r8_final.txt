@@ -1,0 +1,6 @@
+﻿lines: 60
+bad: []
+dup segs: 0
+leftover hits: []
+unchanged rows: []
+OK

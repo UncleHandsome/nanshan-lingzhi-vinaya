@@ -1,0 +1,3 @@
+﻿written 115 skipped 9
+problems: []
+skipped detail: [(11, 'applied'), (34, 'nosug'), (35, 'nosug'), (36, 'nosug'), (37, 'nosug'), (62, 'applied'), (68, 'applied'), (89, 'nosug'), (112, 'applied')]

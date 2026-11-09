@@ -1,0 +1,25 @@
+{
+ "skip": {
+  "92": "no_suggestion",
+  "93": "no_suggestion",
+  "94": "no_suggestion",
+  "95": "no_suggestion",
+  "96": "no_suggestion",
+  "97": "no_suggestion",
+  "98": "no_suggestion",
+  "211": "no_suggestion",
+  "212": "no_suggestion",
+  "19": "already_applied",
+  "10": "already_applied",
+  "12": "already_applied",
+  "83": "already_applied",
+  "171": "already_applied",
+  "188": "already_applied",
+  "191": "already_applied",
+  "135": "multiline_current",
+  "136": "multiline_current",
+  "137": "multiline_current",
+  "138": "multiline_current"
+ },
+ "count": 219
+}

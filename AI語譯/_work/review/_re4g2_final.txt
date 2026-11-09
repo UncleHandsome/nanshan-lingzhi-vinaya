@@ -1,0 +1,4 @@
+﻿BOM False CR False ends_nl True
+lines 115 first field '����O'
+len min/max 32 1899
+segs ['12', '12', '12', '36', '37']

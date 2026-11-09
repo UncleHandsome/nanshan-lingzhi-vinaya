@@ -1,0 +1,9 @@
+﻿trailing empty: True
+lines 115
+unique keys 90 of 115
+books Counter({'����O': 58, '03_�~��': 43, '01_��ƶr': 14})
+bad 0
+DELTA 89 11c_���|�W 36 �] 1 0 1 1
+DELTA 90 11c_���|�W 36 �] 1 0 1 1
+DELTA 93 10c_���T�U 64 �e 1 0 1 1
+DELTA 108 11c_���|�W 37 �] 0 1 0 0

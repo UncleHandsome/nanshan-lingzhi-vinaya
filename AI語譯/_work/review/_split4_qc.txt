@@ -1,0 +1,24 @@
+tr rows=9 src rows=9
+SRC ('04a_上三.txt', 12) parts=2 lens=[101, 29] join_ok=True orig_len=130
+TR  ('04a_上三.txt', 12) parts=2 lens=[217, 64] join_ok=True orig_len=281
+    tr_start=['以上五條次第簡選，由寬廣漸至', '第二項「所對的境界」（第二所']
+    tr_end=['准許。對此應當自己詳加辨明。', '以下，誡勉大家必須審慎詳明。']
+    src_start=['上五次簡從寬至狹，初約諸', '第二所對，結界中，初科為']
+SRC ('04a_上三.txt', 16) parts=3 lens=[26, 48, 25] join_ok=True orig_len=99
+TR  ('04a_上三.txt', 16) parts=3 lens=[71, 103, 53] join_ok=True orig_len=227
+    tr_start=['第二項「能主持羯磨的僧眾」（', '第三項之中分為兩部分，首先解', '從「文」字以下，第二部分引用']
+    tr_end=['事相功用（或事相行用）而言。', '德，人數再多也不算滿足僧數。', '劃分，如同〈二衣篇〉中所說。']
+    src_start=['第二能秉，與下數滿何異？', '三中分二，初釋緣相。作無', '文下，二引本制，初明兩位']
+SRC ('04a_上三.txt', 52) parts=2 lens=[109, 21] join_ok=True orig_len=130
+TR  ('04a_上三.txt', 52) parts=2 lens=[247, 46] join_ok=True orig_len=293
+    tr_start=['如果再作微細的探討，飲食、衣', '在顯揚戒德的文段中，第一科首']
+    tr_end=['知，又有誰還懂得這層道理呢！', '行，佛陀的戒德乃是極果功德；']
+    src_start=['若復細論，飲食衣服房舍臥', '顯德中，初科，初引示。凡']
+SRC ('04c_上三.txt', 45) parts=2 lens=[85, 53] join_ok=True orig_len=138
+TR  ('04c_上三.txt', 45) parts=2 lens=[275, 92] join_ok=True orig_len=367
+    tr_start=['律說比丘尼一旦捨戒就再也不能', '第9篇〈釋師資篇〉（卷上之三']
+    tr_end=['礙她再次領受「具足戒」而已。', '師資相攝。「資」是取的意思。']
+    src_start=['云無更受者，女流報弱，多', '9 釋師資篇(上三)釋師']
+bad_starts=0
+unique=True
+order: 04a_上三.txt#12.1, 04a_上三.txt#12.2, 04a_上三.txt#16.1, 04a_上三.txt#16.2, 04a_上三.txt#16.3, 04a_上三.txt#52.1, 04a_上三.txt#52.2, 04c_上三.txt#45.1, 04c_上三.txt#45.2

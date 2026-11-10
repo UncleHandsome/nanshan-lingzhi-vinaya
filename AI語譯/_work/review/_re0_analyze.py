@@ -14,16 +14,16 @@ def extract_pairs(sug):
     out = []
     s = sug.strip()
     # 1) 將「A」改為「B」/ 將「A」修正為「B」 / 把「A」改為「B」
-    for m in re.finditer(r"(?:將|把)「([^」]+)」(?:改為|修正為|改譯為|改作|改成|修正作)「([^」]+)」", s):
+    for m in re.finditer(r"(?:將|把)「([^」]+)」(?:改為|修正為|修改為|改譯為|改作|改成|修正作|更正為)「([^」]+)」", s):
         out.append(("將A改為B", m.group(1), m.group(2)))
     # 2) 「A」改為「B」
-    for m in re.finditer(r"「([^」]+)」(?:改為|修正為|改譯為|改作)「([^」]+)」", s):
+    for m in re.finditer(r"「([^」]+)」(?:改為|修正為|修改為|改譯為|改作|改成)「([^」]+)」", s):
         if not any(p[1] == m.group(1) and p[2] == m.group(2) for p in out):
             out.append(("A改為B", m.group(1), m.group(2)))
     if out:
         return out
     # 3) 修正為「B」 / 改為「B」
-    m = re.search(r"(?:修正為|改為|改譯為)「([^」]+)」", s)
+    m = re.search(r"(?:修正為|修改為|改為|改譯為|更正為)「([^」]+)」", s)
     if m:
         return [("改為X", None, m.group(1))]
     # 4) 刪除「A」/ 刪去

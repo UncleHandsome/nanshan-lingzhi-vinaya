@@ -1,0 +1,15 @@
+﻿s50 1 ���H����٬ީ󥫡A���R�٪̤��G���٬ƧQ�A�Ҩ�ҳ��F
+s51 -1 ���G���Q���áA���y�I���A�L�i�̾ڡA�G�H�@�ߡA�O�]�C
+s54 1 �P�G�o�A�ؤG���ءC�f�A�s�F�ءe�[��G�o�A�إ|���ءC
+python : Traceback (most recent call last):
+位於 線路:9 字元:47
++ ... Content -Encoding UTF8 tmp_open2.py; python tmp_open2.py 2>&1 | Out-F ...
++                                          ~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\lionc\OneDrive\�ୱ\XW\�T�j��\tmp_open2.py", line 7, in <module>
+    if op!=0: print(x['id'],op,t[-25:])
+              ~~~~~^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'cp950' codec can't encode character '\u5cef' in position 22: illegal multibyte sequence
+s60 1 

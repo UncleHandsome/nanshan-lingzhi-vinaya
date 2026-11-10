@@ -1,0 +1,23 @@
+PASS	docx 段數 753	753
+PASS	docx 組數 375	375
+PASS	docx 字數 183958	183958
+PASS	docx 標籤歸零	{'（前半）': 0, '（後半）': 0, '（前）': 0, '（中）': 0, '（後）': 0}
+PASS	docx 無資料列	
+PASS	docx 同段 50 字重複為 0	[]
+PASS	s114 譯文 1675	1675
+PASS	s80 補 〕	非前無根，因此而制也。〕
+PASS	s83 補 〕	過設諫，因制。〕
+PASS	s157 已併入	('【記】二中。本明受持，而指作衣法者；', '第二項中。本應說明如')
+PASS	新 s199（原 s200）括號	('云揀實心非也。〕', '是錯誤的。）')
+PASS	新 s200（原 s201）無孤 ）	('四中，《十誦》。', '乞求而判')
+PASS	會本 docx 段數 2856	2856
+PASS	會本 docx 字數 650502	650502
+PASS	HTML 組數 375	375
+PASS	HTML 標籤歸零	
+PASS	HTML 無資料列	
+PASS	PDF 頁數 160	160
+PASS	PDF 標籤歸零	
+PASS	PDF 無資料列	
+PASS	PDF s114 只一份	
+PASS	PDF 併段存在	
+PASS	PDF 三處補 〕	

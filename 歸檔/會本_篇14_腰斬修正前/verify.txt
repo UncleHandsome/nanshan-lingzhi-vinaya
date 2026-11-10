@@ -1,0 +1,28 @@
+PASS	docx 段數 753	753
+PASS	docx 字數 183958	183958
+PASS	字元多重集與備份相同	
+PASS	docx 組數 375（鈔 75／記 300）	(375,)
+PASS	s10→s12 重切正確（down）	
+PASS	s29→s31 重切正確（down）	
+PASS	s33→s35 重切正確（up）	
+PASS	s74→s76 重切正確（down）	
+PASS	s100→s102 重切正確（down）	
+PASS	s103→s105 重切正確（down）	
+PASS	s109→s111 重切正確（down）	
+PASS	s215→s217 重切正確（down）	
+PASS	s219→s221 重切正確（down）	
+PASS	s225→s227 重切正確（down）	
+PASS	s247→s249 重切正確（down）	
+PASS	s251→s253 重切正確（up）	
+PASS	s317→s319 重切正確（up）	
+PASS	s333→s335 重切正確（down）	
+PASS	s358→s360 重切正確（up）	
+PASS	s371→s373 重切正確（down）	
+PASS	同段 ≥50 字重複 0	[]
+PASS	HTML 組數 375	375
+PASS	HTML 與 docx 逐段相同	
+PASS	HTML 16 處重切正確	
+PASS	PDF 頁數 161	161
+PASS	PDF 含 16 處重切文字	
+PASS	PDF 譯文同步（s12）	
+PASS	會本_篇14_隨戒釋相.docx 未動	877305

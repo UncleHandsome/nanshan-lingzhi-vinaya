@@ -54,7 +54,8 @@ def main():
     os.makedirs(dst, exist_ok=True)
     moved, missing = [], []
     for n in nums:
-        p = os.path.join(D, '校閱_%02d.txt' % n)
+        cand = [os.path.join(D, '校閱_%03d.txt' % n), os.path.join(D, '校閱_%02d.txt' % n)]
+        p = next((c for c in cand if os.path.exists(c)), cand[0])
         if os.path.exists(p):
             shutil.move(p, os.path.join(dst, os.path.basename(p)))
             moved.append(n)

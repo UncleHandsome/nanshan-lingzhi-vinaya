@@ -14,6 +14,14 @@ B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 VAR = {'牀': '床', '説': '說', '衆': '眾', '爲': '為', '敎': '教', '卽': '即', '旣': '既', '竝': '並'}
 
 
+def _ju_path(B, name):
+    """句讀_clean 檔可能被歸檔到 歸檔/臨時檔/，兩處都找。"""
+    for rel in ('', os.path.join('歸檔', '臨時檔')):
+        p = os.path.join(B, rel, name) if rel else os.path.join(B, name)
+        if os.path.exists(p):
+            return p
+    return os.path.join(B, name)
+
 def nh(c):
     return VAR.get(c, c)
 
@@ -256,9 +264,9 @@ def pairs_global(src_dir, tr_tag, ju_file):
 BOOKS = {
     '03_業疏': dict(src='03_業疏', tr='03_業疏', mode='simple'),
     '04_比丘尼鈔': dict(src='04_比丘尼鈔', tr='04_比丘尼鈔', mode='global',
-                    ju=os.path.join(B, '04_四分律比丘尼鈔_句讀_clean.txt')),
+                    ju=_ju_path(B, '04_四分律比丘尼鈔_句讀_clean.txt')),
     '05_拾毗尼義鈔': dict(src='05_拾毗尼義鈔', tr='05_拾毗尼義鈔', mode='global',
-                     ju=os.path.join(B, '05_四分律拾毗尼義鈔_句讀_clean.txt')),
+                     ju=_ju_path(B, '05_四分律拾毗尼義鈔_句讀_clean.txt')),
 }
 
 

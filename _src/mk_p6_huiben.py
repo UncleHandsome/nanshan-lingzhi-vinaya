@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """篇6 完整會本：記文按牒詞切段，重排到所釋鈔文之後"""
 import io, os, re, json, sys, importlib.util
 from docx import Document
@@ -303,8 +303,9 @@ for cno, it in enumerate(chao, 1):
         b2.paragraph_format.line_spacing = 1.28; b2.paragraph_format.space_after = Pt(2)
         sr(b2.add_run(zt), 10)
 
-out = os.path.join(B, '白話', '會本_篇6結界方法.docx')
+out = os.path.join(B, '白話', '會本_篇06_結界方法.docx')
 doc.save(out)
 missed = [n for n in range(1, len(zi) + 1) if n not in used]
 print('未排入的記段', missed)
 print('saved', out, '段落', len(doc.paragraphs))
+

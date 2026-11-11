@@ -55,7 +55,7 @@ if __name__ == '__main__':
     todo = list(range(a, b + 1))
     t0 = time.time()
     ok = 0
-    with ThreadPoolExecutor(max_workers=4) as ex:
+    with ThreadPoolExecutor(max_workers=16) as ex:
         for n, st, tok in ex.map(run, todo):
             if st in ('ok', 'skip'):
                 ok += 1

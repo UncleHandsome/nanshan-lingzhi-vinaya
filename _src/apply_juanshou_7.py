@@ -51,16 +51,13 @@ bak = os.path.join(B, '歸檔', '卷首_7段重譯前')
 os.makedirs(bak, exist_ok=True)
 shutil.copy2(P, os.path.join(bak, '00_卷首.txt'))
 
+IDX = [42, 43, 44, 45, 46, 47, 48]
 done = 0
-for anchor, new in REV:
-    for i, p in enumerate(ps):
-        if p.startswith(anchor):
-            print('#%d %s  舊%d字 -> 新%d字' % (i + 1, anchor, len(p), len(new)))
-            ps[i] = new
-            done += 1
-            break
-    else:
-        print('找不到：', anchor)
+for (anchor, new), n in zip(REV, IDX):
+    i = n - 1
+    print('#%d %s  舊%d字 -> 新%d字' % (n, anchor, len(ps[i]), len(new)))
+    ps[i] = new
+    done += 1
 
 io.open(P, 'w', encoding='utf-8').write('\n\n'.join(ps) + '\n')
 print('共替換', done, '段，總段數', len(ps))

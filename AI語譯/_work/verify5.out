@@ -1,0 +1,21 @@
+﻿01_行事鈔/03b_卷上之三.txt               base=True changed=2  paras=[3, 36] CRLF 0->0 LF 70->70
+01_行事鈔/04a_卷上之四.txt               base=True changed=2  paras=[20, 23] CRLF 61->61 LF 61->61
+01_行事鈔/04b_卷上之四.txt               base=True changed=2  paras=[11, 27] CRLF 78->78 LF 78->78
+01_行事鈔/04c_卷上之四.txt               base=True changed=1  paras=[12] CRLF 56->56 LF 56->56
+01_行事鈔/05a_卷中之一.txt               base=True changed=3  paras=[18, 19, 25] CRLF 80->80 LF 80->80
+01_行事鈔/06a_卷中之二.txt               base=True changed=3  paras=[6, 14, 21] CRLF 40->40 LF 40->40
+01_行事鈔/09a_卷下之一.txt               base=True changed=2  paras=[39, 40] CRLF 88->88 LF 88->88
+01_行事鈔/09b_卷下之一.txt               base=True changed=1  paras=[20] CRLF 56->56 LF 56->56
+01_行事鈔/09c_卷下之一.txt               base=True changed=3  paras=[1, 14, 22] CRLF 79->79 LF 79->79
+01_行事鈔/10a_卷下之二.txt               base=True changed=1  paras=[7] CRLF 50->50 LF 50->50
+01_行事鈔/10b_卷下之二.txt               base=True changed=1  paras=[13] CRLF 110->110 LF 110->110
+01_行事鈔/10c_卷下之二.txt               base=True changed=1  paras=[11] CRLF 60->60 LF 60->60
+01_行事鈔/11a_卷下之三.txt               base=True changed=2  paras=[21, 27] CRLF 68->68 LF 68->68
+02_戒疏/01a_卷一上之一.txt              base=True changed=1  paras=[94] CRLF 0->0 LF 197->197
+02_戒疏/05a_卷二上之一.txt              base=True changed=1  paras=[119] CRLF 0->0 LF 319->319
+02_戒疏/05d_卷二上之一.txt              base=True changed=3  paras=[39, 94, 99] CRLF 276->276 LF 276->276
+02_戒疏/06b_卷二上之二.txt              base=True changed=1  paras=[113] CRLF 258->258 LF 258->258
+02_戒疏/06c_卷二上之二.txt              base=True changed=1  paras=[108] CRLF 220->220 LF 220->220
+02_戒疏/07a_卷二上之三.txt              base=True changed=1  paras=[23] CRLF 0->0 LF 211->211
+02_戒疏/09d_卷二下之二.txt              base=True changed=1  paras=[28] CRLF 314->314 LF 314->314
+files: 20 changed paragraphs: 33 ALL OK

@@ -1,0 +1,10 @@
+﻿python :   File "C:\Users\lionc\OneDrive\�ୱ\XW\�T�j��\AI�yĶ\_work\mkreport.py", line 48
+位於 線路:18 字元:116
++ ...  "AI語譯\_work\mkrows.py"; python "AI語譯\_work\mkreport.py" 2>&1 | Out-F ...
++                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (  File "C:\User...rt.py", line 48:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+    A("- �H�u�P�q�ϦP��ĳ��r�v�h���A�l **99 ��**�A�h�� 18 ���G
+      ^
+SyntaxError: unterminated string literal (detected at line 48)

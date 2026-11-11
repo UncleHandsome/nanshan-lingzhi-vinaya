@@ -1,0 +1,30 @@
+﻿python : Traceback (most recent call last):
+位於 線路:1 字元:129
++ ... ew($false); python -c "import py_compile,sys; py_compile.compile(r'AI ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\lionc\AppData\Local\Programs\Python\Python314\Lib\py_compile.py", line 144, in compile
+    code = loader.source_to_code(source_bytes, dfile or file,
+                                 _optimize=optimize)
+  File "<frozen importlib._bootstrap_external>", line 827, in source_to_code
+  File "<frozen importlib._bootstrap>", line 491, in _call_with_frames_removed
+  File "AI�yĶ\_work\apply_edits.py", line 104
+    assert new.count("\n") == f["orig"].count("\n"], (book, chunk)
+                                                  ^
+SyntaxError: closing parenthesis ']' does not match opening parenthesis '('
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import py_compile,sys; py_compile.compile(r'AI�yĶ\_work\apply_edits.py', doraise=True)
+                           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lionc\AppData\Local\Programs\Python\Python314\Lib\py_compile.py", line 150, in compile
+    raise py_exc
+py_compile.PyCompileError:   File "AI�yĶ\_work\apply_edits.py", line 104
+    assert new.count("\n") == f["orig"].count("\n"], (book, chunk)
+                                                  ^
+SyntaxError: closing parenthesis ']' does not match opening parenthesis '('
+

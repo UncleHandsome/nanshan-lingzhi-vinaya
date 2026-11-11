@@ -1,0 +1,20 @@
+﻿files: 19 paragraphs: 29
+  01_行事鈔/03b_卷上之三  paras=[3, 36] delta=-10
+  01_行事鈔/04a_卷上之四  paras=[20, 23] delta=-8
+  01_行事鈔/04b_卷上之四  paras=[11, 27] delta=7
+  01_行事鈔/04c_卷上之四  paras=[12] delta=1
+  01_行事鈔/05a_卷中之一  paras=[18, 19, 25] delta=-15
+  01_行事鈔/06a_卷中之二  paras=[14] delta=-2
+  01_行事鈔/09a_卷下之一  paras=[39, 40] delta=0
+  01_行事鈔/09b_卷下之一  paras=[20] delta=0
+  01_行事鈔/09c_卷下之一  paras=[14, 22] delta=2
+  01_行事鈔/10a_卷下之二  paras=[7] delta=-64
+  01_行事鈔/10b_卷下之二  paras=[13] delta=2
+  01_行事鈔/10c_卷下之二  paras=[11] delta=-1
+  01_行事鈔/11a_卷下之三  paras=[21, 27] delta=0
+  02_戒疏/05a_卷二上之一  paras=[119] delta=-1
+  02_戒疏/05d_卷二上之一  paras=[39, 94, 99] delta=0
+  02_戒疏/06b_卷二上之二  paras=[113] delta=1
+  02_戒疏/06c_卷二上之二  paras=[108] delta=-3
+  02_戒疏/07a_卷二上之三  paras=[23] delta=1
+  02_戒疏/09d_卷二下之二  paras=[28] delta=0

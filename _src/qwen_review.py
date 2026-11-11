@@ -14,7 +14,8 @@ B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 KEY = open(os.path.join(B, '.qwen_key'), encoding='utf-8-sig').read().strip()
 BASE = 'https://token-plan.maas.qwencloudapi.com/compatible-mode/v1'
 MODEL = 'qwen4-max-preview'
-OUT = os.path.join(B, 'batch_qwen', 'r1')
+PROMPT = '幫我看看白話譯文有沒有甚麼問題'
+OUT = os.path.join(B, 'batch_qwen', os.environ.get('QWEN_OUT', 'r2'))
 STOP = os.path.join(B, 'batch_qwen', 'STOP')
 WORKERS = int(os.environ.get('QWEN_WORKERS', '12'))
 os.makedirs(OUT, exist_ok=True)
@@ -36,9 +37,8 @@ def run(n):
     payload = {
         'model': MODEL,
         'messages': [{'role': 'user',
-                      'content': head.strip() + '\n\n' + body.strip()}],
+                      'content': PROMPT + body.strip()}],
         'enable_thinking': True,
-        'thinking_budget': 60000,
         'max_completion_tokens': 65536,
     }
     data = json.dumps(payload).encode()

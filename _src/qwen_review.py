@@ -25,7 +25,6 @@ def run(n):
         'enable_thinking': True,
         'thinking_budget': 60000,
         'max_completion_tokens': 65536,
-        'temperature': 0.3,
     }
     data = json.dumps(payload).encode()
     req = urllib.request.Request(BASE + '/chat/completions', data=data,
@@ -55,7 +54,7 @@ if __name__ == '__main__':
     todo = list(range(a, b + 1))
     t0 = time.time()
     ok = 0
-    with ThreadPoolExecutor(max_workers=16) as ex:
+    with ThreadPoolExecutor(max_workers=24) as ex:
         for n, st, tok in ex.map(run, todo):
             if st in ('ok', 'skip'):
                 ok += 1

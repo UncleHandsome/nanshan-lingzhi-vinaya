@@ -21,6 +21,10 @@ def backup_k(book, chunk, src):
 def apply_batch(book, chunk, edits, dry=False):
     o = L.Out(book, chunk)
     segs = list(o.segs)
+    # 末段若自帶行尾（檔案以單一 EOL 收尾），先移入 trailing，避免 NEWLINE 誤判
+    if segs and o.trailing == '' and segs[-1].endswith(o.eol):
+        o.trailing = o.eol
+        segs[-1] = segs[-1][:-len(o.eol)]
     before = list(segs)
     by = {}
     for e in edits:
@@ -30,6 +34,7 @@ def apply_batch(book, chunk, edits, dry=False):
         if not (0 <= i < len(segs)):
             raise SystemExit('SEG RANGE %s#%d (n=%d)' % (chunk, segno, len(segs)))
         t = segs[i]
+        nl0 = t.count('\n') + t.count('\r')
         for e in es:
             c = t.count(e['old'])
             if c != 1:
@@ -41,7 +46,7 @@ def apply_batch(book, chunk, edits, dry=False):
                     c, book, chunk, segno, e['old'][:60], m.size, ctx))
             t = t.replace(e['old'], e['new'])
         segs[i] = t
-        if '\n' in t or '\r' in t:
+        if t.count('\n') + t.count('\r') != nl0:
             raise SystemExit('NEWLINE seg %s#%d' % (chunk, segno))
     if len(segs) != len(before):
         raise SystemExit('SEGCOUNT')

@@ -39,6 +39,7 @@ def paras(p):
 seg_by_book = collections.Counter()
 seg_by_chunk = collections.Counter()
 seg2_by_chunk = collections.Counter()
+seg3_by_chunk = collections.Counter()
 def mat_chunks(lo, hi):
     """校閱_lo..hi 標籤所涵蓋的 (book,chunk) 集合"""
     import re
@@ -65,7 +66,10 @@ for book in sorted(os.listdir(BAK)):
         continue
     names = set()
     for f in os.listdir(bd):
-        names.add(f[:-6] + '.txt' if f.endswith('_b.txt') else f)
+        if f.endswith(('_b.txt', '_c.txt')):
+            names.add(f[:-6] + '.txt')
+        else:
+            names.add(f)
     for f in sorted(names):
         if not f.endswith('.txt'):
             continue
@@ -77,6 +81,7 @@ for book in sorted(os.listdir(BAK)):
         b = paras(cur_p)
         orig_p = os.path.join(bd, f)
         bp = os.path.join(bd, f[:-4] + '_b.txt')
+        cp = os.path.join(bd, f[:-4] + '_c.txt')
         if os.path.exists(orig_p):
             a = paras(orig_p)
             if len(a) != len(b):
@@ -98,8 +103,19 @@ for book in sorted(os.listdir(BAK)):
                     # 只有 _b：累計即本輪
                     seg_by_book[book] += n2
                     seg_by_chunk[(book, f)] += n2
+        if os.path.exists(cp) and not os.path.exists(orig_p) and not os.path.exists(bp):
+            a3 = paras(cp)
+            if len(a3) != len(b):
+                print('!! _c count mismatch', book, f, len(a3), len(b))
+            else:
+                n3 = sum(1 for x, y in zip(a3, b) if x != y)
+                if n3:
+                    seg_by_book[book] += n3
+                    seg_by_chunk[(book, f)] += n3
+                    seg3_by_chunk[(book, f)] += n3
 t_seg = sum(seg_by_book.values())
 t_seg2 = sum(seg2_by_chunk.values())
+t_seg3 = sum(seg3_by_chunk.values())
 t_items = sum(v[0] for v in rows.values())
 t_rej = sum(v[2] for v in rows.values())
 t_doubt = sum(v[3] for v in rows.values())
@@ -114,8 +130,8 @@ L.append('- 回覆來源：`batch_qwen/r3/resp_%s.txt` ～ `resp_%s.txt`（目�
 L.append('- 對應材料：`校閱_10K/校閱_%s.txt` ～ `校閱_%s.txt`。' % (nnns[0], nnns[-1]))
 L.append('- 對照檔（權威來源）：`AI語譯/out/<書>/<chunk>.txt`。材料標籤 `【NNN-MMMM】<書>/<chunk>#段` **不以段號定位**：改以材料【譯文】全文與 out 段落逐一比對（完全相同者取唯一精確命中，微差者取相似度 ≥0.94 之最佳者）。實測材料段號自 校閱_022 起與 out 段落相差 2 段以上，故段號不可信。')
 L.append('- 改動方式：只換該段的字句（片語級替換），不動段落數、不動行尾（各檔 LF/CRLF 原樣保留）。')
-L.append('- 備份：`歸檔/r3修正前/<書>/<chunk>.txt`（001–038 首次改動前的原樣）、`<chunk>_b.txt`（039 以後首次改動前的原樣）。')
-L.append('- 逐檔紀錄：`r3_done.tsv`；改動明細：`fix_r3.tsv`（001–038）、`fix_r3b.tsv`（039 以後）；處理腳本：`_r3/seg.py`、`edit2.py`、`edit3.py`、`gen2.py`、`verify.py`。\n')
+L.append('- 備份：`歸檔/r3修正前/<書>/<chunk>.txt`（001–038 首次改動前的原樣）、`<chunk>_b.txt`（039–060 首次改動前的原樣）、`<chunk>_c.txt`（061 以後首次改動前的原樣）。')
+L.append('- 逐檔紀錄：`r3_done.tsv`；改動明細：`fix_r3.tsv`（001–038）、`fix_r3b.tsv`（039–060）、`fix_r3c.tsv`（061 以後）；處理腳本：`_r3/seg.py`、`edit2.py`、`edit3.py`、`edit4.py`、`sug.py`、`find.py`、`gen2.py`、`verify.py`。\n')
 L.append('## 二、統計\n')
 L.append('| 項目 | 數 |')
 L.append('|---|---|')
@@ -124,6 +140,7 @@ L.append('| 處理意見條數 | %d |' % t_items)
 L.append('| 實際改動段數（累計，對原始備份） | %d（01_行事鈔 %d、02_戒疏 %d） |'
          % (t_seg, seg_by_book.get('01_行事鈔', 0), seg_by_book.get('02_戒疏', 0)))
 L.append('| 其中 039 以後本輪改動段數 | %d |' % t_seg2)
+L.append('| 其中 061 以後本輪改動段數 | %d |' % t_seg3)
 L.append('| 否決（含潤飾／加註／體例） | %d |' % t_rej)
 L.append('| 存疑 | %d |\n' % t_doubt)
 L.append('改動分布（累計）：\n')
@@ -154,7 +171,7 @@ if os.path.exists(_dm):
     _n = sum(1 for l in open(_dm, encoding='utf-8') if l.startswith('- **'))
 L.append('判定為存疑者共 %d 條（分見各檔備註）；其中需覆核古注、兩讀並存而逐條記錄者 %d 條，見 `存疑材料/r3_存疑/01_行事鈔.md`，現行譯文均未動。\n' % (t_doubt, _n))
 L.append('## 六、進度\n')
-L.append('已處理至 `resp_%s`（前段範圍）。`resp_%03d` 以後另由後段處理。續跑時：讀 `resp_NNN.txt` → 以 `python AI語譯/_work/review/_r3/seg.py -t NNN` 看現行譯文 → 寫 `{"subs":[{"nnn":"NNN","pairs":[[舊,新],…]}],"log":[…]}` 交 `edit3.py`（自動定位、自動備份、行尾不變）→ 重跑 `gen2.py`。'
+L.append('已處理至 `resp_%s`（前段範圍）。`resp_%03d` 以後另由後段處理。續跑時：以 `sug.py NNN`（逐條抽取 原文/現譯⇒建議）與 `find.py NNN "現譯片段"`（模糊定位並印上下文）判讀，再寫 `{"subs":[{"nnn":"NNN","pairs":[[舊,新],…]}],"log":[…]}` 交 `edit4.py`（自動定位、備份寫 `<chunk>_c.txt`、行尾不變、明細寫 `fix_r3c.tsv`）→ 重跑 `gen2.py`。'
          % (nnns[-1], int(nnns[-1]) + 1))
 open(OUTMD, 'w', encoding='utf-8').write('\n'.join(L))
 print('wrote', OUTMD, 'files', len(rows), 'items', t_items, 'segs', t_seg, 'thisrun', t_seg2, 'rej', t_rej, 'doubt', t_doubt)

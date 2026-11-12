@@ -1,0 +1,36 @@
+﻿file                               para  eol diff   appl  sugok status
+03_業疏/00_卷首                           5 CRLF    2      2      2 OK
+03_業疏/03a_卷一之三                      134 CRLF    1      1      1 OK
+03_業疏/05a_卷一之五                      117 CRLF    1      1      1 OK
+03_業疏/07a_卷二之一                      100 CRLF    2      2      2 OK
+03_業疏/07b_卷二之一                      115 CRLF    1      1      1 OK
+03_業疏/08a_卷二之二                      129 CRLF    1      1      1 OK
+03_業疏/08b_卷二之二                      111 CRLF    1      1      1 OK
+03_業疏/15a_卷三之四                      118 CRLF    1      1      1 OK
+04_比丘尼鈔/03a_卷中之上                     78 CRLF    1      1      1 OK
+04_比丘尼鈔/03b_卷中之上                     32 CRLF    1      1      1 OK
+04_比丘尼鈔/04a_卷中之下                     35 CRLF    2      2      2 OK
+04_比丘尼鈔/04b_卷中之下                     85 CRLF    3      3      3 OK
+04_比丘尼鈔/05b_卷下之上                     48 CRLF    2      2      2 OK
+04_比丘尼鈔/06a_卷下之下                     66 CRLF    3      3      3 OK
+05_拾毗尼義鈔/01a_卷上之一                    16 CRLF    3      3      3 OK
+05_拾毗尼義鈔/03a_卷中之一                    40 CRLF    1      1      1 OK
+05_拾毗尼義鈔/03b_卷中之一                    41 CRLF    2      2      2 OK
+05_拾毗尼義鈔/04a_卷中之二                    53 CRLF    2      2      2 OK
+05_拾毗尼義鈔/04b_卷中之二                    43 CRLF    3      3      3 OK
+資持記/02c_上一下                          63 CRLF    1      1      1 OK
+資持記/02d_上一下                          63 CRLF    1      1      1 OK
+資持記/02e_上一下                          62 CRLF    1      1      1 OK
+資持記/02f_上一下                          53 CRLF    2      2      2 OK
+資持記/03b_上二                           64 CRLF    1      1      1 OK
+資持記/03c_上二                           64 CRLF    2      2      2 OK
+資持記/03d_上二                           21 CRLF    1      1      1 OK
+資持記/04a_上三                           67 CRLF    1      1      1 OK
+資持記/10b_中三下                          64 CRLF    1      1      1 OK
+03_業疏/21a_卷四之四                      105 CRLF    1      1      1 OK
+03_業疏/21b_卷四之四                      102 CRLF    1      1      1 OK
+03_業疏/22a_卷四之五                      127 CRLF    1      1      1 OK
+03_業疏/22b_卷四之五                      167 CRLF    4      4      4 OK
+
+files=32  total paras=2388  applied=51  diff paras=51  failures=0
+encoding ok (utf-8, no BOM)

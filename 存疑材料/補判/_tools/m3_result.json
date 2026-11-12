@@ -1,0 +1,926 @@
+{
+ "report": [
+  {
+   "id": "1557-0006",
+   "book": "03_業疏",
+   "chunk": "00_卷首",
+   "seg": 1,
+   "src": "新_補_01_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1558-0003",
+   "book": "03_業疏",
+   "chunk": "00_卷首",
+   "seg": 4,
+   "src": "新_補_01_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1597-0007",
+   "book": "03_業疏",
+   "chunk": "03a_卷一之三",
+   "seg": 118,
+   "src": "新_補_02_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1623-0004",
+   "book": "03_業疏",
+   "chunk": "05a_卷一之五",
+   "seg": 29,
+   "src": "新_補_02_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1650-0005",
+   "book": "03_業疏",
+   "chunk": "07a_卷二之一",
+   "seg": 23,
+   "src": "新_補_03_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1654-0005",
+   "book": "03_業疏",
+   "chunk": "07a_卷二之一",
+   "seg": 78,
+   "src": "新_補_03_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1657-0015",
+   "book": "03_業疏",
+   "chunk": "07b_卷二之一",
+   "seg": 39,
+   "src": "新_補_03_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1662-0011",
+   "book": "03_業疏",
+   "chunk": "08a_卷二之二",
+   "seg": 11,
+   "src": "新_補_04_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1672-0010",
+   "book": "03_業疏",
+   "chunk": "08b_卷二之二",
+   "seg": 41,
+   "src": "新_補_04_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1774-0012",
+   "book": "03_業疏",
+   "chunk": "15a_卷三之四",
+   "seg": 14,
+   "src": "新_補_04_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1433-0003",
+   "book": "04_比丘尼鈔",
+   "chunk": "03a_卷中之上",
+   "seg": 66,
+   "src": "新_補_05_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1439-0001",
+   "book": "04_比丘尼鈔",
+   "chunk": "03b_卷中之上",
+   "seg": 9,
+   "src": "新_補_06_回2.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1445-0003",
+   "book": "04_比丘尼鈔",
+   "chunk": "04a_卷中之下",
+   "seg": 1,
+   "src": "新_補_07_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1448-0002",
+   "book": "04_比丘尼鈔",
+   "chunk": "04a_卷中之下",
+   "seg": 9,
+   "src": "新_補_07_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1455-0006",
+   "book": "04_比丘尼鈔",
+   "chunk": "04b_卷中之下",
+   "seg": 8,
+   "src": "新_補_08_回2.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1457-0004",
+   "book": "04_比丘尼鈔",
+   "chunk": "04b_卷中之下",
+   "seg": 22,
+   "src": "新_補_08_回2.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1460-0001",
+   "book": "04_比丘尼鈔",
+   "chunk": "04b_卷中之下",
+   "seg": 39,
+   "src": "新_補_09_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1480-0011",
+   "book": "04_比丘尼鈔",
+   "chunk": "05b_卷下之上",
+   "seg": 41,
+   "src": "新_補_11_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1481-0005",
+   "book": "04_比丘尼鈔",
+   "chunk": "05b_卷下之上",
+   "seg": 48,
+   "src": "新_補_11_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1484-0006",
+   "book": "04_比丘尼鈔",
+   "chunk": "06a_卷下之下",
+   "seg": 29,
+   "src": "新_補_12_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1486-0001",
+   "book": "04_比丘尼鈔",
+   "chunk": "06a_卷下之下",
+   "seg": 38,
+   "src": "新_補_12_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1487-0010",
+   "book": "04_比丘尼鈔",
+   "chunk": "06a_卷下之下",
+   "seg": 57,
+   "src": "新_補_12_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1503-0001",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "01a_卷上之一",
+   "seg": 12,
+   "src": "新_補_13_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1504-0001",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "01a_卷上之一",
+   "seg": 13,
+   "src": "新_補_13_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1506-0001",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "01a_卷上之一",
+   "seg": 15,
+   "src": "新_補_13_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1525-0001",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "03a_卷中之一",
+   "seg": 10,
+   "src": "新_補_14_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1530-0001",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "03b_卷中之一",
+   "seg": 1,
+   "src": "新_補_14_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1537-0003",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "03b_卷中之一",
+   "seg": 41,
+   "src": "新_補_14_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1537-0006",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "04a_卷中之二",
+   "seg": 3,
+   "src": "新_補_15_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1539-0001",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "04a_卷中之二",
+   "seg": 6,
+   "src": "新_補_15_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1555-0004",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "04b_卷中之二",
+   "seg": 34,
+   "src": "新_補_15_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1556-0002",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "04b_卷中之二",
+   "seg": 36,
+   "src": "新_補_15_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1557-0005",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "04b_卷中之二",
+   "seg": 43,
+   "src": "新_補_15_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "941-0063",
+   "book": "資持記",
+   "chunk": "02c_上一下",
+   "seg": 63,
+   "src": "新_補_16_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "945-0032",
+   "book": "資持記",
+   "chunk": "02d_上一下",
+   "seg": 32,
+   "src": "新_補_16_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "956-0060",
+   "book": "資持記",
+   "chunk": "02e_上一下",
+   "seg": 60,
+   "src": "新_補_17_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "961-0029",
+   "book": "資持記",
+   "chunk": "02f_上一下",
+   "seg": 29,
+   "src": "新_補_17_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "963-0048",
+   "book": "資持記",
+   "chunk": "02f_上一下",
+   "seg": 48,
+   "src": "新_補_17_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "972-0004",
+   "book": "資持記",
+   "chunk": "03b_上二",
+   "seg": 4,
+   "src": "新_補_17_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "984-0034",
+   "book": "資持記",
+   "chunk": "03c_上二",
+   "seg": 34,
+   "src": "新_補_18_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "984-0035",
+   "book": "資持記",
+   "chunk": "03c_上二",
+   "seg": 35,
+   "src": "新_補_18_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "資持記-03d#1",
+   "book": "資持記",
+   "chunk": "03d_上二",
+   "seg": 1,
+   "src": "新_補_18_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "997-0052",
+   "book": "資持記",
+   "chunk": "04a_上三",
+   "seg": 52,
+   "src": "新_補_19_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1200-0007",
+   "book": "資持記",
+   "chunk": "10b_中三下",
+   "seg": 59,
+   "src": "新_補_19_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1883-0001",
+   "book": "03_業疏",
+   "chunk": "21a_卷四之四",
+   "seg": 48,
+   "src": "末_補_01_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1892-0012",
+   "book": "03_業疏",
+   "chunk": "21b_卷四之四",
+   "seg": 102,
+   "src": "末_補_01_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1894-0009",
+   "book": "03_業疏",
+   "chunk": "22a_卷四之五",
+   "seg": 25,
+   "src": "末_補_01_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1903-0007",
+   "book": "03_業疏",
+   "chunk": "22b_卷四之五",
+   "seg": 16,
+   "src": "末_補_01_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1903-0013",
+   "book": "03_業疏",
+   "chunk": "22b_卷四之五",
+   "seg": 22,
+   "src": "末_補_01_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1905-0021",
+   "book": "03_業疏",
+   "chunk": "22b_卷四之五",
+   "seg": 65,
+   "src": "末_補_01_回.txt",
+   "result": "套用"
+  },
+  {
+   "id": "1907-0005",
+   "book": "03_業疏",
+   "chunk": "22b_卷四之五",
+   "seg": 89,
+   "src": "末_補_01_回.txt",
+   "result": "套用"
+  }
+ ],
+ "files": [
+  {
+   "path": "AI語譯/out/03_業疏/00_卷首.txt",
+   "book": "03_業疏",
+   "chunk": "00_卷首",
+   "n_para_before": 5,
+   "n_para_after": 5,
+   "eol_before": {
+    "CRLF": 5
+   },
+   "eol_after": {
+    "CRLF": 5
+   },
+   "applied": 2,
+   "diff_paras": 2,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/03_業疏/03a_卷一之三.txt",
+   "book": "03_業疏",
+   "chunk": "03a_卷一之三",
+   "n_para_before": 134,
+   "n_para_after": 134,
+   "eol_before": {
+    "CRLF": 134
+   },
+   "eol_after": {
+    "CRLF": 134
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/03_業疏/05a_卷一之五.txt",
+   "book": "03_業疏",
+   "chunk": "05a_卷一之五",
+   "n_para_before": 117,
+   "n_para_after": 117,
+   "eol_before": {
+    "CRLF": 117
+   },
+   "eol_after": {
+    "CRLF": 117
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/03_業疏/07a_卷二之一.txt",
+   "book": "03_業疏",
+   "chunk": "07a_卷二之一",
+   "n_para_before": 100,
+   "n_para_after": 100,
+   "eol_before": {
+    "CRLF": 100
+   },
+   "eol_after": {
+    "CRLF": 100
+   },
+   "applied": 2,
+   "diff_paras": 2,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/03_業疏/07b_卷二之一.txt",
+   "book": "03_業疏",
+   "chunk": "07b_卷二之一",
+   "n_para_before": 115,
+   "n_para_after": 115,
+   "eol_before": {
+    "CRLF": 115
+   },
+   "eol_after": {
+    "CRLF": 115
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/03_業疏/08a_卷二之二.txt",
+   "book": "03_業疏",
+   "chunk": "08a_卷二之二",
+   "n_para_before": 129,
+   "n_para_after": 129,
+   "eol_before": {
+    "CRLF": 129
+   },
+   "eol_after": {
+    "CRLF": 129
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/03_業疏/08b_卷二之二.txt",
+   "book": "03_業疏",
+   "chunk": "08b_卷二之二",
+   "n_para_before": 111,
+   "n_para_after": 111,
+   "eol_before": {
+    "CRLF": 111
+   },
+   "eol_after": {
+    "CRLF": 111
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/03_業疏/15a_卷三之四.txt",
+   "book": "03_業疏",
+   "chunk": "15a_卷三之四",
+   "n_para_before": 118,
+   "n_para_after": 118,
+   "eol_before": {
+    "CRLF": 118
+   },
+   "eol_after": {
+    "CRLF": 118
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/04_比丘尼鈔/03a_卷中之上.txt",
+   "book": "04_比丘尼鈔",
+   "chunk": "03a_卷中之上",
+   "n_para_before": 78,
+   "n_para_after": 78,
+   "eol_before": {
+    "CRLF": 78
+   },
+   "eol_after": {
+    "CRLF": 78
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/04_比丘尼鈔/03b_卷中之上.txt",
+   "book": "04_比丘尼鈔",
+   "chunk": "03b_卷中之上",
+   "n_para_before": 32,
+   "n_para_after": 32,
+   "eol_before": {
+    "CRLF": 32
+   },
+   "eol_after": {
+    "CRLF": 32
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/04_比丘尼鈔/04a_卷中之下.txt",
+   "book": "04_比丘尼鈔",
+   "chunk": "04a_卷中之下",
+   "n_para_before": 35,
+   "n_para_after": 35,
+   "eol_before": {
+    "CRLF": 35
+   },
+   "eol_after": {
+    "CRLF": 35
+   },
+   "applied": 2,
+   "diff_paras": 2,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/04_比丘尼鈔/04b_卷中之下.txt",
+   "book": "04_比丘尼鈔",
+   "chunk": "04b_卷中之下",
+   "n_para_before": 85,
+   "n_para_after": 85,
+   "eol_before": {
+    "CRLF": 85
+   },
+   "eol_after": {
+    "CRLF": 85
+   },
+   "applied": 3,
+   "diff_paras": 3,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/04_比丘尼鈔/05b_卷下之上.txt",
+   "book": "04_比丘尼鈔",
+   "chunk": "05b_卷下之上",
+   "n_para_before": 48,
+   "n_para_after": 48,
+   "eol_before": {
+    "CRLF": 48
+   },
+   "eol_after": {
+    "CRLF": 48
+   },
+   "applied": 2,
+   "diff_paras": 2,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/04_比丘尼鈔/06a_卷下之下.txt",
+   "book": "04_比丘尼鈔",
+   "chunk": "06a_卷下之下",
+   "n_para_before": 66,
+   "n_para_after": 66,
+   "eol_before": {
+    "CRLF": 66
+   },
+   "eol_after": {
+    "CRLF": 66
+   },
+   "applied": 3,
+   "diff_paras": 3,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/05_拾毗尼義鈔/01a_卷上之一.txt",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "01a_卷上之一",
+   "n_para_before": 16,
+   "n_para_after": 16,
+   "eol_before": {
+    "CRLF": 16
+   },
+   "eol_after": {
+    "CRLF": 16
+   },
+   "applied": 3,
+   "diff_paras": 3,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/05_拾毗尼義鈔/03a_卷中之一.txt",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "03a_卷中之一",
+   "n_para_before": 40,
+   "n_para_after": 40,
+   "eol_before": {
+    "CRLF": 40
+   },
+   "eol_after": {
+    "CRLF": 40
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/05_拾毗尼義鈔/03b_卷中之一.txt",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "03b_卷中之一",
+   "n_para_before": 41,
+   "n_para_after": 41,
+   "eol_before": {
+    "CRLF": 41
+   },
+   "eol_after": {
+    "CRLF": 41
+   },
+   "applied": 2,
+   "diff_paras": 2,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/05_拾毗尼義鈔/04a_卷中之二.txt",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "04a_卷中之二",
+   "n_para_before": 53,
+   "n_para_after": 53,
+   "eol_before": {
+    "CRLF": 53
+   },
+   "eol_after": {
+    "CRLF": 53
+   },
+   "applied": 2,
+   "diff_paras": 2,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/05_拾毗尼義鈔/04b_卷中之二.txt",
+   "book": "05_拾毗尼義鈔",
+   "chunk": "04b_卷中之二",
+   "n_para_before": 43,
+   "n_para_after": 43,
+   "eol_before": {
+    "CRLF": 43
+   },
+   "eol_after": {
+    "CRLF": 43
+   },
+   "applied": 3,
+   "diff_paras": 3,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/資持記/02c_上一下.txt",
+   "book": "資持記",
+   "chunk": "02c_上一下",
+   "n_para_before": 63,
+   "n_para_after": 63,
+   "eol_before": {
+    "CRLF": 63
+   },
+   "eol_after": {
+    "CRLF": 63
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/資持記/02d_上一下.txt",
+   "book": "資持記",
+   "chunk": "02d_上一下",
+   "n_para_before": 63,
+   "n_para_after": 63,
+   "eol_before": {
+    "CRLF": 63
+   },
+   "eol_after": {
+    "CRLF": 63
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/資持記/02e_上一下.txt",
+   "book": "資持記",
+   "chunk": "02e_上一下",
+   "n_para_before": 62,
+   "n_para_after": 62,
+   "eol_before": {
+    "CRLF": 62
+   },
+   "eol_after": {
+    "CRLF": 62
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/資持記/02f_上一下.txt",
+   "book": "資持記",
+   "chunk": "02f_上一下",
+   "n_para_before": 53,
+   "n_para_after": 53,
+   "eol_before": {
+    "CRLF": 53
+   },
+   "eol_after": {
+    "CRLF": 53
+   },
+   "applied": 2,
+   "diff_paras": 2,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/資持記/03b_上二.txt",
+   "book": "資持記",
+   "chunk": "03b_上二",
+   "n_para_before": 64,
+   "n_para_after": 64,
+   "eol_before": {
+    "CRLF": 64
+   },
+   "eol_after": {
+    "CRLF": 64
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/資持記/03c_上二.txt",
+   "book": "資持記",
+   "chunk": "03c_上二",
+   "n_para_before": 64,
+   "n_para_after": 64,
+   "eol_before": {
+    "CRLF": 64
+   },
+   "eol_after": {
+    "CRLF": 64
+   },
+   "applied": 2,
+   "diff_paras": 2,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/資持記/03d_上二.txt",
+   "book": "資持記",
+   "chunk": "03d_上二",
+   "n_para_before": 21,
+   "n_para_after": 21,
+   "eol_before": {
+    "CRLF": 21
+   },
+   "eol_after": {
+    "CRLF": 21
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/資持記/04a_上三.txt",
+   "book": "資持記",
+   "chunk": "04a_上三",
+   "n_para_before": 67,
+   "n_para_after": 67,
+   "eol_before": {
+    "CRLF": 67
+   },
+   "eol_after": {
+    "CRLF": 67
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/資持記/10b_中三下.txt",
+   "book": "資持記",
+   "chunk": "10b_中三下",
+   "n_para_before": 64,
+   "n_para_after": 64,
+   "eol_before": {
+    "CRLF": 64
+   },
+   "eol_after": {
+    "CRLF": 64
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/03_業疏/21a_卷四之四.txt",
+   "book": "03_業疏",
+   "chunk": "21a_卷四之四",
+   "n_para_before": 105,
+   "n_para_after": 105,
+   "eol_before": {
+    "CRLF": 105
+   },
+   "eol_after": {
+    "CRLF": 105
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/03_業疏/21b_卷四之四.txt",
+   "book": "03_業疏",
+   "chunk": "21b_卷四之四",
+   "n_para_before": 102,
+   "n_para_after": 102,
+   "eol_before": {
+    "CRLF": 102
+   },
+   "eol_after": {
+    "CRLF": 102
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/03_業疏/22a_卷四之五.txt",
+   "book": "03_業疏",
+   "chunk": "22a_卷四之五",
+   "n_para_before": 127,
+   "n_para_after": 127,
+   "eol_before": {
+    "CRLF": 127
+   },
+   "eol_after": {
+    "CRLF": 127
+   },
+   "applied": 1,
+   "diff_paras": 1,
+   "ok": true
+  },
+  {
+   "path": "AI語譯/out/03_業疏/22b_卷四之五.txt",
+   "book": "03_業疏",
+   "chunk": "22b_卷四之五",
+   "n_para_before": 167,
+   "n_para_after": 167,
+   "eol_before": {
+    "CRLF": 167
+   },
+   "eol_after": {
+    "CRLF": 167
+   },
+   "applied": 4,
+   "diff_paras": 4,
+   "ok": true
+  }
+ ]
+}

@@ -1,0 +1,131 @@
+# -*- coding: utf-8 -*-
+"""r2 1048-1180 摘要器：把 resp 壓成「候選替換」清單，供人工覆核。
+用法: python _zx2_dg.py 1048 [1049 ...]
+輸出: n|seq|seg|OLD => NEW|win|why
+"""
+import os, sys, re
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _r2a_lib as L
+
+RESP = os.path.join(L.ROOT, 'batch_qwen', 'r2')
+QUOT = re.compile(r'「([^」]{2,60})」')
+STRONG = re.compile(r'(錯|誤|相反|反了|顛倒|漏譯|漏掉|不成對|應作|應改|必須|不可|術語|專名|程序|多出|增譯|添加|衍文|脫文|不成詞|讀破|標點)')
+WEAK = re.compile(r'(可保留|無問題|正確無誤|譯得準確|已經正確)')
+SEQPATS = [
+    re.compile(r'【\s*(?:\d{3,4}-)?(\d{1,4})\s*】'),
+    re.compile(r'#{2,4}\s*(?:[\u4e00-\u9fff]+/[^\s#]*?#)?\s*(\d{1,4})\s*(?:｜|$)'),
+    re.compile(r'(?<![\d])#(\d{1,2})(?![\d])'),
+    re.compile(r'段\s*(\d{1,2})(?![\d])'),
+]
+
+
+def clean(s):
+    return s.replace('**', '').replace('*', '').strip()
+NEWPAT = re.compile(r'(?:建議(?:改為|作|改成)?|應作|應改為|應改|宜作|宜改為|宜改|改作|改為|改成|作)[：:，,、\s]*「([^」]+)」')
+
+
+def clean(s):
+    return s.replace('**', '').replace('*', '').strip()
+
+
+def quoted_pairs(item):
+    return [clean(q) for q in QUOT.findall(item) if clean(q)]
+
+
+def find_old(item, cur):
+    qs = quoted_pairs(item)
+    # 先找最長且出現在譯文的引文
+    best = None
+    for q in qs:
+        if q in cur and len(q) >= 2:
+            if best is None or len(q) > len(best):
+                best = q
+    return best
+
+
+def find_new(item, old, cur, orig):
+    m = NEWPAT.search(item)
+    cands = []
+    if m:
+        cands.append(m.group(1))
+    qs = quoted_pairs(item)
+    if old in qs:
+        i = qs.index(old)
+        cands.extend(qs[i + 1:])
+    cands.extend(qs)
+    for c in cands:
+        c = clean(c)
+        if not c or c == old:
+            continue
+        if c in cur or c in (orig or ''):
+            continue
+        if c in ('……', '…') or '…' in c or len(c) > 40:
+            continue
+        return c
+    return None
+
+
+def main():
+    for a in sys.argv[1:]:
+        n = int(a)
+        rp = os.path.join(RESP, 'resp_%d.txt' % n)
+        print('##### %d' % n)
+        if not os.path.exists(rp):
+            print('MISSING')
+            continue
+        txt = open(rp, encoding='utf-8').read()
+        recs = L.parse_review(n)
+        outs = {}
+        for r in recs:
+            k = (r['book'], r['chunk'])
+            if k not in outs:
+                outs[k] = L.Out(*k)
+        seqs = [r['seq'] for r in recs]
+        lines = txt.split('\n')
+        seq = None
+        items = []
+        cur = []
+        for ln in lines:
+            s = ln.rstrip('\r')
+            found = None
+            for p in SEQPATS:
+                m = p.search(s)
+                if m:
+                    v = int(m.group(1))
+                    if v in seqs or (1 <= v <= 99):
+                        found = v
+                        break
+            isnew = bool(re.match(r'^\s*(?:\d{1,2}[\.、]|[*\-•]|❗|⚠|✏|✅|###|##\s*【)', s))
+            if isnew and cur:
+                items.append((seq, '\n'.join(cur)))
+                cur = []
+            if found is not None:
+                seq = found if found in seqs else seq
+            if s.strip():
+                cur.append(s)
+        if cur:
+            items.append((seq, '\n'.join(cur)))
+        for sq, it in items:
+            if sq is None or sq not in seqs:
+                continue
+            r = [x for x in recs if x['seq'] == sq][0]
+            cur_t = outs[(r['book'], r['chunk'])].segs[r['seg'] - 1]
+            old = find_old(it, cur_t)
+            if not old:
+                continue
+            if WEAK.search(it) and not re.search(r'(錯|誤|相反|顛倒|漏譯|應作|應改)', it):
+                continue
+            strong = bool(STRONG.search(it))
+            new = find_new(it, old, cur_t, r['orig'])
+            i = cur_t.find(old)
+            win = cur_t[max(0, i - 28):i + len(old) + 28].replace('\n', '')
+            why = re.sub(r'\s+', ' ', it)[:70]
+            if new:
+                print('%d|%d|%d|%s => %s|%s|%s' % (n, sq, r['seg'], old, new, win, why))
+            elif strong:
+                print('%d|%d|%d|%s => ?|%s|%s' % (n, sq, r['seg'], old, win, why))
+        print()
+
+
+if __name__ == '__main__':
+    main()

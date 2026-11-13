@@ -1,0 +1,7 @@
+10b_中三下 paras=65 lines=128 CR=0
+BAD bracket 10b_中三下#14 〔2/1〕 （0/0） 「1/1」
+BAD bracket 10b_中三下#15 〔0/1〕 （0/0） 「3/3」
+BAD bracket 10b_中三下#18 〔2/1〕 （2/2） 「0/0」
+BAD bracket 10b_中三下#19 〔3/4〕 （0/0） 「0/0」
+BAD bracket 10b_中三下#44 〔2/1〕 （4/4） 「3/3」
+10c_中三下 paras=66 lines=130 CR=0

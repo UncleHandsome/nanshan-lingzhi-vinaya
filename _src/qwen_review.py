@@ -26,7 +26,7 @@ def stopped():
 
 
 def run(n):
-    src = os.path.join(B, '校閱_10K', '校閱_%03d.txt' % n)
+    src = os.path.join(B, os.environ.get('QWEN_SRC', '校閱_10K'), '校閱_%03d.txt' % n)
     dst = os.path.join(OUT, 'resp_%03d.txt' % n)
     if os.path.exists(dst) and os.path.getsize(dst) > 200:
         return (n, 'skip')
@@ -39,6 +39,7 @@ def run(n):
         'messages': [{'role': 'user',
                       'content': PROMPT + body.strip()}],
         'enable_thinking': True,
+        'enable_search': os.environ.get('QWEN_SEARCH','0')=='1',
         'max_completion_tokens': 65536,
     }
     data = json.dumps(payload).encode()

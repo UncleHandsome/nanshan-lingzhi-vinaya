@@ -1,0 +1,22 @@
+{
+ "file": "files/xxtyfqbikmdx",
+ "batch": {
+  "name": "batches/4hga8c9323z2wzy1dgkocbd18j1679dk930t",
+  "metadata": {
+   "@type": "type.googleapis.com/google.ai.generativelanguage.v1main.GenerateContentBatch",
+   "model": "models/gemini-4-argon",
+   "displayName": "translation-argon-14",
+   "inputConfig": {
+    "fileName": "files/xxtyfqbikmdx"
+   },
+   "createTime": "2026-11-12T22:04:35.436268120Z",
+   "updateTime": "2026-11-12T22:04:35.436268120Z",
+   "batchStats": {
+    "requestCount": "14",
+    "pendingRequestCount": "14"
+   },
+   "state": "BATCH_STATE_PENDING",
+   "name": "batches/4hga8c9323z2wzy1dgkocbd18j1679dk930t"
+  }
+ }
+}

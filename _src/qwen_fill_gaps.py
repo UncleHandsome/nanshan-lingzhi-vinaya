@@ -7,7 +7,7 @@ KEY = open(os.path.join(B, '.qwen_key'), encoding='utf-8-sig').read().strip()
 BASE = 'https://token-plan.maas.qwencloudapi.com/compatible-mode/v1'
 MODEL = 'qwen4-max-preview'
 PROMPT = '幫我看看白話譯文有沒有甚麼問題'
-SRC = os.path.join(B, '校閱_10K')
+SRC = os.path.join(B, os.environ.get('QWEN_SRC', '校閱_10K'))
 
 
 def call(text, tag):

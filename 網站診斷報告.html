@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>lionccm.org 網站無法連線 — 診斷報告</title>
+<style>
+  :root {
+    --ink: #1a1d21;
+    --muted: #626b76;
+    --line: #dfe3e8;
+    --red: #c0392b;
+    --redbg: #fdf2f1;
+    --green: #1e7e4f;
+    --greenbg: #f0f9f4;
+    --amber: #9a6b00;
+    --amberbg: #fdf8ec;
+    --blue: #1f5fa8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 40px 20px 80px;
+    background: #f5f6f8;
+    color: var(--ink);
+    font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", -apple-system, sans-serif;
+    line-height: 1.75;
+    font-size: 15.5px;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  .card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 34px 38px;
+    margin-bottom: 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  header.card { border-top: 5px solid var(--red); }
+  h1 { font-size: 26px; margin: 0 0 10px; letter-spacing: -.3px; }
+  .meta { color: var(--muted); font-size: 13.5px; }
+  .meta b { color: var(--ink); font-weight: 600; }
+  h2 {
+    font-size: 19px; margin: 0 0 18px; padding-bottom: 10px;
+    border-bottom: 2px solid var(--line); letter-spacing: -.2px;
+  }
+  h3 { font-size: 16px; margin: 26px 0 10px; }
+  h3:first-of-type { margin-top: 0; }
+  p { margin: 0 0 14px; }
+  .verdict {
+    background: var(--redbg);
+    border-left: 5px solid var(--red);
+    padding: 20px 24px;
+    border-radius: 0 8px 8px 0;
+    margin: 22px 0;
+  }
+  .verdict .lbl {
+    font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+    color: var(--red); text-transform: uppercase; margin-bottom: 8px;
+  }
+  .verdict p { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.6; }
+  .verdict p + p { margin-top: 12px; font-size: 15px; font-weight: 400; color: #444; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14.5px; }
+  th, td { text-align: left; padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #fafbfc; font-weight: 600; width: 190px; color: #33383f; }
+  td code, code.inline {
+    font-family: "Cascadia Mono", Consolas, monospace;
+    background: #f1f3f5; padding: 2px 6px; border-radius: 4px;
+    font-size: 13.5px; color: #b3251a;
+  }
+  .ok  { color: var(--green); font-weight: 700; }
+  .bad { color: var(--red);   font-weight: 700; }
+  .warn{ color: var(--amber); font-weight: 700; }
+  pre {
+    background: #23272e; color: #e6e9ed; padding: 18px 20px; border-radius: 8px;
+    overflow-x: auto; font-family: "Cascadia Mono", Consolas, monospace;
+    font-size: 13px; line-height: 1.65; margin: 16px 0;
+  }
+  pre .r { color: #ff8a80; font-weight: 700; }
+  pre .g { color: #8bd99a; }
+  pre .y { color: #ffd479; }
+  pre .m { color: #8b949e; }
+  ol, ul { margin: 0 0 14px; padding-left: 24px; }
+  li { margin-bottom: 9px; }
+  .steps { counter-reset: s; list-style: none; padding-left: 0; }
+  .steps > li {
+    counter-increment: s;
+    position: relative;
+    padding: 16px 20px 16px 62px;
+    background: #fafbfc;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  .steps > li::before {
+    content: counter(s);
+    position: absolute; left: 18px; top: 16px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--blue); color: #fff;
+    font-weight: 700; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .steps > li strong { display: block; margin-bottom: 4px; }
+  .tag {
+    display: inline-block; font-size: 11.5px; font-weight: 700;
+    padding: 2px 9px; border-radius: 20px; letter-spacing: .5px;
+    vertical-align: middle; margin-left: 8px;
+  }
+  .tag.p1 { background: var(--redbg);   color: var(--red); }
+  .tag.p2 { background: var(--amberbg); color: var(--amber); }
+  .note {
+    background: var(--amberbg); border-left: 4px solid var(--amber);
+    padding: 15px 20px; border-radius: 0 6px 6px 0; margin: 18px 0;
+    font-size: 14.5px;
+  }
+  .note b { color: var(--amber); }
+  .good {
+    background: var(--greenbg); border-left: 4px solid var(--green);
+    padding: 15px 20px; border-radius: 0 6px 6px 0; margin: 18px 0;
+    font-size: 14.5px;
+  }
+  .good b { color: var(--green); }
+  footer { text-align: center; color: var(--muted); font-size: 12.5px; padding-top: 8px; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="card">
+    <h1>網站無法連線 — 診斷報告</h1>
+    <div class="meta">
+      檢測對象：<b>https://www.lionccm.org/</b> 　|　
+      檢測時間：<b>2026-11-12 20:25（台北時間）</b> 　|　
+      檢測者：DeepSeek Harness 自動化診斷
+    </div>
+  </header>
+
+  <section class="card">
+    <h2>一、結論</h2>
+
+    <div class="verdict">
+      <div class="lbl">根本原因</div>
+      <p>網站的 SSL 安全憑證已於 2026-11-11 上午 08:36 過期，至今未更新。</p>
+      <p>
+        這不是網路斷線、也不是主機當機。網站伺服器本身完全正常運作，
+        但因為憑證過期，所有瀏覽器與系統都會在建立加密連線時直接拒絕連線，
+        因此使用者看到的是「無法連上這個網站」。
+      </p>
+    </div>
+
+    <p>
+      換句話說：<b>網站本身是好的，只是「門牌上的有效期限」過期了，守門的瀏覽器不放行。</b>
+      只要把憑證續期，網站立刻就會恢復，不需要修改任何網頁內容。
+    </p>
+  </section>
+
+  <section class="card">
+    <h2>二、關鍵證據</h2>
+
+    <h3>1. 憑證確實已過期</h3>
+    <table>
+      <tr><th>憑證網域</th><td><code class="inline">www.lionccm.org</code></td></tr>
+      <tr><th>發證機構</th><td>Let's Encrypt（YR1）— 免費憑證，有效期 90 天</td></tr>
+      <tr><th>簽發日期</th><td>2026-08-13 08:36（台北時間）</td></tr>
+      <tr><th>到期時間</th><td><span class="bad">2026-11-11 08:36（台北時間）</span></td></tr>
+      <tr><th>目前狀態</th><td><span class="bad">已過期 1.5 天</span></td></tr>
+      <tr><th>系統錯誤碼</th><td><code class="inline">CERT_HAS_EXPIRED</code>（憑證已過期）</td></tr>
+      <tr><th>憑證鏈完整性</th><td><span class="ok">正常</span>（中繼憑證齊全，無缺漏）</td></tr>
+    </table>
+
+    <h3>2. 伺服器本身完全正常</h3>
+    <p>
+      若略過憑證檢查直接連線，網站回應正常，內容完整可讀：
+    </p>
+    <pre><span class="m">=== 略過憑證驗證後直接連線 ===</span>
+HTTP STATUS: <span class="g">200 OK</span>
+server: openresty
+content-type: text/html
+content-length: 5645
+last-modified: Mon, 17 Aug 2026 15:43:37 GMT
+
+<span class="m">&lt;title&gt;</span>正覺精舍<span class="m">&lt;/title&gt;</span>
+<span class="m">→ 首頁 HTML 正常送出，網站資料與程式皆無異常</span></pre>
+
+    <div class="good">
+      <b>重點：</b>後端網站 100% 健康。問題純粹出在「加密憑證」這一層，
+      修復後即可立即恢復，不會有資料遺失或需要還原的問題。
+    </div>
+
+    <h3>3. 憑證續期自動化已經中斷一段時間</h3>
+    <p>查詢憑證簽發紀錄（CT Log），可以看到續期節奏在 8 月之後就停了：</p>
+    <table>
+      <tr><th>簽發日期</th><th>涵蓋網域</th><th>到期日</th><th>狀態</th></tr>
+      <tr><td>2026-08-13</td><td>www.lionccm.org</td><td>2026-11-11</td><td><span class="bad">已過期（目前使用中）</span></td></tr>
+      <tr><td>2026-06-27</td><td>lionccm.org、*.lionccm.org</td><td>2026-09-25</td><td><span class="bad">已過期 48 天，未續</span></td></tr>
+      <tr><td>2026-05-13</td><td>lionccm.org、www</td><td>2026-08-11</td><td>已汰換</td></tr>
+      <tr><td>2026-03-14</td><td>lionccm.org、www</td><td>2026-06-12</td><td>已汰換</td></tr>
+    </table>
+    <div class="note">
+      <b>這代表：</b>憑證自動續期（Auto-Renew）在 <b>2026 年 8 月中旬之後就停止運作了</b>。
+      原本每約 45 天會自動換發一次，8 月 13 日之後完全沒有再簽發新憑證。
+      裸域的憑證更早在 9 月 25 日就已過期，但當時無人察覺，直到 11 月 11 日主站憑證也到期，網站才正式對外打不開。
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>三、為什麼使用者「完全無法繞過」</h2>
+    <p>
+      網站設定了 HSTS（強制加密連線）標頭，這是使用者無法自行點「繼續前往」的關鍵：
+    </p>
+    <pre>strict-transport-security: <span class="y">max-age=63072000; preload</span>
+<span class="m">                            └─ 2 年（63072000 秒）</span></pre>
+    <ul>
+      <li>曾經造訪過這個網站的瀏覽器，會在接下來 <b>2 年內</b>強制只走加密連線。</li>
+      <li>遇到憑證過期時，Chrome、Edge、Safari 會<b>隱藏「進階 → 繼續前往」的選項</b>，直接擋下。</li>
+      <li>因此使用者不是「看到警告還能點進去」，而是<b>真的完全進不去</b>。</li>
+      <li>即使換用不同瀏覽器或手機，只要該裝置曾被要求走 HSTS，一樣會被擋。</li>
+    </ul>
+    <div class="note">
+      <b>請勿採取以下做法：</b>關閉 HSTS、叫使用者「忽略警告繼續」、或在瀏覽器加入例外。
+      這些都無法解決問題，反而會讓已造訪過的使用者持續被鎖在門外。
+      <b>唯一正解是把憑證續期。</b>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>四、附帶發現的第二個問題 <span class="tag p2">次要</span></h2>
+    <p>
+      檢測時發現，不帶 www 的網址 <code class="inline">lionccm.org</code> 有<b>另一個獨立問題</b>：
+    </p>
+    <table>
+      <tr><th>www.lionccm.org</th><td>指向 <code class="inline">prx.lionccm.phimedia.tv</code> → <code class="inline">35.206.208.16</code>（Google Cloud 主機，openresty 反向代理）</td></tr>
+      <tr><th>lionccm.org</th><td>指向 <code class="inline">24.144.94.63</code> — <span class="warn">完全不同的另一台主機</span></td></tr>
+    </table>
+    <p>
+      而 <code class="inline">24.144.94.63</code> 這台主機上<b>並沒有設定 lionccm.org 這個網站</b>，
+      它回傳的是別人的憑證：
+    </p>
+    <pre><span class="m">=== 連線 lionccm.org（不帶 www）===</span>
+回傳憑證對象 : <span class="r">livekit.ecity.city</span>
+涵蓋網域     : DNS:livekit.ecity.city
+瀏覽器判定   : <span class="r">ERR_TLS_CERT_ALTNAME_INVALID</span>（網域不符）</pre>
+    <p>
+      意思是：直接輸入 <code class="inline">lionccm.org</code>（不含 www）的使用者，
+      會連到一台不屬於本網站的主機，看到錯誤或別人的頁面。
+      <b>建議一併請網站公司檢查 DNS 設定</b>，讓裸域正確指向同一個網站，
+      或設定轉址到 www。
+    </p>
+  </section>
+
+  <section class="card">
+    <h2>五、修復步驟</h2>
+    <p>請將本報告轉給<b>網站主機商／網站維護公司</b>（依 DNS 判斷為 <code class="inline">phimedia.tv</code> 及網域註冊商 <code class="inline">net-chinese.com.tw</code> 相關服務商），並要求：</p>
+
+    <ol class="steps">
+      <li>
+        <strong>立即續簽並部署 SSL 憑證 <span class="tag p1">最優先</span></strong>
+        為 <code class="inline">www.lionccm.org</code> 重新簽發憑證並套用到 openresty 反向代理。
+        若使用 certbot，指令為 <code class="inline">certbot renew</code>。
+        這一步完成後網站即刻恢復，通常 10 分鐘內可完成。
+      </li>
+      <li>
+        <strong>修復自動續期機制</strong>
+        查明為何 8 月之後自動續期停止運作（常見原因：cron／systemd timer 未執行、
+        ACME challenge 路徑被轉址規則阻擋、主機搬遷後排程未移轉）。
+        目前 port 80 的 <code class="inline">/.well-known/acme-challenge/</code> 會被 301 轉到 HTTPS，
+        需確認驗證檔仍可正常取得，否則續期會再次失敗。
+      </li>
+      <li>
+        <strong>補簽包含裸域的憑證</strong>
+        新憑證請同時涵蓋 <code class="inline">lionccm.org</code> 與 <code class="inline">www.lionccm.org</code>，
+        避免裸域再次出現網域不符的問題。
+      </li>
+      <li>
+        <strong>建立到期監控</strong>
+        設定憑證到期前 30／14／7 天的自動通知（例如監控服務或 Email 提醒），
+        避免再次發生「過期兩天才有人發現」的情況。
+      </li>
+      <li>
+        <strong>修正裸域 DNS <span class="tag p2">次要</span></strong>
+        確認 <code class="inline">lionccm.org</code> 應指向正確主機，或設定 301 轉址至 www。
+      </li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>六、修復後如何確認</h2>
+    <p>
+      本站已附檢查工具 <code class="inline">檢查憑證.js</code>，修復後執行即可確認：
+    </p>
+    <pre>node 檢查憑證.js
+
+<span class="m">修復成功時應顯示：</span>
+  <span class="g">✓ 憑證有效，還有 89 天到期</span>
+  瀏覽器判定 : <span class="g">✓ 正常</span></pre>
+    <p>或直接在瀏覽器開啟 <code class="inline">https://www.lionccm.org/</code>，能正常顯示首頁即表示已修復。</p>
+  </section>
+
+  <footer>
+    本報告由自動化診斷產生，所有數據於 2026-11-12 20:25（台北時間）實測取得。
+  </footer>
+
+</div>
+</body>
+</html>

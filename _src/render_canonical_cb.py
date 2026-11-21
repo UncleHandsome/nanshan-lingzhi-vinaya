@@ -41,6 +41,7 @@ for book in ([args.book] if args.book else list(BOOKS)):
    if chunk!=last:
     idx+=1; body.append('<h2 class="sec" id="p%d">%s</h2>'%(idx,html.escape(chunk))); last=chunk
    for lab,s,tr in pairs(r):
+    s = r.get('display_source') or s
     if not s or not tr: continue
     pc={'疏文':'s','記文':'j','註文':'z','律文':'lv','序文':'x'}.get(lab,'')
     oc={'疏文':'shu','記文':'ji','註文':'zhu','律文':'lv','序文':'xu'}.get(lab,'')

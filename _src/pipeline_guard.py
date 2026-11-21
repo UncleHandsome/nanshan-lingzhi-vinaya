@@ -47,7 +47,9 @@ def check(book):
             tr = html.unescape(re.sub('<[^>]+>', '', m.group(2)))
             if not tr.strip():
                 errors.append('%s 有空白白話' % v)
-            for bad in ('【後文背景', '【裁決', '【分段要求', '【必改硬傷】'):
+            if '白話：' in tr:
+                errors.append('%s 白話殘留「白話：」' % v)
+            for bad in ('【後文背景', '【裁決', '【分段要求', '【必改硬傷】', '【卷題】'):
                 if bad in o or bad in tr:
                     errors.append('%s 殘留 %s' % (v, bad))
                     break

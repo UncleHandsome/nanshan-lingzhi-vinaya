@@ -686,3 +686,11 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
 .pair.s .o,.pair.s .t{color:#5a3a18;}
 .pair.j .o,.pair.j .t{color:#1f4e6b;}
 .pair.m{background:#fafafa;}
+
+/* 註文、律文、序文 */
+.pair.z{border-left:4px solid #6b8e23;background:#f3f8e8;}
+.pair.z .o,.pair.z .t{color:#3f5413;}
+.pair.lv{border-left:4px solid #6f6f6f;background:#f4f4f4;}
+.pair.lv .o,.pair.lv .t{color:#3d3d3d;}
+.pair.x{border-left:4px solid #a05a9a;background:#fbf0fa;}
+.pair.x .o,.pair.x .t{color:#5e2a59;}

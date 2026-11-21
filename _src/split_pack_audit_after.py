@@ -1,0 +1,71 @@
+# -*- coding: utf-8 -*-
+"""pack_audit 審後拆回：每包只把被 [n] 點名的成員標 FIX，其餘 PASS。"""
+import io
+import json
+import os
+import re
+
+B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
+P = os.path.join(B, '測試', '重譯', '資持記', '_打包審核')
+OUT = os.path.join(B, '測試', '重譯', '資持記', '_終審_拆回', '回覆')
+os.makedirs(OUT, exist_ok=True)
+
+
+def verdict(t):
+    m = re.search(r'【結論】\s*(PASS|FIX|ERROR)', t)
+    return m.group(1) if m else ('FIX' if 'FIX' in t else 'PASS')
+
+
+def hard_section(t):
+    m = re.search(r'【必改硬傷】\s*(.*?)(?:\n【|\Z)', t, re.S)
+    return m.group(1).strip() if m else ''
+
+
+def split_fixes(sec, members):
+    marks = list(re.finditer(r'\[(?:打包段附)?\[?(\d+)\]?\]', sec))
+    out = {}
+    if not marks:
+        return out
+    for i, m in enumerate(marks):
+        n = int(m.group(1))
+        end = marks[i + 1].start() if i + 1 < len(marks) else len(sec)
+        body = sec[m.end():end].strip()
+        if 1 <= n <= len(members) and body:
+            out.setdefault(members[n - 1], []).append(body)
+    return out
+
+
+packs = 0
+pass_n = fix_n = 0
+for f in sorted(os.listdir(P)):
+    if not f.endswith('.json'):
+        continue
+    key = f[:-5]
+    rp = os.path.join(P, '回覆', key + '_回.txt')
+    if not os.path.exists(rp):
+        continue
+    x = json.load(io.open(os.path.join(P, f), encoding='utf-8'))
+    members = [str(m) for m in (x.get('members') or [])]
+    if not members:
+        continue
+    t = io.open(rp, encoding='utf-8').read()
+    v = verdict(t)
+    packs += 1
+    if v == 'PASS':
+        for k in members:
+            io.open(os.path.join(OUT, k + '_回.txt'), 'w', encoding='utf-8').write('【結論】\nPASS\n\n【必改硬傷】\n無\n')
+            pass_n += 1
+        continue
+    sec = hard_section(t)
+    fixes = split_fixes(sec, members)
+    if not fixes:
+        for k in members:
+            fixes.setdefault(k, []).append(sec or '未標 [n] 的硬傷，整包保留 FIX')
+    for k in members:
+        if k in fixes:
+            io.open(os.path.join(OUT, k + '_回.txt'), 'w', encoding='utf-8').write('【結論】\nFIX\n\n【必改硬傷】\n' + '\n'.join(fixes[k]) + '\n')
+            fix_n += 1
+        else:
+            io.open(os.path.join(OUT, k + '_回.txt'), 'w', encoding='utf-8').write('【結論】\nPASS\n\n【必改硬傷】\n無\n')
+            pass_n += 1
+print('packs', packs, 'pass', pass_n, 'fix', fix_n, 'out', OUT)

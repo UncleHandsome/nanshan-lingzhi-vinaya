@@ -17,7 +17,7 @@ def source_block(md):
     if not m:
         return ''
     s = md[m.end():].strip()
-    cut = re.search(r'\n■\s*[^\n（]*（|【裁決|【後文背景】|\n---', s)
+    cut = re.search(r'\n■\s*[^\n（]*（|【待審譯文】|【裁決|【後文背景】|\n---', s)
     if cut:
         s = s[:cut.start()].strip()
     return s

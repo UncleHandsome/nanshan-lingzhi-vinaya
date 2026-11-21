@@ -1,0 +1,9 @@
+# 對話材料 #1259
+
+- event: assistant/message
+- seq: 135211
+- time: 1795249032011
+
+---
+
+{"file_path": "C:\\Users\\lionc\\OneDrive\\桌面\\XW\\三大部\\apply44valid.py", "content": "import io, os, re, html\nB = r'C:\\Users\\lionc\\OneDrive\\桌面\\XW\\三大部'\nf = io.open(os.path.join(B, '重作材料_長段', '44.txt'), encoding='utf-8').read()\nsecs = re.findall(r'^## (D\\d+)\\s*\\n(.*?)(?=\\n## D|\\Z)', f, re.M | re.S)\ndata = {}\nfor k, b in secs:\n    segs = re.findall(r'### \\d+\\s*\\n【疏文】(.*?)\\n【疏文】(.*?)(?=\\n### |\\Z)', b, re.S)\n    if segs:\n        data[k] = [(a.strip(), c.strip()) for a, c in segs]\n\ndef han(s):\n    return ''.join(re.findall(r'[\\u4e00-\\u9fff]', re.sub(r'^(?:【[^】]+】)+', '', s.strip())))\n\npat = re.compile(r'<div class=\"pair ([^\"]*)\"><div class=\"o[^\"]*\">(.*?)</div><div class=\"t\">.*?</div></div>', re.S)\nfor k, segs in data.items():\n    done = False\n    for v in ('卷一', '卷二', '卷三', '卷四'):\n        p = os.path.join(B, 'docs', 'jieshu', v + '.html')\n        t = io.open(p, encoding='utf-8').read()\n        needle = han(segs[0][0])[:10]\n        m = next((x for x in pat.finditer(t) if needle and needle in han(html.unescape(re.sub('<[^>]+>', '', x.group(2))))), None)\n        if not m:\n            continue\n        cls = m.group(1)\n        new = ''.join('<div class=\"pair %s\"><div class=\"o\">【疏文】%s</div><div class=\"t\">【疏文】%s</div></div>' % (cls, html.escape(a), html.escape(b)) for a, b in segs)\n        t = t[:m.start()] + new + t[m.end():]\n        io.open(p, 'w', encoding='utf-8').write(t)\n        print(k, v, len(segs))\n        done = True\n        break\n    if not done:\n        print(k, 'NOTFOUND')\n"}

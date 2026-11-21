@@ -1,0 +1,9 @@
+# 對話材料 #1064
+
+- event: assistant/message
+- seq: 129468
+- time: 1795236598390
+
+---
+
+{"command": "@'\nimport io,os,re,html\nB=r'C:\\Users\\lionc\\OneDrive\\桌面\\XW\\三大部'; pat=re.compile(r'<div class=\"pair[^\"]*\">(.*?)</div></div>',re.S)\nfor v in ('卷一','卷二','卷三','卷四'):\n p=os.path.join(B,'docs','jieshu',v+'.html'); t=io.open(p,encoding='utf-8').read(); counts={'s':0,'j':0,'m':0}\n def repl(m):\n  inner=m.group(1); o=re.search(r'<div class=\"o[^\"]*\">(.*?)</div>',inner,re.S); tr=re.search(r'<div class=\"t\">(.*?)</div>',inner,re.S)\n  if not o or not tr: return '<div class=\"pair\">%s</div></div>'%inner\n  s=html.unescape(re.sub('<[^>]+>','',o.group(1))); x=html.unescape(re.sub('<[^>]+>','',tr.group(1)))\n  for mark in ('【後文背景','【裁決分歧參考','【本次待審'):\n   x=x.split(mark)[0]\n  hs='【疏文】' in x or '【疏】' in x; hj='【記文】' in x or '【記】' in x\n  label='【疏文】' if hs else ('【記文】' if hj else '')\n  s=re.sub(r'^【原文】\\s*','',s).strip()\n  if label and not s.startswith('【'): s=label+s\n  cls='m' if hs and hj else ('j' if hj else ('s' if hs else 'm')); counts[cls]+=1\n  return '<div class=\"pair %s\"><div class=\"o\">%s</div><div class=\"t\">%s</div></div></div>'%(cls,html.escape(s).replace('\\n','<br>'),html.escape(x.strip()).replace('\\n','<br>'))\n t2=pat.sub(repl,t); io.open(p,'w',encoding='utf-8').write(t2); print(v,counts)\n'@ | Out-File -Encoding utf8 \"$env:TEMP\\fixlabels.py\"; python -X utf8 \"$env:TEMP\\fixlabels.py\"; Remove-Item \"$env:TEMP\\fixlabels.py\" -Force\ngit add -- docs/jieshu/卷一.html docs/jieshu/卷二.html docs/jieshu/卷三.html docs/jieshu/卷四.html\ngit commit -m \"fix(jieshu): 清理原文標籤並補疏記標示\"\ngit push origin main", "description": "Fix 戒疏 labels from translations", "timeoutMs": 180000}

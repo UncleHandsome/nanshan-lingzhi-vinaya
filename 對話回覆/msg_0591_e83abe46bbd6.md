@@ -1,0 +1,9 @@
+# 對話材料 #0591
+
+- event: assistant/message
+- seq: 86335
+- time: 1794834206818
+
+---
+
+{"content": "# -*- coding: utf-8 -*-\n\"\"\"補建「新增必改硬傷」五段的修訂材料。\"\"\"\nimport io\nimport os\nimport re\nimport sys\n\nB = r'C:\\Users\\lionc\\OneDrive\\桌面\\XW\\三大部'\nsys.path.insert(0, os.path.join(B, '_src'))\nimport mk_revise_materials as R  # noqa: E402\n\nRES = os.path.join(B, '測試', '長段審核包', 'output.txt')\nSRC = os.path.join(B, '測試', '重譯', '行事鈔', '_長段', '_終審')\nOUT = os.path.join(B, '測試', '行事鈔長段修訂_補')\n\n\ndef main():\n    t = io.open(RES, encoding='utf-8').read()\n    marks = list(re.finditer(r'(?m)^【檔名】\\s*(\\S+)\\s*$', t))\n    os.makedirs(OUT, exist_ok=True)\n    n = 0\n    for idx, m in enumerate(marks):\n        k = m.group(1).strip()\n        end = marks[idx + 1].start() if idx + 1 < len(marks) else len(t)\n        b = t[m.end():end]\n        if '【結論】' in b or '【新增必改硬傷】' not in b:\n            continue\n        mp = os.path.join(SRC, k + '.md')\n        if not os.path.exists(mp):\n            continue\n        mt = io.open(mp, encoding='utf-8').read()\n        i = mt.index('\\n【原文】\\n')\n        j = mt.index('\\n【待審譯文】\\n')\n        kk = mt.find('\\n【後文背景', j)\n        orig = mt[i + 5:j].strip()\n        tr = mt[j + 9:kk if kk > 0 else len(mt)].strip()\n        fixes = b.split('【新增必改硬傷】', 1)[1].strip()\n        prompt = (R.REVISE_PROMPT.replace('{book_note}', '《行事鈔》為比丘律制，部別稱謂須與比丘眾相應')\n                  .replace('{fixes}', fixes).replace('{out_format}', '【鈔文】……'))\n        L = [prompt, '', '---', '', '（檔名：%s）' % k, '',\n             '【原文】', '', orig, '', '【目前譯文】', '', tr, '']\n        io.open(os.path.join(OUT, k + '.md'), 'w', encoding='utf-8').write('\\n'.join(L) + '\\n')\n        n += 1\n    print('補產', n, sorted(os.listdir(OUT)))\n\n\nif __name__ == '__main__':\n    main()\n", "file_path": "_src/mk_long_revise_extra.py"}

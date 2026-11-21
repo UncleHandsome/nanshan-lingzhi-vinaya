@@ -38,15 +38,19 @@ def main():
             if not vol:
                 q = r.get('raw_start', -1)
                 if q >= 0:
-                    last = None
-                    for pos, mv, txt in marks:
-                        if pos <= q:
-                            last = (mv, txt)
-                        else:
-                            break
-                    if last:
-                        vol = last[0]
-                        chunk = last[1]
+                    if marks and q < marks[0][0]:
+                        vol = vols[0]
+                        chunk = marks[0][2]
+                    else:
+                        last = None
+                        for pos, mv, txt in marks:
+                            if pos <= q:
+                                last = (mv, txt)
+                            else:
+                                break
+                        if last:
+                            vol = last[0]
+                            chunk = last[1]
             r['vol'] = vol or '未定位'
             r['chunk'] = chunk or r['vol']
         # 未定位者用前後條的卷補

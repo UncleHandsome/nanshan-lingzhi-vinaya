@@ -37,8 +37,11 @@ def parse(md, rep):
     if i < 0 or j < 0:
         return None
     raw_src = md[i + 4:j].strip()
+    cut = min([x for x in (raw_src.find('【裁決分歧參考'), raw_src.find('【後文背景'), raw_src.find('\n---')) if x >= 0] or [len(raw_src)])
+    raw_src = raw_src[:cut].strip()
     e = min([x for x in (md.find('【後文背景】', j), md.find('【裁決分歧參考', j)) if x >= 0] or [len(md)])
     tr = md[j + 6:e].strip()
+    tr = tr.split('【裁決分歧參考')[0].split('【後文背景')[0].strip()
     revised = False
     if rep and os.path.exists(rep):
         tr = io.open(rep, encoding='utf-8').read().strip()

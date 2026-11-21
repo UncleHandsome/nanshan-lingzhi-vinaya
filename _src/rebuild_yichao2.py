@@ -19,8 +19,13 @@ def source_from_material(md):
     if not ms:
         return ''
     s = md[ms[-1].end():].strip()
-    cut = min([x for x in (s.find('【後文背景'), s.find('【裁決'), s.find('\n---')) if x >= 0] or [len(s)])
-    return s[:cut].strip()
+    m2 = re.search(r'■\s*[^\n（]*（現譯）|【現譯】|【後文背景】|【裁決', s)
+    if m2:
+        s = s[:m2.start()].strip()
+    cut = s.find('\n---')
+    if cut >= 0:
+        s = s[:cut].strip()
+    return s
 
 def term_translation(path):
     t = io.open(path, encoding='utf-8').read()

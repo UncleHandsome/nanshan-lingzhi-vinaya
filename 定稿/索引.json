@@ -1,0 +1,35 @@
+{
+  "books": {
+    "xingshichao": {
+      "name": "行事鈔",
+      "pairs": 1988,
+      "matched": 1988,
+      "file": "xingshichao.jsonl"
+    },
+    "jieshu": {
+      "name": "戒疏",
+      "pairs": 7608,
+      "matched": 7462,
+      "file": "jieshu.jsonl"
+    },
+    "yeshu": {
+      "name": "業疏",
+      "pairs": 5068,
+      "matched": 5067,
+      "file": "yeshu.jsonl"
+    },
+    "nicao": {
+      "name": "尼鈔",
+      "pairs": 806,
+      "matched": 806,
+      "file": "nicao.jsonl"
+    },
+    "yichao": {
+      "name": "義鈔",
+      "pairs": 558,
+      "matched": 558,
+      "file": "yichao.jsonl"
+    }
+  },
+  "total": 16028
+}

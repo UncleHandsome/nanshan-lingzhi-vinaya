@@ -42,7 +42,9 @@ for book in ([args.book] if args.book else list(BOOKS)):
     idx+=1; body.append('<h2 class="sec" id="p%d">%s</h2>'%(idx,html.escape(chunk))); last=chunk
    for lab,s,tr in pairs(r):
     if not s or not tr: continue
-    body.append('<div class="pair"><div class="o">【%s】%s</div><div class="t">【%s】%s</div></div>'%(lab,html.escape(s).replace('\n','<br>'),lab,html.escape(tr).replace('\n','<br>')))
+    pc={'疏文':'s','記文':'j','註文':'z','律文':'lv','序文':'x'}.get(lab,'')
+    oc={'疏文':'shu','記文':'ji','註文':'zhu','律文':'lv','序文':'xu'}.get(lab,'')
+    body.append('<div class="pair %s"><div class="o %s">【%s】%s</div><div class="t">【%s】%s</div></div>'%(pc,oc,lab,html.escape(s).replace('\n','<br>'),lab,html.escape(tr).replace('\n','<br>')))
   p=os.path.join(B,'docs',book,v+'.html'); t=io.open(p,encoding='utf-8').read(); m=re.search(r'<main id="main">.*?</main>',t,re.S)
   new=t[:m.start()]+'<main id="main">'+''.join(body)+'</main>'+t[m.end():]
   io.open(p+'.new','w',encoding='utf-8').write(new)

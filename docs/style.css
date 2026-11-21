@@ -679,3 +679,10 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
   .scroll { overflow: visible; }
   .tools { display: none; }
 }
+
+/* 戒疏 疏/記 區分 */
+.pair.s{border-left:4px solid #b07a3a;background:#fbf6ea;}
+.pair.j{border-left:4px solid #3f6f8f;background:#eef5f8;}
+.pair.s .o,.pair.s .t{color:#5a3a18;}
+.pair.j .o,.pair.j .t{color:#1f4e6b;}
+.pair.m{background:#fafafa;}

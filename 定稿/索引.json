@@ -4,32 +4,38 @@
       "name": "行事鈔",
       "units": 1441,
       "revised": 380,
+      "pairs": 1441,
       "file": "xingshichao.jsonl"
     },
     "jieshu": {
       "name": "戒疏",
       "units": 4634,
       "revised": 456,
+      "pairs": 7671,
       "file": "jieshu.jsonl"
     },
     "yeshu": {
       "name": "業疏",
       "units": 2580,
       "revised": 348,
+      "pairs": 4830,
       "file": "yeshu.jsonl"
     },
     "nicao": {
       "name": "尼鈔",
       "units": 774,
       "revised": 188,
+      "pairs": 774,
       "file": "nicao.jsonl"
     },
     "yichao": {
       "name": "義鈔",
       "units": 207,
       "revised": 48,
+      "pairs": 207,
       "file": "yichao.jsonl"
     }
   },
-  "total": 9636
+  "total": 9636,
+  "pairs": 14923
 }

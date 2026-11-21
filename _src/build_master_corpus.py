@@ -14,7 +14,8 @@ def nonbody(t):
     t = t[:140]
     if t.startswith(('大覺慈父','九十單提法','百眾學法','四分戒本》者','甞聞毗尼藏','原夫大雄','疏卷第一')): return True
     if '【四分律' in t[:80] and '卷' in t[:100]: return True
-    if '四分律含注戒本疏卷' in t[:50]: return True
+    if '四分律含注戒本疏卷' in t[:50] or '行宗記卷' in t[:60]: return True
+    if re.match(r'^[一二三四五六七八九十百]+[^。]{0,30}戒', t): return True
     if t.startswith(('四分律刪補','四分律含注','四分律拾毗尼','四分律比丘尼鈔','南山三大部','底本')): return True
     if '篇第' in t[:80] and ('】' in t[:80] or '卷' in t[:60]): return True
     return False

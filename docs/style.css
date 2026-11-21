@@ -683,14 +683,22 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
 /* 戒疏 疏/記 區分 */
 .pair.s{border-left:4px solid #b07a3a;background:#fbf6ea;}
 .pair.j{border-left:4px solid #3f6f8f;background:#eef5f8;}
-.pair.s .o,.pair.s .t{color:#5a3a18;}
-.pair.j .o,.pair.j .t{color:#1f4e6b;}
+.pair.s .o{color:inherit;}
+.pair.j .o{color:inherit;}
 .pair.m{background:#fafafa;}
 
 /* 註文、律文、序文 */
 .pair.z{border-left:4px solid #6b8e23;background:#f3f8e8;}
-.pair.z .o,.pair.z .t{color:#3f5413;}
+.pair.z .o{color:inherit;}
 .pair.lv{border-left:4px solid #6f6f6f;background:#f4f4f4;}
-.pair.lv .o,.pair.lv .t{color:#3d3d3d;}
+.pair.lv .o{color:inherit;}
 .pair.x{border-left:4px solid #a05a9a;background:#fbf0fa;}
-.pair.x .o,.pair.x .t{color:#5e2a59;}
+.pair.x .o{color:inherit;}
+
+/* 只對原文上色，白話保持黑色 */
+.pair.s .o{color:#5a3a18;}
+.pair.j .o{color:#1f4e6b;}
+.pair.z .o{color:#3f5413;}
+.pair.lv .o{color:#3d3d3d;}
+.pair.x .o{color:#5e2a59;}
+.pair .t{color:#222;background:transparent;}

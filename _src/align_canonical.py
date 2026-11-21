@@ -34,7 +34,7 @@ def nonbody(t):
 
 def main():
     lines = ['# 五書定稿順序對齊整合', '',
-             '| 書 | 單位 | 有位置 | 未定位 | 正文缺口 | 非正文缺口 | 重疊 |',
+             '| 書 | 單位 | 有位置 | 未定位 | 正文缺口 | 非正文（已排除） | 重疊 |',
              '|:--|--:|--:|--:|--:|--:|--:|']
     for book, (name, rawp) in BOOKS.items():
         raw = io.open(os.path.join(B, rawp), encoding='utf-8').read()
@@ -67,6 +67,7 @@ def main():
                 i += 1
         dups = sum(1 for a, b in iv if any(cover[i] > 1 for i in range(a, min(b, len(h)))))
         lines.append('| %s | %d | %d | %d | %d | %d | %d |' % (name, len(rows), len(iv), len(rows) - len(iv), body, other, dups))
+    lines += ['', '非正文＝卷首、序文、目次、卷題、篇題；已排除，不列為待補缺口。']
     fp = os.path.join(B, '重作材料_長段', '五書定稿_對齊整合.md')
     io.open(fp, 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
     print(fp)

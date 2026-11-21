@@ -9,9 +9,9 @@
     },
     "jieshu": {
       "name": "戒疏",
-      "units": 4634,
-      "revised": 456,
-      "pairs": 7671,
+      "units": 4637,
+      "revised": 472,
+      "pairs": 7686,
       "file": "jieshu.jsonl"
     },
     "yeshu": {
@@ -36,6 +36,6 @@
       "file": "yichao.jsonl"
     }
   },
-  "total": 9636,
-  "pairs": 14923
+  "total": 9639,
+  "pairs": 14938
 }

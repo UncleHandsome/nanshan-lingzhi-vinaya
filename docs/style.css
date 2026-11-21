@@ -702,3 +702,5 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
 .pair.lv .o{color:#3d3d3d;}
 .pair.x .o{color:#5e2a59;}
 .pair .t{color:#222;background:transparent;}
+
+.pair.s,.pair.j,.pair.z,.pair.lv,.pair.x{background:transparent;}

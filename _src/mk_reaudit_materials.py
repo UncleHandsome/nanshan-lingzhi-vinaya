@@ -769,6 +769,7 @@ def _ke_volume_excerpt(book, chunk, cap=1200):
 
 def _ke_note(book, src, chunk='', key='', cap=420):
     """科判位置：先用引號內科文／原文頭精查；查不到才用卷區間節錄。"""
+    _key = re.sub(r'卷第', '卷', key or '')
     try:
         import local_corpus as LC
         work = _KE_FILES.get(book, '')
@@ -787,7 +788,7 @@ def _ke_note(book, src, chunk='', key='', cap=420):
                     continue
                 kw = (hits[0].get('kwic') or '').strip()
                 _v = re.search(r'(卷[一二三四])', _key)
-                if _v and _v.group(1) not in (hits[0].get('juan') or ''):
+                if _v and _v.group(1) not in (hits[0].get('juan') or '').replace('卷第', '卷'):
                     continue
                 if kw and (q[:4] in kw or q in kw):
                     return ('《%s》%s：%s' % (hits[0].get('book'),
@@ -795,7 +796,6 @@ def _ke_note(book, src, chunk='', key='', cap=420):
                                              kw)).strip()[:cap]
     except Exception:
         pass
-    _key = re.sub(r'卷第', '卷', key or '')
     m = re.search(r'(卷[一二三四](?:[上下]之[一二三四]|之[一二三四五六]))', _key)
     label = m.group(1) if m else ''
     if label:
@@ -900,27 +900,32 @@ _QUOTE_WORKS = (
 
 
 def _quote_note(src):
-    """原文書名＋云／言／說時，反查該書 1 條原文（只作對照）。"""
+    """原文書名＋云／言／說時，抓引文反查該書 1 條原文（只作對照）。"""
     try:
         import local_corpus as LC
     except Exception:
         return ''
-    h = han(src)
+    raw = re.sub(r'\s+', '', src or '')
     for short, work in _QUOTE_WORKS:
-        if short not in h:
+        m = re.search(re.escape(short) + r'[論律經]?[云言說曰：:]\s*([\u4e00-\u9fff]{4,24})', raw)
+        if not m:
             continue
-        if not re.search(re.escape(short) + r'[云言說曰]', h):
-            continue
-        for q in (h[:12], short):
+        q = m.group(1)
+        cands = [q]
+        # 查不到才拆 3-gram 共現（避免只查簡稱）
+        if len(q) >= 9:
+            cands.append(' '.join(q[i:i + 3] for i in range(0, len(q) - 2, 3)))
+        for qq in cands:
             try:
-                hs = LC.find(q, work, limit=1, pad=240)
+                hs = LC.find(qq, work, limit=1, pad=240)
             except Exception:
                 hs = []
             if hs:
                 kw = (hs[0].get('kwic') or '').strip()
                 if kw:
-                    return '《%s》%s：%s' % (hs[0].get('book') or work,
-                                            hs[0].get('juan') or '', kw)
+                    return ('《%s》%s：%s'
+                            % (hs[0].get('book') or work,
+                               (hs[0].get('juan') or '').replace('卷第', '卷'), kw))
     return ''
 
 

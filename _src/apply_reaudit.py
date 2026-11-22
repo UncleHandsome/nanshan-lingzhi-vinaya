@@ -383,7 +383,9 @@ def main():
     raw_h, raw_path = _load_raw(args.book)
     rows = [json.loads(x) for x in io.open(src_jsonl, encoding='utf-8') if x.strip()]
     by_key = {r.get('key'): r for r in rows}
-    missing = [k for k in fix if k not in by_key]
+    missing = [k for k, v in fix.items()
+               if (v.get('unit_key') or (k.split('__', 1)[-1] if '__' in k else k))
+               not in by_key]
     applied, blocked, pending = [], [], []
     new_rows = []
     for row in rows:

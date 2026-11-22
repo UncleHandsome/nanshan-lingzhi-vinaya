@@ -49,7 +49,7 @@ for book in ([args.book] if args.book else list(BOOKS)):
   body=['<h1>%s・%s</h1>'%(name,v),'<p class="byline">%d 單元；依 CBETA 卷題區間，跨頁單元前後並見。</p>'%len(sel)]
   idx=0; last=None
   for r in sel:
-   chunk=r.get('chunk') or v
+   chunk=v if book=='jieshu' else (r.get('chunk') or v)
    if chunk!=last:
     idx+=1; body.append('<h2 class="sec" id="p%d">%s</h2>'%(idx,html.escape(chunk))); last=chunk
    for lab,s,tr in pairs(r):

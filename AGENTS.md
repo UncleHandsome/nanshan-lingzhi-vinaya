@@ -359,6 +359,143 @@ docs/<book>/卷*.html
 
 ---
 
+## 7A. 20K 再審流程（定稿後複核）
+
+### 7A.1 目的
+
+定稿完成後，以「一份 `.md` 約 20K 字」的連續批次再審，解掉逐段送審看不到前後文的問題：
+
+```text
+跨段專名／術語不一致
+跨段指代與施受斷裂
+長段切段接縫重複主語
+業疏／戒疏疏記互核不一致
+```
+
+### 7A.2 唯一來源
+
+```text
+定稿/<book>.jsonl
+```
+
+不得讀 `docs/`、`_材料`、舊 `AI語譯/out` 當來源。
+
+每批只讀同一卷（`chunk`），不跨卷；同一 unit 的疏文＋記文不拆。
+
+### 7A.3 四支腳本
+
+```text
+_src/mk_reaudit_materials.py
+  定稿 → _再審/<book>_r0001.md + .json
+
+_src/split_reaudit.py
+  驗核驗表、400／截斷對半切、依 [n] 拆回 FIX 計畫
+
+_src/mk_rerevise_materials.py
+  只為 FIX 單位產生單段修訂材料
+
+_src/apply_reaudit.py
+  FIX 回寫 定稿_v2/<book>.jsonl、qc、source==raw、變更對照
+```
+
+### 7A.4 材料格式
+
+每段交錯排列，讓 `qwen_local.py` 的 `SRC_RE_ALL` 只抓原文：
+
+```markdown
+### [01]（key: ys_01_0012）
+■ 疏文（原文）[01]
+……
+■ 疏文（現譯）[01]
+……
+■ 記文（原文）[01]
+……
+■ 記文（現譯）[01]
+……
+```
+
+`.json` 必須記錄：
+
+```text
+idx / key / chunk / raw_start / raw_end / labs / parts / src_hash
+```
+
+### 7A.5 20K 預算
+
+```text
+整份 .md：約 19K–20.5K 字
+待審原文＋現譯：約 11.5K–14K 字
+前文背景：原文 ≤1500 字＋前鄰譯文 ≤400 字
+後文背景：原文 ≤600 字＋後鄰譯文 ≤300 字
+資持記所釋鈔文：≤2500 字
+```
+
+### 7A.6 qwen 環境
+
+```powershell
+$env:QWEN_SHUJI_SRC='重譯/<book>/_再審'
+$env:QWEN_KEY_FILE='qwk.txt'
+$env:QWEN_LOCAL='1'; $env:QWEN_NO_WEB='0'
+$env:QWEN_MAX_LOCAL='14'
+$env:QWEN_MAX_SEARCH='4'
+$env:QWEN_MAX_ROUNDS='10'
+$env:QWEN_MAX_LAST_IN='90000'
+$env:QWEN_HTTP_TIMEOUT='1200'
+$env:QWEN_WORKERS='12'
+$env:QWEN_RAW_SAVE='1'; $env:QWEN_NO_CITE='0'
+$env:QWEN_EFFORT='xhigh'; $env:QWEN_KEEP_THINKING='1'
+python -X utf8 _src/qwen_local.py
+```
+
+### 7A.7 執行順序
+
+```powershell
+python -X utf8 _src/mk_reaudit_materials.py --book 義鈔 --target-chars 20000 --check-raw
+python -X utf8 _src/qwen_local.py
+python -X utf8 _src/split_reaudit.py --book 義鈔 --bisect
+python -X utf8 _src/mk_rerevise_materials.py --book 義鈔
+python -X utf8 _src/qwen_local.py
+python -X utf8 _src/apply_reaudit.py --book 義鈔
+```
+
+### 7A.8 驗收
+
+```text
+【分段核驗表】[01]..[N] 無漏號
+400／截斷：0
+FIX 比例合理（約 5%–15%）
+source == raw：0 錯
+未定位：0
+重疊：0
+qc_scan：0 致命
+幅度警報：人工核對
+```
+
+`apply_reaudit.py` 只替換 FIX 單位；PASS 單位從原定稿原樣複製，不得重譯。
+
+### 7A.9 禁止
+
+```text
+不可把 20K 材料一次重吐全文
+不可在修訂階段改 PASS 單位
+不可用模糊比對補 [n]
+不可跳過 split_reaudit 直接套回
+不可用舊 docs 頁面當來源
+```
+
+### 7A.10 目前狀態
+
+```text
+mk_reaudit_materials.py：已存在
+split_reaudit.py：已存在
+mk_rerevise_materials.py：已存在
+apply_reaudit.py：待補
+```
+
+先以《義鈔》單卷試跑；確認 20K 檔長、漏號率、FIX 比例與變更對照後，才放量到其他書。
+
+---
+
 ## 8. qwen／金鑰／背景工作
 
 - `qwk.txt` 與 `.qwen_key` 是不同 key，額度不同；不要假設。

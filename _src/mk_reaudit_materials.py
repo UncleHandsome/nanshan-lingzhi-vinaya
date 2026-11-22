@@ -451,6 +451,7 @@ SINGLE_SCOPE = (
     '2. 先遮蔽【現譯】單讀【原文】，獨立拆解文法、主客施受、條件界限與律義，再反向驗收【現譯】，'
     '切勿順著譯文流暢度讀過。\n'
     '3. 【前文背景】【後文背景】僅供銜接理解；【對照層】僅供校勘，兩者都嚴禁譯入正文。\n'
+    '4. 見【正文缺口提示】：缺口係定稿未收錄之正文，禁止代譯、補譯或判為現譯漏譯。\n'
 )
 
 
@@ -733,7 +734,8 @@ def _ke_volume_excerpt(book, chunk, cap=1200):
     p = os.path.join(B, '原文', name, name + '.txt')
     if not os.path.exists(p):
         return ''
-    m = re.match(r'卷([一二三四])(?:([上下])之([一二三四])|之([一二三四五六]))?', chunk or '')
+    chunk = re.sub(r'卷第', '卷', chunk or '')
+    m = re.match(r'卷([一二三四])(?:([上下])之([一二三四])|之([一二三四五六]))?', chunk)
     if not m or not (m.group(2) or m.group(4)):
         return ''
     t = io.open(p, encoding='utf-8', errors='ignore').read()
@@ -784,7 +786,7 @@ def _ke_note(book, src, chunk='', key='', cap=420):
                 if not hits:
                     continue
                 kw = (hits[0].get('kwic') or '').strip()
-                _v = re.search(r'(卷[一二三四])', key or '')
+                _v = re.search(r'(卷[一二三四])', _key)
                 if _v and _v.group(1) not in (hits[0].get('juan') or ''):
                     continue
                 if kw and (q[:4] in kw or q in kw):
@@ -793,7 +795,8 @@ def _ke_note(book, src, chunk='', key='', cap=420):
                                              kw)).strip()[:cap]
     except Exception:
         pass
-    m = re.search(r'(卷[一二三四]之[一二三四五六])', key or '')
+    _key = re.sub(r'卷第', '卷', key or '')
+    m = re.search(r'(卷[一二三四](?:[上下]之[一二三四]|之[一二三四五六]))', _key)
     label = m.group(1) if m else ''
     if label:
         seg = _ke_volume_excerpt(book, label, cap=min(cap, 1200))

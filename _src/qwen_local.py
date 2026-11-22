@@ -131,6 +131,8 @@ def _han_len(text):
 def _local_cap(text):
     """依待審原文長度決定本地檢索上限；短段不強制用全量配額。"""
     n = _raw_len(text)
+    if n < 20:
+        return 1
     if n < 30:
         return 2
     if n < 100:
@@ -144,8 +146,10 @@ def _quota(text):
     """依待審原文長度決定 (搜尋上限, 抓取上限)；環境變數可單獨覆寫（短段除外）。"""
     n = _raw_len(text)
     fetch = int(os.environ['QWEN_MAX_FETCH']) if os.environ.get('QWEN_MAX_FETCH') else 1
+    if n < 20:
+        return 0, fetch          # 純篇題／短科名：不 web、local 1
     if n < 30:
-        return 1, fetch          # 短段：web 0–1、local 2，不被固定 4/2 覆蓋
+        return 1, fetch
     if os.environ.get('QWEN_MAX_SEARCH'):
         return MAX_SEARCH_PER_GROUP, fetch
     if n < 100:

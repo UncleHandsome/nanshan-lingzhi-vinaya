@@ -67,7 +67,8 @@ def _unit_parts(meta):
     for p in (meta.get('parts') or []):
         parts.append({'lab': p.get('lab') or '鈔文',
                       'orig': p.get('orig') or '',
-                      'tr': p.get('tr') or ''})
+                      'tr': p.get('tr') or '',
+                      'display': p.get('display') or p.get('orig_display') or ''})
     return parts
 
 
@@ -217,7 +218,7 @@ def _context_from_material(md):
     if not md:
         return ''
     out = []
-    for prefix in ('前文背景', '對照層', '後文背景', '所釋鈔文'):
+    for prefix in ('前文背景', '對照層', '後文背景', '所釋鈔文', '初審檢索摘錄'):
         m = re.search(r'(?m)^【%s[^】]*】\s*$' % prefix, md)
         if not m:
             continue
@@ -234,8 +235,8 @@ def _context_from_material(md):
 def _verify_material(book, key, parts, fixes, before_text, after_text, vol='',
                      context=''):
     """產出 VERIFY 材料：原文＋前後文／對照層＋硬傷清單＋修訂前後譯文。"""
-    src = '\n'.join('■ %s（原文）\n\n%s\n' % (p['lab'], p['orig'].strip())
-                    for p in parts if (p.get('orig') or '').strip())
+    src = '\n'.join('■ %s（原文）\n\n%s\n' % (p['lab'], (p.get('display') or p['orig']).strip())
+                    for p in parts if (p.get('display') or p.get('orig') or '').strip())
     L = [BC.verify_prompt(book, BC.note_for(book, [p['lab'] for p in parts])), '',
          '---', '', '（出處：《%s》%s，%s）' % (book, vol or '（未分卷）', key), '']
     if context:

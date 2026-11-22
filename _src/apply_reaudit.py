@@ -236,7 +236,8 @@ def _qc(src, out, src_disp=''):
     _src_notes = max(0, src.count('（') + src.count('(') + src.count('〔')
                      + _disp_notes - out.count('〔'))
     _out_pars = [x.strip() for x in re.findall(r'[（(]([^）)]*)[）)]', out)
-                 if not re.fullmatch(r'[一二三四五六七八九十百千\d]+', x.strip())
+                 if len(re.sub(r'\W', '', x.strip())) > 10
+                 and not re.fullmatch(r'[一二三四五六七八九十百千\d]+', x.strip())
                  and not re.fullmatch(r'[^，。；]{0,8}反', x.strip())]
     if len(_out_pars) > _src_notes:
         issues.append('疑自加解說括號（譯 %d＞原 %d）' % (len(_out_pars), _src_notes))

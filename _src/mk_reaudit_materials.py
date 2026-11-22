@@ -1455,14 +1455,21 @@ def generate_single(book, outdir, keys, pre_cap=PRE_SRC_CAP, post_cap=POST_SRC_C
     rep = os.path.join(outdir, '回覆')
     if os.path.isdir(rep) and any(f.endswith('_回.txt') for f in os.listdir(rep)) and not force:
         raise SystemExit('（已中止）輸出目錄已有回覆：%s；請加 --force 或換目錄' % outdir)
+    target_set = set(keys)
     for f in list(os.listdir(outdir)):
-        if f.endswith(('.md', '.json')) and (
-                f.startswith(bid + '_') or f.startswith('索引_')
-                or f == '_材料索引.md'):
-            try:
-                os.remove(os.path.join(outdir, f))
-            except OSError:
-                pass
+        if not f.endswith(('.md', '.json')):
+            continue
+        if f.startswith(bid + '__'):
+            k = f[len(bid + '__'):].rsplit('.', 1)[0]
+            # 只清本次要重產的 key；--keys-file 子集不可清掉其他 508 份
+            if k not in target_set:
+                continue
+        elif not (f.startswith('索引_') or f == '_材料索引.md'):
+            continue
+        try:
+            os.remove(os.path.join(outdir, f))
+        except OSError:
+            pass
     metas, bad_units, bad_parts, disorder = [], [], [], []
     for n, k in enumerate(keys, 1):
         i = pos[k]

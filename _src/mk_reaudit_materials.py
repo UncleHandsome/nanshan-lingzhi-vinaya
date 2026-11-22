@@ -56,10 +56,10 @@ BOOKS = {
                 raw='TXT_句讀校定/zhichi.txt', alt='', raw_reliable=False),
 }
 
-TARGET_CHARS = 20000
+TARGET_CHARS = 10000
 COUNT_MODES = ('md', 'body', 'source')
 GROUP_BY = ('vol', 'chunk')
-PRE_SRC_CAP = 1500
+PRE_SRC_CAP = 1800
 PRE_TR_CAP = 400
 POST_SRC_CAP = 600
 POST_TR_CAP = 300
@@ -491,50 +491,290 @@ def _parallel_notes(book, src, cap=900, limit=2):
     return '\n'.join(out)[:cap]
 
 
-# 義鈔平行釋文用的律學主題詞（只作檢索鍵，不進提示詞）
-YICHAO_TOPICS = ('三衣', '說淨', '坐具', '臥具', '波羅夷', '僧殘', '捨墮', '目連',
-                 '耆婆', '黃門', '二形', '上中下', '戒體', '無作', '覆藏', '懺',
-                 '羯磨', '二篇', '眾學', '滅擯')
+# ---------------------------------------------------------------- 通用對照檢索（無題庫詞）
+_DF_BOOKS = ('戒疏', '行宗記', '資持記', '行事鈔')
+_DF_TEXT = {}
+_STOP_CHARS = set(
+    '的了著是在把被將與及或而則以於之其此彼所為無有不得應須當如若使皆並又即乃'
+    '但故也矣焉哉乎者我汝今昔上下前後中內外一二三四五六七八九十百千萬如是云何')
+_STOP_WORDS = {'如是', '云何', '所以', '其中', '今此', '若爾', '何故', '何以',
+               '故知', '所言', '問曰', '答曰', '若言', '此中', '爾時', '一時'}
 
 
-def _yichao_parallel(src, cap=900, limit=2):
-    """義鈔：以主題詞檢索戒疏／行宗記／資持記／行事鈔的平行釋文。"""
+def _df_texts():
+    """四部註疏的漢字流（只建一次，供 DF 稀有度評分）。"""
+    if _DF_TEXT:
+        return _DF_TEXT
+    import local_corpus as LC
+    LC.load()
+    for b in _DF_BOOKS:
+        _DF_TEXT[b] = ''.join(LC._plain(x['text']) for x in LC.LINES
+                              if x.get('book') == b)
+    return _DF_TEXT
+
+
+def _sentences(src):
+    return [s for s in re.split(r'[。！？；：\n]', src or '')
+            if len(han(s)) >= 6]
+
+
+def _sampled_sentences(src, per=2):
+    ss = _sentences(src)
+    if len(ss) <= per * 3:
+        return ss
+    n = len(ss)
+    return ss[:per] + ss[n // 2 - per // 2:n // 2 + per - per // 2] + ss[-per:]
+
+
+def _grams(sentence, ns=(2, 3)):
+    h = han(sentence)
+    out = set()
+    for n in ns:
+        for i in range(0, max(0, len(h) - n + 1)):
+            g = h[i:i + n]
+            if g in _STOP_WORDS:
+                continue
+            if all(c in _STOP_CHARS for c in g):
+                continue
+            out.add(g)
+    return out
+
+
+def _yichao_parallel(src, cap=1400, limit=3):
+    """義鈔：通用演算法。切句→前中後取樣→2/3 字候選→四庫 DF 稀有度→雙詞共現查四庫。"""
     try:
+        texts = _df_texts()
         import local_corpus as LC
     except Exception:
         return ''
-    out = []
-    for term in YICHAO_TOPICS:
-        if term not in src:
+    # 1) 取樣句與候選
+    cands = set()
+    for s in _sampled_sentences(src):
+        cands |= _grams(s)
+    if not cands:
+        return ''
+    # 2) 四庫 DF／總頻次評分（低頻優先，長詞優先）
+    scored = []
+    for g in cands:
+        if len(g) < 2:
             continue
-        for work in ('戒疏', '行宗記', '資持記', '行事鈔'):
+        cnt = 0
+        df = 0
+        for b in _DF_BOOKS:
+            t = texts.get(b) or ''
+            c = t.count(g)
+            cnt += c
+            if c:
+                df += 1
+        # 2–3 字都要在四庫有一定出現次數，避免「是上」「畜是」跨詞偽雙字
+        if cnt < 5:
+            continue
+        score = cnt / (1.6 if len(g) >= 3 else 1.0)  # 3 字加權（較不易撞詞）
+        scored.append((score, -len(g), g))
+    scored.sort()
+    top = [x[2] for x in scored[:14]]
+    rank = {g: i for i, g in enumerate(top)}
+    # 3) 每句取「最稀有且不重疊」的兩詞作共現查詢（最多 8 組），不先 break
+    pairs, seen_p = [], set()
+    for s in _sampled_sentences(src):
+        h = han(s)
+        spans = []
+        for g in set(_grams(s)):
+            if g not in rank:
+                continue
+            a0 = h.find(g)
+            if a0 >= 0:
+                spans.append((rank[g], a0, a0 + len(g), g))
+        spans.sort()
+        chosen = []
+        for _r, a0, a1, g in spans:
+            if all(a1 <= b0 or a0 >= b1 for _, b0, b1, _ in chosen):
+                chosen.append((_r, a0, a1, g))
+            if len(chosen) == 2:
+                break
+        if len(chosen) == 2:
+            a, b = chosen[0][3], chosen[1][3]
+            if a != b and (a, b) not in seen_p:
+                seen_p.add((a, b))
+                pairs.append((a, b))
+        if len(pairs) >= 8:
+            break
+    # 4) 每組跨四庫查，收集不同書的命中
+    out, seen_hit = [], set()
+    for a, b in pairs:
+        for work in _DF_BOOKS:
             try:
-                hs = LC.find(term, work, limit=1, pad=110)
+                hs = LC.find('%s %s' % (a, b), work, limit=1, pad=200)
             except Exception:
                 hs = []
-            if hs:
-                h = hs[0]
-                out.append('《%s》%s（因「%s」檢得）：%s'
-                           % (h.get('book'), h.get('juan') or '', term,
-                              (h.get('kwic') or '').strip()))
+            for h in hs:
+                kw = (h.get('kwic') or '').strip()
+                sig = (h.get('book'), kw[:40])
+                if not kw or sig in seen_hit:
+                    continue
+                seen_hit.add(sig)
+                out.append('《%s》%s（%s＋%s）：%s'
+                           % (h.get('book'), h.get('juan') or '', a, b, kw))
+                break
+            if len(out) >= limit:
                 break
         if len(out) >= limit:
+            break
+    # 5) 共現查無（長問答常見）：退回稀有單詞跨四庫查
+    if not out:
+        for g in top[:6]:
+            for work in _DF_BOOKS:
+                try:
+                    hs = LC.find(g, work, limit=1, pad=220)
+                except Exception:
+                    hs = []
+                got = False
+                for h in hs or []:
+                    kw = (h.get('kwic') or '').strip()
+                    sig = (h.get('book'), kw[:40])
+                    if not kw or sig in seen_hit:
+                        continue
+                    seen_hit.add(sig)
+                    out.append('《%s》%s（%s）：%s'
+                               % (h.get('book'), h.get('juan') or '', g, kw))
+                    got = True
+                    break
+                if got or len(out) >= limit:
+                    break
+            if len(out) >= limit:
+                break
+    return '\n'.join(out)[:cap]
+
+
+# ---------------------------------------------------------------- 辭典自動索引（無題庫詞）
+_DICT_INDEX = None
+
+
+def _dict_index():
+    """《南山律學辭典》詞頭＋4-gram 稀有片段 Counter；只建一次。"""
+    global _DICT_INDEX
+    if _DICT_INDEX is not None:
+        return _DICT_INDEX
+    p = os.path.join(B, '原文', '南山律學辭典', '南山律學辭典.txt')
+    t = io.open(p, encoding='utf-8', errors='ignore').read() if os.path.exists(p) else ''
+    heads = set(m.group(1).strip() for m in re.finditer(r'【([^】]{2,12})】', t))
+    for ln in t.splitlines():
+        s = ln.strip()
+        if 2 <= len(s) <= 8 and not re.search(r'[，。；：！？、（）]', s):
+            heads.add(s)
+    from collections import Counter
+    h = han(t)
+    four = Counter(h[i:i + 4] for i in range(0, max(0, len(h) - 3)))
+    _DICT_INDEX = (t, heads, four)
+    return _DICT_INDEX
+
+
+def _dict_notes(src, cap=1100):
+    """只留真實辭典詞頭＋罕見 4-gram（1–4 次）；依稀有度＋長度排序，最多 4 條。"""
+    t, heads, four = _dict_index()
+    if not t:
+        return ''
+    h = han(src)
+    cand = set()
+    for n in (2, 3, 4):
+        for i in range(0, max(0, len(h) - n + 1)):
+            w = h[i:i + n]
+            if all(c in _STOP_CHARS for c in w):
+                continue
+            cand.add(w)
+    scored = []
+    for w in cand:
+        if len(w) == 4:
+            cnt = four.get(w, 0)
+            if not (1 <= cnt <= 4) and w not in heads:
+                continue
+        elif w in heads:
+            cnt = four.get(w, 1) if len(w) == 4 else 1
+        else:
+            continue
+        if w in _STOP_WORDS:
+            continue
+        scored.append((cnt, -len(w), w))
+    scored.sort()
+    out, used = [], 0
+    for cnt, neglen, w in scored:
+        i = t.find(w)
+        if i < 0:
+            continue
+        ctx = re.sub(r'\s+', ' ', t[max(0, i - 90):i + 300]).strip()
+        # 辭典排版常在中文間換行；接回以免檢索詞被空白切開
+        ctx = re.sub(r'(?<=[\u4e00-\u9fff])\s+(?=[\u4e00-\u9fff])', '', ctx)
+        out.append('「%s」：%s' % (w, ctx))
+        used += 1
+        if used >= 4:
             break
     return '\n'.join(out)[:cap]
 
 
-def _ke_note(book, src, cap=360):
-    """科判位置：業疏科／戒疏科取最相近一筆。"""
+_KE_FILES = {'業疏': '業疏科', '戒疏': '戒疏科'}
+
+
+def _ke_volume_excerpt(book, chunk, cap=1200):
+    """依卷／子卷比例，從科判檔取該區間節錄（用於引號查不到的上層母科）。"""
+    name = _KE_FILES.get(book)
+    if not name:
+        return ''
+    p = os.path.join(B, '原文', name, name + '.txt')
+    if not os.path.exists(p):
+        return ''
+    m = re.match(r'卷([一二三四])(?:之([一二三四五六]))?', chunk or '')
+    if not m:
+        return ''
+    t = io.open(p, encoding='utf-8', errors='ignore').read()
+    vol = '卷' + m.group(1)
+    _CN = {'一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6}
+    sub = _CN.get(m.group(2) or '一', 1)
+    marks = [(x.start(), x.group(0)) for x in re.finditer(r'卷[一二三四]', t)]
+    start = None
+    end = len(t)
+    for pos, txt in marks:
+        if txt == vol and start is None:
+            start = pos
+        elif start is not None and pos > start:
+            end = pos
+            break
+    if start is None or end <= start:
+        return ''
+    a = start + int((end - start) * (sub - 1) / 6.0)
+    b = start + int((end - start) * sub / 6.0)
+    seg = re.sub(r'[ \t\r]+', ' ', t[a:b]).strip()
+    return seg[:cap]
+
+
+def _ke_note(book, src, chunk='', key='', cap=420):
+    """科判位置：優先用 key 的『卷X之Y』取該卷區間節錄；再以引號內科文／原文頭查科檔。"""
+    m = re.search(r'(卷[一二三四]之[一二三四五六])', key or '')
+    label = m.group(1) if m else (chunk or '')
+    seg = _ke_volume_excerpt(book, label, cap=min(cap, 1200))
+    if seg and len(han(seg)) >= 12:
+        return '（%s區間節錄）%s' % (label or '', seg)
     try:
         import local_corpus as LC
-        work = '業疏科' if book == '業疏' else '戒疏科'
-        q = han(src)[:10]
-        if len(q) < 5:
+        work = _KE_FILES.get(book, '')
+        if not work:
             return ''
-        hits = LC.find(q, work, limit=1, pad=80)
-        if hits:
-            return ('《%s》%s：%s' % (hits[0].get('book'), hits[0].get('juan') or '',
-                                     hits[0].get('kwic') or '')).strip()[:cap]
+        cands = []
+        for q in re.findall(r'「([^」]{2,14})」', src):
+            q = q.strip()
+            if len(q) >= 2:
+                cands.append(q)
+        cands.append(han(src)[:14])
+        for q in cands:
+            if len(q) < 2:
+                continue
+            hits = LC.find(q, work, limit=1, pad=220)
+            if not hits:
+                continue
+            kw = (hits[0].get('kwic') or '').strip()
+            if not kw:
+                continue
+            return ('《%s》%s：%s' % (hits[0].get('book'),
+                                     hits[0].get('juan') or '', kw)).strip()[:cap]
     except Exception:
         return ''
     return ''
@@ -589,11 +829,34 @@ def reference_blocks(book, unit, order, i):
                 _seq = MC._seq_json()
                 MC._seq_json = (lambda: _seq)
                 MC._RA_SEQ_READY = True
-            ji = MC.ji_for_chao(src, cap=900)
+            ji = MC.ji_for_chao(src, cap=2200)
         except Exception:
             ji = ''
         if ji:
             blocks.append(('資持記相關釋文（僅供訓釋字義，嚴禁搬入正文）', ji))
+        # 鈔文問「何法」而資持記以部派受戒釋之：母本序列比對不到時，
+        # 以原文詞檢索資持記，取含「何部」的解說（不寫死該句）。
+        if ('何法' in src or '三衣' in src) and '何部' not in (ji or ''):
+            try:
+                import local_corpus as LC
+                for q in ('何法', '三衣'):
+                    if q not in src:
+                        continue
+                    hits = LC.find(q, '資持記', limit=10, pad=600)
+                    got = ''
+                    for h in hits or []:
+                        kw = (h.get('kwic') or '')
+                        i = kw.find('何部')
+                        if i >= 0:
+                            got = kw[max(0, i - 200):i + 300].strip()
+                            break
+                    if got:
+                        blocks.append((
+                            '資持記相關釋文（原文詞檢索補查；僅供訓釋，嚴禁搬入正文）',
+                            got[:900]))
+                        break
+            except Exception:
+                pass
     if book == '義鈔':
         disp = '\n'.join(p.get('display') or '' for p in unit['parts']
                          if (p.get('display') or '').strip())
@@ -608,7 +871,7 @@ def reference_blocks(book, unit, order, i):
         sus = _suoshu_text(order, i)
         if sus:
             blocks.append(('所釋疏文（單邊記文之母文，僅供對讀，嚴禁抄入記文）', sus))
-        ke = _ke_note(book, src)
+        ke = _ke_note(book, src, unit.get('chunk') or '', unit.get('key') or '')
         if ke:
             blocks.append(('所屬科判位置（僅供定位，勿改寫正文）', ke))
         if book == '戒疏' and ('文云' in src or '注云' in src):
@@ -622,6 +885,10 @@ def reference_blocks(book, unit, order, i):
                                                 hits[0].get('kwic') or '')).strip()))
             except Exception:
                 pass
+    if book in ('戒疏', '業疏', '義鈔', '行事鈔'):
+        dn = _dict_notes(src)
+        if dn:
+            blocks.append(('南山律學辭典條目參考（僅供訓釋，嚴禁搬入正文）', dn))
     return blocks
 
 
@@ -1085,14 +1352,30 @@ def generate(book, outdir, target, mode, gap_mode, gap_min, check_raw,
             except OSError:
                 pass
     meta_all = []
+    _pos = {u['key']: j for j, u in enumerate(order)}
     for i, pack in enumerate(packs, 1):
         i0 = order.index(pack[0])
         i1 = order.index(pack[-1])
         pre = context_before(order, i0)
         post = context_after(order, i1)
         gaps = _pack_gaps(pack, order, effective_gap_mode, gap_min, raw_h)
+        # 全書 pack 也要掛對照層：逐 unit 收集、去重、總長 ≤2800
+        pack_refs, seen_ref, ref_len = [], set(), 0
+        for u in pack:
+            for title, body in reference_blocks(book, u, order, _pos[u['key']]):
+                if not (body or '').strip():
+                    continue
+                sig = re.sub(r'\s+', '', body)[:80]
+                if sig in seen_ref:
+                    continue
+                if ref_len + len(body) > 2800:
+                    continue
+                seen_ref.add(sig)
+                pack_refs.append((title, body))
+                ref_len += len(body)
         key, meta = emit_pack(outdir, pack, i, book, BOOKS[book]['id'], mode,
-                              gaps, raw_h, pre=pre, post=post, target=target)
+                              gaps, raw_h, pre=pre, post=post, target=target,
+                              refs=pack_refs)
         meta['n_units'] = len(pack)
         meta_all.append(meta)
     json.dump({
@@ -1143,7 +1426,7 @@ def main():
         description='從 定稿/<book>.jsonl 打包約 20K 字的再審材料（不呼叫 qwen）')
     ap.add_argument('--book', default='業疏', choices=list(BOOKS), help='書別（預設 業疏）')
     ap.add_argument('--target-chars', type=int, default=TARGET_CHARS,
-                    help='每檔目標字數（預設 20000；預設計整份 md）')
+                    help='每檔目標字數（預設 10000；全量建議 9000–10000）')
     ap.add_argument('--count-mode', default='md', choices=COUNT_MODES,
                     help='字數計法：md＝整份材料（預設）、body＝原文＋現譯、source＝僅原文')
     ap.add_argument('--group-by', default='vol', choices=GROUP_BY,

@@ -373,7 +373,7 @@ docs/<book>/卷*.html
 2. 全量掃 source 開頭 closing 引號／缺【，結尾缺句末標點
 3. 抽樣比對：譯文有完整句、source 卻截斷 → 先修 raw_start／raw_end
 4. source 必須 == raw[raw_start:raw_end]
-5. 定稿凍結後才產 20K 材料
+5. 定稿凍結後才產 10K 材料
 ```
 
 **次序不可顛倒：先修 source 邊界，再做再審。** 若 source 邊界未修就送再審，模型會把譯文正確補出的「如前文已釋」「等諸法」判成無據增補。
@@ -391,7 +391,7 @@ python -X utf8 _src/recheck_scan.py --out 重作材料_長段/再審前置掃描
 10 類旗標：空白／缺欄／source 頭尾、缺開頭標籤、背景外洩、GAP／BLIND／JE-／YE-、
 第三人稱旁白、引號內 BAD_VAR、`〔` 溢出、句末冒號／「的等。」／「？等等。」、
 膨脹 >1.9／縮水 <0.5／孤立『』、雙欄總數詞／無標點多「云言問答曰」／破折號／序跋。
-另加 `FALSE_FRIEND_HIT`（全書通用高危假朋友）與 `BOOK_TERM_HIT`（各書抽樣已證實具體詞）。
+另加 `FALSE_FRIEND_HIT`（全書通用高危假朋友）與 `BOOK_TERM_HIT`（各書抽樣已證實具體詞）；**兩者只作排序／報告，不作跳過再審依據**。
 
 **具體詞例只活在程式裡。** `recheck_scan.py` 的 `FALSE_FRIEND`／`BOOK_TERMS` 是 0 成本觸發器；
 `SYSTEM_PROMPT`、`REAUDIT`／`REVISE`／`VERIFY`、`book_config.py` 各書 note **不得**再抄這些詞例
@@ -408,7 +408,7 @@ python -X utf8 _src/recheck_scan.py --out 重作材料_長段/再審前置掃描
 
 ### 7A.1 目的
 
-定稿完成後，以「一份 `.md` 約 20K 字」的連續批次再審，解掉逐段送審看不到前後文的問題：
+定稿完成後，以「一份 `.md` 約 9–10K 字」的連續批次再審，解掉逐段送審看不到前後文的問題：
 
 ```text
 跨段專名／術語不一致
@@ -425,7 +425,7 @@ python -X utf8 _src/recheck_scan.py --out 重作材料_長段/再審前置掃描
 
 不得讀 `docs/`、`_材料`、舊 `AI語譯/out` 當來源。
 
-每批不跨 `vol`；同一 `chunk` 優先。為達到 20K 目標，允許跨同卷內相鄰 `chunk`，但同一 unit 的疏文＋記文不拆。
+每批不跨 `vol`；同一 `chunk` 優先。為達到 9–10K 目標，允許跨同卷內相鄰 `chunk`，但同一 unit 的疏文＋記文不拆。
 
 `--group-by vol` 是預設；`--group-by chunk` 只在該卷材料足夠時使用。
 
@@ -479,12 +479,12 @@ _src/recheck_scan.py
 idx / key / chunk / raw_start / raw_end / labs / parts / src_hash
 ```
 
-### 7A.5 20K 預算
+### 7A.5 10K 預算
 
 ```text
-整份 .md：約 19K–20.5K 字
-待審原文＋現譯：約 11.5K–14K 字
-前文背景：原文 ≤1500 字＋前鄰譯文 ≤400 字
+整份 .md：約 8.5K–10.5K 字
+待審原文＋現譯：約 5K–7K 字
+前文背景：原文 ≤1800 字＋前鄰譯文 ≤400 字
 後文背景：原文 ≤600 字＋後鄰譯文 ≤300 字
 資持記所釋鈔文：≤2500 字
 ```
@@ -526,10 +526,10 @@ VERIFY_PROMPT（book_config.py）
 $env:QWEN_SHUJI_SRC='重譯/<book>/_再審'
 $env:QWEN_KEY_FILE='qwk.txt'
 $env:QWEN_LOCAL='1'; $env:QWEN_NO_WEB='0'
-$env:QWEN_MAX_LOCAL='14'
-$env:QWEN_MAX_SEARCH='4'
-$env:QWEN_MAX_ROUNDS='10'
-$env:QWEN_MAX_LAST_IN='90000'
+$env:QWEN_MAX_LOCAL='4'
+$env:QWEN_MAX_SEARCH='2'
+$env:QWEN_MAX_ROUNDS='5'
+$env:QWEN_MAX_LAST_IN='40000'
 $env:QWEN_HTTP_TIMEOUT='1200'
 $env:QWEN_WORKERS='12'
 $env:QWEN_RAW_SAVE='1'; $env:QWEN_NO_CITE='0'
@@ -537,7 +537,7 @@ $env:QWEN_EFFORT='xhigh'; $env:QWEN_KEEP_THINKING='1'
 python -X utf8 _src/qwen_local.py
 ```
 
-修訂（Step 3）：`QWEN_SHUJI_SRC='重譯/<book>/_再審修訂'`、`QWEN_MAX_SEARCH='1'`、`QWEN_NO_CITE='1'`、`QWEN_EFFORT='xhigh'`。
+修訂（Step 3）：`QWEN_SHUJI_SRC='重譯/<book>/_再審修訂'`、`QWEN_MAX_SEARCH='2'`、`QWEN_NO_CITE='1'`、`QWEN_EFFORT='xhigh'`。
 
 驗收（Step 4）：`QWEN_SHUJI_SRC='重譯/<book>/_再驗'`、`QWEN_NO_WEB='1'`、`QWEN_MAX_LOCAL='2'`、**`QWEN_EFFORT='high'`**、`QWEN_KEEP_THINKING='1'`。
 
@@ -548,7 +548,7 @@ python -X utf8 _src/qwen_local.py
 python -X utf8 _src/recheck_scan.py --book 義鈔 --out 重作材料_長段/再審前置掃描.md
 
 # 1) 再審材料 → 再審
-python -X utf8 _src/mk_reaudit_materials.py --book 義鈔 --target-chars 20000 --check-raw
+python -X utf8 _src/mk_reaudit_materials.py --book 義鈔 --target-chars 9000–10000 --check-raw
 python -X utf8 _src/qwen_local.py
 
 # 2) 拆回 → 修訂材料 → 修訂
@@ -606,7 +606,7 @@ check_final_merge --final：7 項全達標
 ### 7A.9 禁止
 
 ```text
-不可把 20K 材料一次重吐全文
+不可把 10K 材料一次重吐全文
 不可在修訂階段改 PASS 單位
 不可用模糊比對補 [n]
 不可跳過 split_reaudit 直接套回

@@ -340,18 +340,19 @@ def find(query, work=None, limit=6, pad=240, per_book=None, ctx_book=None):
             if not _ok:
                 continue
         r = LINES[eidx]
+        _cap_chars = max(480, int(pad) * 2)
         if others:
-            # 依實際字數湊足前後各 240 字，不鎖行數
+            # 依實際字數湊足前後各 max(480, pad*2) 字，不鎖行數
             lo_i, hi_i = eidx, eidx + 1
             _acc = len(r.get('plain', r['text']))
-            while lo_i > 0 and _acc < 240 * 2:
+            while lo_i > 0 and _acc < _cap_chars:
                 _j = lo_i - 1
                 if LINES[_j]['book'] != r['book']:
                     break
                 lo_i = _j
                 _acc += len(LINES[_j].get('plain', LINES[_j]['text']))
             _acc = len(r.get('plain', r['text']))
-            while hi_i < len(LINES) and _acc < 240 * 2:
+            while hi_i < len(LINES) and _acc < _cap_chars:
                 if LINES[hi_i]['book'] != r['book']:
                     break
                 _acc += len(LINES[hi_i].get('plain', LINES[hi_i]['text']))
@@ -416,13 +417,14 @@ def find(query, work=None, limit=6, pad=240, per_book=None, ctx_book=None):
         used[r['book']] = used.get(r['book'], 0) + 1
         lo_i, hi_i = idx, idx + 1
         _acc = len(_plain(LINES[idx]['text']))
-        while lo_i > 0 and _acc < 480:
+        _cap_chars = max(480, int(pad) * 2)
+        while lo_i > 0 and _acc < _cap_chars:
             if LINES[lo_i - 1]['book'] != r['book']:
                 break
             lo_i -= 1
             _acc += len(_plain(LINES[lo_i]['text']))
         _acc = len(_plain(LINES[idx]['text']))
-        while hi_i < len(LINES) and _acc < 480:
+        while hi_i < len(LINES) and _acc < _cap_chars:
             if LINES[hi_i]['book'] != r['book']:
                 break
             _acc += len(_plain(LINES[hi_i]['text']))

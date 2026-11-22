@@ -47,11 +47,13 @@ for book in ([args.book] if args.book else list(BOOKS)):
  for v,a,b in intervals:
   sel=[r for r in rows if r['raw_start']<b and r['raw_end']>a]
   body=['<h1>%s・%s</h1>'%(name,v),'<p class="byline">%d 單元；依 CBETA 卷題區間，跨頁單元前後並見。</p>'%len(sel)]
-  idx=0; last=None
+  idx=0; last=None; seen=set()
   for r in sel:
    chunk=v if book=='jieshu' else (r.get('chunk') or v)
-   if chunk!=last:
-    idx+=1; body.append('<h2 class="sec" id="p%d">%s</h2>'%(idx,html.escape(chunk))); last=chunk
+   if book!='jieshu' and chunk==v: continue
+   if chunk!=last and (chunk=='卷首' or chunk.startswith(v)):
+    if chunk not in seen:
+     idx+=1; body.append('<h2 class="sec" id="p%d">%s</h2>'%(idx,html.escape(chunk))); seen.add(chunk); last=chunk
    for lab,s,tr in pairs(r):
     if not s or not tr: continue
     pc={'疏文':'s','記文':'j','註文':'z','律文':'lv','序文':'x'}.get(lab,'')

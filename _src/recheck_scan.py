@@ -85,7 +85,8 @@ FATAL = {'EMPTY_TR', 'MISSING_FIELD', 'DUAL_MISSING_COL', 'SRC_HEAD_CLOSE',
 FLAG_ORDER = (
     'EMPTY_TR', 'MISSING_FIELD', 'DUAL_MISSING_COL', 'SRC_HEAD_CLOSE',
     'SRC_TAIL_NO_END', 'NO_LEAD_LABEL', 'BG_LEAK', 'GAP_SEG', 'THIRD_PERSON',
-    'BAD_VAR_QUOTE', 'BRACKET_OVERFLOW', 'TAIL_COLON', 'DE_DENG', 'Q_WENDENG',
+    'BAD_VAR_QUOTE', 'BAD_VAR_OUTSIDE', 'LABEL_203_REVIEW',
+    'BRACKET_OVERFLOW', 'TAIL_COLON', 'DE_DENG', 'Q_WENDENG',
     'INFLATE', 'SHRINK', 'LONE_CORNER', 'DUAL_TOTAL', 'NO_PUNCT_DIALOG',
     'DASH_NOTE', 'PREFACE_RISK', 'FALSE_FRIEND_HIT', 'BOOK_TERM_HIT',
 )
@@ -183,6 +184,18 @@ def scan_row(book, row, raw_h=None, inflate_thr=1.9, shrink_thr=0.5):
     _bv = _quote_bad(tr, src)
     if _bv:
         add('BAD_VAR_QUOTE', char=_bv)
+    # 引號外異體字（不豁免 src 同字；只報告）
+    _noq = re.sub(r'[「『][^」』]*[」』]', '', tr or '')
+    _bv_out = [c for c in BAD_VAR if c in _noq]
+    if _bv_out:
+        add('BAD_VAR_OUTSIDE', chars=_bv_out)
+
+    # 尼鈔 203 標籤／display 篇題疑點：只報告，不改資料
+    if book == '尼鈔' and key == '203':
+        labs = [p.get('lab') for p in parts if p.get('lab')]
+        disp = row.get('display_source') or ''
+        if labs and set(labs) == {'鈔文'} and re.search(r'卷[一二三四]|篇|章', disp[:120]):
+            add('LABEL_203_REVIEW', labs=labs, display=disp[:80])
 
     if (tr or '').count('〔') > src.count('〔'):
         add('BRACKET_OVERFLOW', out=tr.count('〔'), src=src.count('〔'))
@@ -344,6 +357,8 @@ def write_report(path, all_res, sums, generated):
           '| DUAL_MISSING_COL | 雙欄段有一欄空白 |',
           '| SRC_HEAD_CLOSE | source 開頭為 】」、，。；： 等（邊界截斷） |',
           '| SRC_TAIL_NO_END | source 結尾非句末標點 |',
+          '| BAD_VAR_OUTSIDE | 引號外殘留却／鉢／厨／徧／牀／説／衆（只報告） |',
+          '| LABEL_203_REVIEW | 尼鈔 203 標籤或 display 篇題疑點（只報告） |',
           '| NO_LEAD_LABEL | 譯文開頭缺白名單段別標籤 |',
           '| BG_LEAK | 譯文殘留材料背景／清單標籤 |',
           '| GAP_SEG | key 屬 GAP／BLIND／JE-／YE- 缺口段（必再審） |',

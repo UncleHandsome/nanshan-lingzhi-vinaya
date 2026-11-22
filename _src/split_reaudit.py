@@ -95,7 +95,8 @@ def _is_none(txt):
     if s in ('', '無', '無。', '无', '无。', '沒有', '没有'):
         return True
     # 單段常見「無（只有…）」：無 [n] 問題欄位即視為無硬傷
-    if s.startswith(('無', '无')) and not re.search(r'\[\d', s):
+    if s.startswith(('無', '无')) and not re.search(r'\[\d', s) \
+            and not re.search(r'問題[:：]|修正方向[:：]', s):
         return True
     return False
 

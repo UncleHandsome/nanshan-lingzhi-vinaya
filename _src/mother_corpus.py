@@ -203,11 +203,12 @@ def ji_for_chao(text, limit=6, cap=2200):
         sel = list(head)
         acc = sum(len(s) for s in head) + len(head)
         reserve = sum(len(s) for s in tail) + len(tail)
-        step = max(1, len(mid) // 4)
-        for s in mid[::step]:
-            if acc + len(s) + 1 + reserve <= cap:
-                sel.append(s)
-                acc += len(s) + 1
+        # 中間每條保留前 70 字，不跳步整條丟；首尾仍留全條
+        for s in mid:
+            piece = s[:70]
+            if acc + len(piece) + 1 + reserve <= cap:
+                sel.append(piece)
+                acc += len(piece) + 1
         sel.extend(tail)
         out = '\n'.join(sel)
         return out if len(out) <= cap else out[:cap - 1] + '…'

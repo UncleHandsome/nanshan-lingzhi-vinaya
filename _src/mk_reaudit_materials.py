@@ -553,7 +553,7 @@ def _yichao_parallel(src, cap=1400, limit=3):
         return ''
     # 1) 取樣句與候選
     cands = set()
-    for s in _sampled_sentences(src):
+    for s in _sampled_sentences(src, per=4):
         cands |= _grams(s)
     if not cands:
         return ''
@@ -580,7 +580,7 @@ def _yichao_parallel(src, cap=1400, limit=3):
     rank = {g: i for i, g in enumerate(top)}
     # 3) 每句取「最稀有且不重疊」的兩詞作共現查詢（最多 8 組），不先 break
     pairs, seen_p = [], set()
-    for s in _sampled_sentences(src):
+    for s in _sampled_sentences(src, per=4):
         h = han(s)
         spans = []
         for g in set(_grams(s)):
@@ -721,7 +721,8 @@ def _dict_notes(src, cap=1100):
     return '\n'.join(out)[:cap]
 
 
-_KE_FILES = {'業疏': '業疏科', '戒疏': '戒疏科'}
+_KE_FILES = {'業疏': '業疏科', '戒疏': '戒疏科', '行事鈔': '行事鈔科',
+             '義鈔': '義鈔科', '尼鈔': '尼鈔科'}
 
 
 def _ke_volume_excerpt(book, chunk, cap=1200):
@@ -886,6 +887,39 @@ def _reverse_ji_note(src, cap=900):
     return ''
 
 
+_QUOTE_WORKS = (
+    ('伽論', '薩婆多部毘尼摩得勒伽'), ('婆沙', '薩婆多毘尼毘婆沙'),
+    ('多論', '薩婆多毘尼毘婆沙'), ('五分', '五分律'), ('十誦', '十誦律'),
+    ('僧祇', '摩訶僧祇律'), ('善見', '善見律毘婆沙'), ('母論', '毘尼母經'),
+    ('隨機羯磨', '隨機羯磨'), ('戒本', '含注戒本'),
+)
+
+
+def _quote_note(src):
+    """原文書名＋云／言／說時，反查該書 1 條原文（只作對照）。"""
+    try:
+        import local_corpus as LC
+    except Exception:
+        return ''
+    h = han(src)
+    for short, work in _QUOTE_WORKS:
+        if short not in h:
+            continue
+        if not re.search(re.escape(short) + r'[云言說曰]', h):
+            continue
+        for q in (h[:12], short):
+            try:
+                hs = LC.find(q, work, limit=1, pad=240)
+            except Exception:
+                hs = []
+            if hs:
+                kw = (hs[0].get('kwic') or '').strip()
+                if kw:
+                    return '《%s》%s：%s' % (hs[0].get('book') or work,
+                                            hs[0].get('juan') or '', kw)
+    return ''
+
+
 def reference_blocks(book, unit, order, i):
     """回傳 [(標題, 內文)]：只掛本段可用且有據的對照層。"""
     blocks = []
@@ -916,16 +950,11 @@ def reference_blocks(book, unit, order, i):
                 blocks.append((
                     '資持記相關釋文（原文稀有詞反查；僅供訓釋，嚴禁搬入正文）', rv))
     if book == '義鈔':
-        disp = '\n'.join(p.get('display') or '' for p in unit['parts']
-                         if (p.get('display') or '').strip())
-        if not disp:
-            disp = (unit.get('row') or {}).get('display_source') or ''
-        if disp and han(disp):
-            blocks.append(('原典補標點原文（僅供斷句對照）', disp[:REF_CAP]))
+        # 現譯原文已是 display（句讀版），不再重複附補標點原文；篇幅留給平行文
         par = _yichao_parallel(src)
         if par:
             blocks.append(('平行釋文（戒疏／行宗記／資持記／行事鈔；僅供訓釋，嚴禁搬入正文）', par))
-    if book in ('業疏', '戒疏'):
+    if book in _KE_FILES:
         sus = _suoshu_text(order, i)
         if sus:
             blocks.append(('所釋疏文（單邊記文之母文，僅供對讀，嚴禁抄入記文）', sus))
@@ -947,6 +976,9 @@ def reference_blocks(book, unit, order, i):
         dn = _dict_notes(src)
         if dn:
             blocks.append(('南山律學辭典條目參考（僅供訓釋，嚴禁搬入正文）', dn))
+    qn = _quote_note(src)
+    if qn:
+        blocks.append(('原文明引書對照（僅供校勘，嚴禁搬入正文）', qn))
     return blocks
 
 
@@ -999,8 +1031,9 @@ def render_material(book, pack, idx, book_id, key, pre, post, gaps, mode, raws,
                        scope_note=(SINGLE_SCOPE if n == 1 else BC.PACK_SCOPE),
                        **notes)
     L = [prompt, '', '---', '',
-         '（出處：《%s》%s，%s｜單位 %d–%d｜原文 %s 字＋現譯 %s 字）'
-         % (book, vol, key, 1, n, _fmt(src_chars), _fmt(tr_chars)), '']
+         '（出處：《%s》%s，%s｜%s｜單位 %d–%d｜原文 %s 字＋現譯 %s 字）'
+         % (book, vol, key, pack[0].get('chunk') or '', 1, n,
+            _fmt(src_chars), _fmt(tr_chars)), '']
     _gaps_body = [g for g in gaps if g['kind'] == '正文']
     if _gaps_body:
         L += ['【正文缺口提示】', '',

@@ -15,26 +15,62 @@ import re
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 
-AUDIT_PROMPT = '你是南山律典終審校勘員，對照原文找出【待審譯文】的實質錯誤。\n\n請逐句從【原文】獨立拆解文法與律義，再反向驗收【待審譯文】，切勿順著譯文流暢度讀過去；裁決未列分歧之處仍須核對，防範雙譯同誤；即使已發現一處硬傷，仍須核完其餘各句。若有【裁決分歧參考】，逐項驗明所採是否與原文相容，但不得因此忽略未列分歧處。一眼可見之漏譯或贅注直接判定，勿為求安心重複搜尋。{dual_note}{long_note}\n\n### 檢核（只抓實質錯誤，不挑純修辭潤飾）\n1. **律義與部別**（{book_note}）：違背律宗常制、錯混部別、混淆本宗定論與他部異說、科判層級或「文」之所指有誤、引文與著者評論混同、【疏】【記】義理不能互核。\n2. **文法與邏輯**：主客施受反轉、持犯開遮與模態強弱錯置、想疑心念與行為要件失真、時序與界限條件模糊、範圍與否定作用域偏差、句尾虛字斷句致因果轉折反轉、引文起迄錯亂。\n3. **忠實與增刪**：漏譯條件、實質夾注、音訓或實詞；無據增補細目、背景或考訂；誤將背景或他欄專論混入正文；依文脈腦補譯文所無之詞。原文實質夾注、讀音與確須存疑之 `〔補字〕`／`〔疑作X〕` 得保留，空白占位括號不強留。\n4. **表達與殘留**：古今與同形異義誤讀、文言直抄、歐化倒裝、動詞缺主賓、同義重複疊詞、違規添加解說性圓括號、同一核心術語前後譯法歧出，以及網址／按語／自創標籤殘留。\n\n凡涉上述四項實質問題或致語意歧義者，一律列為硬傷判 `FIX`。\n\n### 輸出（勿改寫整段，勿在建議中代寫完整替換句）\n1. **【逐句簡核】**：逐句對照【原文】與【待審譯文】實際字面，核明核心實詞、動詞、主客與界限之實際譯法（禁止按段概括或僅複述原文大意帶過），註明查證結果。\n2. **【結論】**：`PASS` 或 `FIX`（判 FIX 須列至少 1 項硬傷；判 PASS 則下欄只寫「無」）。\n3. **【必改硬傷】**（無硬傷時**只寫「無」一字**，勿寫「經核對…」等說明）：\n   - `[疏/記/鈔/律/註/序，打包段附[n]] 原文「……」→ 待審譯文「……」｜問題：……｜依據：……（引原文或查證書名，摘錄關鍵原句 1–2 句）｜修正方向：……（只寫須補齊或糾正之要素；所涉專詞須兼顧現代白話清晰而不生古今歧義）`'
-
-NOTE_NICAO = ('《比丘尼鈔》須依比丘尼律制與對舉「僧／尼」語境審斷；''檢索《行事鈔》等平行文對讀時，須尊重《尼鈔》對尼眾之改制與節略，不得以比丘制硬套覆蓋')
-NOTE_SHUJI = ('《業疏》「文／注」指《隨機羯磨》，《戒疏》「文／注」指《含注戒本》，「律」方指《四分律》，'
-              '且【疏】【記】須義理相契，【疏文】勿無故偷搬【記文】專論')
-
+AUDIT_PROMPT = (
+    '你是南山律典終審校勘員，對照原文找出【待審譯文】的實質錯誤。\n\n'
+    '請依【原文】逐句拆解文法與律義，再反向驗收【待審譯文】（切勿順著流暢度讀過）；'
+    '無論是否附【裁決分歧參考】或已發現硬傷，皆須核畢全文。若有【裁決分歧參考】，須驗明所採是否與原文相容，'
+    '不得因此忽略未列分歧處。顯明文意或一眼可見之漏譯贅注可直接判定；但遇疏中略牒（如「某字下」「此下」）、'
+    '譯文對原文泛稱補指具體書名／人名、或確有古今撞義而影響義理者，仍須檢索確認，不得以字面通順放行。\n\n'
+    '### 檢核（只抓實質錯誤，不挑純修辭與純格式）\n'
+    '1. **實質錯誤（見即判 FIX）**：漏譯／無據增補、背景或他欄專論混入正文、動詞缺主賓（僅純分科標目短語除外；凡含散說闡釋之句仍須主賓明確）、'
+    '條件句缺結果、術語歧出、生澀文言實詞未譯透或關鍵量詞缺失（致單讀歧義、不知所指，或誤讀為他宗／現代詞義）、'
+    '直接引號「……」內半文半白、錯標原典出處／篡改原典文意（引原文＋白話者，白話須在引號外）、'
+    '依他典原字改壞本段刻意節改引文；以及網址／按語／自創或錯置標籤殘留'
+    '（註：先引原文一句再白話解釋，不視為雙譯疊詞；僅同一句白話重複兩次才判 FIX）。\n'
+    '2. **遮蔽原文反讀**：假設不見原文單讀【待審譯文】（僅純分科標目短語除外），須能唯一讀出正確施受、對象、時序與邏輯'
+    '（背景截斷或母本無據者，用語法完整之中性泛稱即算通過，不得強求猜補具體對象或條件）；'
+    '凡須腦補古文脈絡才能讀通者，判 FIX。\n'
+    '3. **不判 FIX**：純修辭換詞；簡繁／異體字、戒名引號、典籍簡稱展開或簡寫、及引文是否保留引號等純表面格式；'
+    '依體例保留之被訓釋原詞、專名、儀軌稱謂「某甲」、度量、篇題、「某某反」與未定校勘〔…〕；本段刻意節改所引經律而依本段原文直譯者；'
+    '合乎原文脈絡與律制分際的顯義、先引原文再白話解釋，以及不扭曲原義、亦非無據臆造之簡短消歧括注。\n\n'
+    '（本段所屬：{book_note}）\n\n'
+    '### 檢核通則\n{logic_checklist}\n{dual_note}{long_note}\n'
+    '### 輸出（勿改寫整段，勿代寫完整替換句）\n'
+    '（段別標籤白名單：【疏文】【記文】【鈔文】【律文】【註文】【序文】；不得自創或混用。）\n\n'
+    '【逐句簡核】須分兩步完成（PASS 亦不得略過為一兩行總述）：第一步先遮蔽原文單讀【待審譯文】，'
+    '凡指代撞牆、主語斷裂、漏量詞、生澀文言實詞未譯透、前後自相矛盾或事理反常處，先逐點標出；'
+    '第二步再逐句對照【原文】核對主客施受、關鍵動詞、條件／否定界限與專詞實義'
+    '（顯明無誤之句可按意群簡記相符，長段無須逐字重抄，惟關鍵句與疑點須逐句走到），末句須明言「反讀通順無歧義」或指出斷裂處。\n\n'
+    '【結論】\n'
+    'PASS 或 FIX（FIX 須列至少 1 項硬傷；PASS 則下欄只寫「無」）。\n\n'
+    '【必改硬傷】\n'
+    '- 有硬傷每條一行：[打包段附[n]][疏/記/鈔/律/註/序] 原文「……」→ 待審譯文「……」｜問題：……｜'
+    '依據：……（引原文或書名卷次，外部查證須摘錄關鍵原句 1–2 句）｜修正方向：……\n'
+    '- 凡要求補出具體對象或條件者，依據欄須引出原文或檢索原句；無據不得強令猜補；外部查證須確認確屬本段同一事類脈絡，勿以跨書、跨篇或同篇異節之異釋硬套（須核對論題主體一致）。\n'
+    '- 同一專詞或略牒詞於本段多處重現而義理相牽者，或修正將牽動同句領起語／關聯詞者，須一併列出，勿只改一處致前後矛盾。\n'
+    '- 無硬傷只寫「無」一字。'
+)
 
 def book_of(path_or_text):
     return BC.book_of(path_or_text)
+
+
+def render_audit(note='', dual='', long='', logic=None):
+    """填滿 AUDIT_PROMPT 全部佔位符；未給 logic 時用共用通則，避免佔位符漏填上線。"""
+    return (AUDIT_PROMPT.replace('{book_note}', note)
+            .replace('{logic_checklist}', BC.LOGIC_CHECKLIST if logic is None else logic)
+            .replace('{dual_note}', dual).replace('{long_note}', long))
 
 NOTE_CHAO = '《行事鈔》《義鈔》為比丘律制，部別稱謂須與比丘眾相應'
 
 
 def _strip_head_paren(s):
-    s = (s or '').lstrip('*：: \t\r\n')
+    s = (s or '').lstrip('】*：: \t\r\n')
     if s[:1] in ('（', '('):
         m = re.match(r'[（(][^）)]*[）)]\s*[：:*]*\s*\n?', s)
         if m and re.search(r'註|注|按|說明|沿用|未改|以下|全文|白話|修訂|完整', m.group(0)):
             s = s[m.end():]
-    return s.lstrip('*：: \t\r\n')
+    return s.lstrip('】*：: \t\r\n')
 
 
 _MARK = 'PASS_A_KEEP_A'
@@ -63,12 +99,12 @@ def col3(rt):
             mm = re.compile(r'(?m)^\s*【(?:疏文|記文|鈔文|律文|註文|序文)】').search(rt, _from)
             if mm:
                 return re.sub(r'\n{3,}', '\n\n',
-                              rt[mm.start():].lstrip('*：: \t\r\n')).strip()
+                              rt[mm.start():].lstrip('】*：: \t\r\n')).strip()
             raise ValueError('回覆檔找不到「修正後的譯文」欄位')
         body = rt[i + len('修正後的譯文'):].lstrip('：: \t')
         if body.startswith('\n'):
             body = body[1:]
-    body = body.lstrip('*：: \t\r\n')
+    body = body.lstrip('】*：: \t\r\n')
     return re.sub(r'\n{3,}', '\n\n', _strip_head_paren(body)).strip()
 
 
@@ -88,9 +124,24 @@ def col3_safe(rt):
     return _strip_head_paren(body)
 
 
+def _pick_tag(head, why):
+    """從裁決欄「（甲優／乙優／非甲優…）」精確取捨，避免「非甲優」被誤判為採甲。"""
+    m = re.search(r'[（(]([^）)]{0,80})[）)]', head or '')
+    seg = m.group(1) if m else (why or '')[:80]
+    if re.search(r'(?:非|不|未|無)\s*甲優|甲優\s*(?:否|非)|不採甲', seg):
+        return '乙'
+    if '甲優' in seg:
+        return '甲'
+    if re.search(r'(?:非|不|未|無)\s*乙優|乙優\s*(?:否|非)', seg):
+        return '重修'
+    if '乙優' in seg:
+        return '乙'
+    return '重修'
+
+
 def divergence(rt):
     """取裁決回覆的第 2 欄（分歧與裁決），供審核／修訂參考。"""
-    m = re.search(r'分歧與裁決[^\n]*\n(.+?)(?=\n[#*\s]*(?:3|三)[.、．：:]|\n\s*\**\s*修正後的譯文|\Z)',
+    m = re.search(r'分歧與裁決[^\n]*\n(.+?)(?=\n[#*\s]*(?:3|三)[.、．：:]|\n[#*\s【]*(?:修正後|修訂後|定稿|最終)(?:的)?譯文|\Z)',
                   rt, re.S)
     if not m:
         return ''
@@ -143,15 +194,20 @@ def main():
             if _bm:
                 book = _bm.group(1)
         cfg = BC.cfg(book)
-        note = cfg['note']
-        _dual = ('同段【疏】【記】須互核：以【疏文】前提檢核【記文】科判動詞，'
-                 '並確認【疏文】未隱沒【記文】所牒實詞。' if book in ('業疏', '戒疏') else '')
-        _long = ('本單元為長文切片：若與（本段前文）／（本段後文）語氣連貫，'
-                 '勿強補重複主語或結尾句號。' if ('（本段前文）' in t or '（本段後文）' in t or '_長段' in src) else '')
-        prompt = (AUDIT_PROMPT.replace('{book_note}', note)
-                  .replace('{dual_note}', _dual).replace('{long_note}', _long))
+        _labs = {u.get('lab') for u in (md0.get('units') or []) if u.get('lab')}
+        _has_dual = (book in ('業疏', '戒疏')) and ('疏文' in _labs and '記文' in _labs)
+        _dual = ('\n\n同段【疏】【記】須雙向互核：【疏文】與【記文】之科判、釋義、列舉項數與施受主語須前後相契，'
+                 '並確認【疏文】未隱沒【記文】所牒實詞；【疏文】為消歧、還原指代或補全必要量詞之極簡實指不判 FIX，'
+                 '僅將【記文】整句專論或無據情節硬搬入【疏文】者始判 FIX。' if _has_dual else '')
+        _long = ('\n\n本單元為長文切片：若與（本段前文）／（本段後文）語氣連貫，'
+                 '勿強補重複主語或結尾句號（此項優先於「動詞缺主賓」與「遮蔽原文反讀」要求）；'
+                 '並請檢查切片接縫：句末多餘句號、重複主語、語氣斷裂。'
+                 if (md0.get('long') or '（本段前文）' in t or '（本段後文）' in t) else '')
+        note = BC.note_for(book, _labs)
+        prompt = render_audit(note, _dual, _long)
 
         md = MI.load(src, key) or {}
+        md = MI.fill_mother(md, md.get('book') or book, t)
         srcs = [(u['lab'], u['orig']) for u in md.get('units', [])]
         pre = md.get('pre', '')
         post = md.get('post', '')
@@ -159,8 +215,10 @@ def main():
 
         L = [prompt, '', '---', '', '（出處：%s）' % ((ex.group(1) if ex else '') or ('《%s》' % (book or '未知'))), '']
         if pre:
-            L += ['【前文背景（僅供參考）】', '', pre, '']
+            L += ['【前文背景（僅供參考，嚴禁譯入正文）】', '', pre, '']
         L += ['【原文】', '']
+        if book == '資持記':
+            srcs = [('記文' if lab == '鈔文' else lab, s) for lab, s in srcs]
         for lab, s in srcs:
             L += ['■ %s（原文）' % lab, '', s.strip(), '']
         body = col3_safe(rt)
@@ -171,6 +229,8 @@ def main():
         if body is None:
             print('  ⚠ 略過異常檔：', key)
             continue
+        if book == '資持記':
+            body = re.sub(r'(?m)^【鈔文】', '【記文】', body)
         div = divergence(rt)
         if div:
             _brief = []
@@ -178,27 +238,42 @@ def main():
                 _s = _ln.strip()
                 if not _s:
                     continue
-                _m = re.match(r'(.*?｜裁決[^：:]{0,15}[：:])(.*)', _s)
-                if _m:
-                    _head = _m.group(1)
-                    _why = _m.group(2)
-                    _tag = '甲' if '甲優' in (_head + _why) else ('乙' if '乙優' in (_head + _why) else '重修')
-                    _srcs = re.findall(r'《[^》]{2,20}》[^，。；\n]{0,8}', _why)
-                    _hint = ('（線索：' + '、'.join(_srcs[:2]) + '）') if _srcs else ''
-                    _brief.append(_head + '採' + _tag + _hint)
-                elif re.match(r'(?:[-*•]|\d+\.)?\s*\[', _s):
-                    _mn = re.match(r'\s*(\[\d+\])?', _s)
-                    _tag = '甲' if '甲優' in _s else ('乙' if '乙優' in _s else '重修')
-                    _brief.append((_mn.group(1) + ' ' if _mn and _mn.group(1) else '')
-                                  + '採' + _tag + '（理由格式異常，略）')
+                _s = re.sub(r'^\s*(?:[-*•]|\d+[.、．])?\s*', '', _s).replace('**', '')
+                _m = re.match(r'(.*?｜裁決[^：:\n]{0,40}[：:])(.*)', _s)
+                if not _m:
+                    continue
+                _head = _m.group(1)
+                _why = _m.group(2)
+                _tag = _pick_tag(_head, _why)
+                _srcs = re.findall(r'《[^》]{2,20}》[^，。；\n]{0,16}', _why)
+                _hint = ('（線索：' + '、'.join(_srcs[:2]) + '）') if _srcs else ''
+                if _tag == '甲':
+                    _brief.append(_head + '採甲' + _hint)
+                else:
+                    _brief.append(_head + '採' + _tag + '：' + _why.strip()[:800])
             if _brief:
                 L += ['【裁決分歧參考（僅供參考，勿照抄）】', '', '\n'.join(_brief), '']
+        _ep = os.path.join(src, '回覆', key + '_evid.json')
+        if os.path.exists(_ep):
+            try:
+                _ev = json.load(io.open(_ep, encoding='utf-8'))
+                _bits = []
+                for _it in (_ev if isinstance(_ev, list) else [])[:2]:
+                    _tx = re.sub(r'https?://\S+', '', (_it.get('text') or '')).strip()
+                    if _tx:
+                        _bits.append(_tx[:400])
+                if _bits:
+                    L += ['【裁決檢索摘錄（僅供參考，勿照抄）】', '', '\n'.join(_bits), '']
+            except Exception:
+                pass
         L += ['【待審譯文】', '', body, '']
         if md.get('packed'):
-            L += ['【分段要求】本單元含多個短段，請保留 [1][2]… 編號逐條對應，'
-                  '勿合併、增減條數或改動編號。', '']
+            L += ['【分段要求】本單元含多個短段，請按 [1][2]… 編號逐條核對；【必改硬傷】條目前請加註段號 [n]，'
+                  '勿合併或增減條數。', '']
         if post:
-            L += ['【後文背景（僅供參考）】', '', post, '']
+            L += ['【後文背景（僅供參考，嚴禁譯入正文）】', '', post, '']
+        if md.get('mother'):
+            L += ['【所釋鈔文（僅供對照，嚴禁譯入正文）】', '', md['mother'], '']
 
         io.open(os.path.join(out, fn), 'w', encoding='utf-8').write('\n'.join(L))
         n += 1

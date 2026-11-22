@@ -18,7 +18,7 @@ import book_config as BC  # noqa: E402
 import build_a2 as A      # noqa: E402
 import mk_audit_materials as MA  # noqa: E402
 
-PACK_MAX = 300
+PACK_MAX = 450
 PACK_SEGS = 6
 
 
@@ -39,7 +39,8 @@ def main():
             os.remove(os.path.join(out, f))
 
     items = []
-    for fn in sorted(os.listdir(jd)):
+    _nat = lambda f: re.sub(r'\d+', lambda m: m.group(0).zfill(8), f)
+    for fn in sorted(os.listdir(jd), key=_nat):
         if not fn.endswith('.md'):
             continue
         key = fn[:-3]
@@ -47,14 +48,19 @@ def main():
         body = ''
         rp = os.path.join(rep, key + '_回.txt')
         if os.path.exists(rp):
+            _rt = ''
             try:
                 _rt = io.open(rp, encoding='utf-8').read()
                 body = A.col3(_rt) or ''
                 if MI.is_keep_a(body):
                     body = MI.from_jia(io.open(os.path.join(jd, key + '.md'), encoding='utf-8').read())
-
             except Exception:
                 body = ''
+            if not (body or '').strip():
+                if 'PASS_A' in _rt:
+                    body = MI.from_jia(io.open(os.path.join(jd, key + '.md'), encoding='utf-8').read())
+                if not (body or '').strip():
+                    print('  ⚠ 裁決回覆無譯文，審核包留空：', key)
         items.append(dict(key=key, md=md, body=body))
 
     packs, cur, cur_len = [], [], 0
@@ -66,8 +72,23 @@ def main():
             packs.append([it])
             continue
         ln = len(it['body'])
+        def _idx(s):
+            try:
+                return int(s.rsplit('_', 1)[-1])
+            except Exception:
+                return None
+        _pm, _cm = cur[-1]['md'] if cur else {}, it['md']
+        _ps, _cs = _pm.get('s0'), _cm.get('s0')
+        _pg, _cg = _pm.get('g1'), _cm.get('g1')
+        if _ps is not None and _cs is not None:
+            _adj = (_cs == _pg) if _pg is not None else (_cs > _ps)
+        else:
+            _pi, _ci = _idx(cur[-1]['key']) if cur else None, _idx(it['key'])
+            _adj = _pi is not None and _ci is not None and 0 < _ci - _pi <= 10
+        _labs_it = tuple(sorted({u['lab'] for u in it['md'].get('units', []) if u.get('lab')}))
+        _labs_pv = tuple(sorted({u['lab'] for u in _pm.get('units', []) if u.get('lab')})) if cur else _labs_it
         same = (not cur) or (cur[-1]['md'].get('ex', '').split('，')[0]
-                             == it['md'].get('ex', '').split('，')[0])
+                             == it['md'].get('ex', '').split('，')[0] and _adj and _labs_it == _labs_pv)
         if cur and (not same or cur_len + ln > args.max or len(cur) >= args.segs):
             packs.append(cur)
             cur, cur_len = [], 0
@@ -99,31 +120,60 @@ def main():
 
         _book = pack[0]['md'].get('book') or BC.book_of(os.path.join(jd, pack[0]['key'] + '.md'))
         _cfg = BC.cfg(_book)
-        _prompt = (MA.AUDIT_PROMPT.replace('{book_note}', _cfg.get('note', ''))
-                    .replace('{dual_note}', '').replace('{long_note}', ''))
+        _labs = set()
+        for _it in pack:
+            for _u in (_it['md'].get('units') or []):
+                if _u.get('lab'):
+                    _labs.add(_u['lab'])
+        _has_dual = _book in ('業疏', '戒疏') and {'疏文', '記文'} <= _labs
+        _dual = ('\n\n**【疏】【記】須雙向互核**：【疏文】與【記文】之科判、釋義、列舉項數與施受主語須前後相契，'
+                 '並確認【疏文】未隱沒【記文】所牒實詞；【疏文】為消歧、還原指代或補全必要量詞之極簡實指不判 FIX，'
+                 '僅將【記文】整句專論或無據情節硬搬入【疏文】者始判 FIX。' if _has_dual else '')
+        _note = BC.note_for(_book, _labs)
+        _prompt = MA.render_audit(_note, _dual, '')
         L = [_prompt, '', '---', '', '（出處：%s）' % pack[0]['md'].get('ex', ''), '']
+        _packed = len(pack) > 1 or bool(pack[0]['md'].get('packed'))
         pre = pack[0]['md'].get('pre', '')
         post = pack[-1]['md'].get('post', '')
         if pre:
-            L += ['【前文背景（僅供參考）】', '', pre, '']
-        if len(pack) > 1:
-            L += ['【分段要求】本單元含多個短段，請保留 [1][2]… 編號逐條對應，勿合併增減。', '']
+            L += ['【前文背景（僅供參考，嚴禁譯入正文）】', '', pre, '']
+        if _packed:
+            L += ['【分段要求】本單元含多個短段，請按 [1][2]… 編號逐條核對；包內 [1]..[n] 原屬相鄰上下文，判讀代詞與承接關係時請相互參照，輸出時仍依各編號獨立對應。', '']
         L += ['【原文】', '']
-        for it in pack:
+        for idx_u, it in enumerate(pack, 1):
+            _pfx = ('[%d]' % idx_u) if len(pack) > 1 else ''
             for u in it['md'].get('units', []):
-                L += ['■ %s（原文）' % u['lab'], '', u['orig'], '']
+                L += ['■ %s（原文）%s' % (u['lab'], _pfx), '', u['orig'], '']
         L += ['【待審譯文】', '', body, '']
         if post:
-            L += ['【後文背景（僅供參考）】', '', post, '']
+            L += ['【後文背景（僅供參考，嚴禁譯入正文）】', '', post, '']
+        _mchs = [(i, (it['md'].get('mother') or '').strip()) for i, it in enumerate(pack, 1)
+                 if (it['md'].get('mother') or '').strip()]
+        _mseen, _mchs2 = set(), []
+        for i, m in _mchs:
+            if m not in _mseen:
+                _mseen.add(m); _mchs2.append((i, m))
+        _mchs = _mchs2
+        if _mchs:
+            L += ['【所釋鈔文（僅供對照，嚴禁譯入正文）】', '']
+            for i, m in _mchs:
+                L += [(('[%d] ' % i) if len(pack) > 1 else '') + m, '']
         io.open(os.path.join(out, key + '.md'), 'w', encoding='utf-8').write('\n'.join(L))
+        # 單一成員且原已打包時，沿用原 segments（否則下游會以 1 段對多個 [n]）
+        if len(pack) == 1 and pack[0]['md'].get('packed') and pack[0]['md'].get('segments'):
+            _segs = list(pack[0]['md']['segments'])
+        else:
+            _segs = [it['body'] for it in pack]
         MI.write_json(out, key, {
             'key': key,
             'book': pack[0]['md'].get('book', ''),
             'pre': pre, 'post': post,
-            'units': [u for it in pack for u in it['md'].get('units', [])],
-            'packed': len(pack) > 1,
-            'segments': [it['body'] for it in pack],
+            'units': [dict(u, pack_idx=i) for i, it in enumerate(pack, 1)
+                      for u in it['md'].get('units', [])],
+            'packed': _packed,
+            'segments': _segs,
             'members': [it['key'] for it in pack],
+            'mother': '\n'.join((('[%d] ' % i) if len(pack) > 1 else '') + m for i, m in _mchs),
         })
 
     io.open(os.path.join(out, '索引_pack.json'), 'w', encoding='utf-8').write(

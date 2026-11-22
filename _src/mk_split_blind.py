@@ -11,10 +11,14 @@ import os
 import re
 import book_config as BC
 
-MAX_PRE_CHARS = 900
-MAX_POST_CHARS = 600
-LONG_TAIL = ('本單元若切於句中未完處，須與前後片段自然銜接，勿重複補出已見前文的主詞，亦勿強加句號收尾；【前文背景】或【後文背景】中標為（本段前文）／（本段後文）之鄰接子句，僅供銜接語氣，嚴禁重複譯出')
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
+
+MAX_PRE_CHARS = 1800
+MAX_POST_CHARS = 600
+LONG_TAIL = ('\n（本項長文續段銜接優先於「語法自足／補全省略主賓」要求）'
+            '本單元若切於句中未完處，須與前後片段自然銜接，勿重複補出已見前文的主詞，'
+            '亦勿強加句號收尾；【前文背景】或【後文背景】中標為（本段前文）／（本段後文）之鄰接子句，'
+            '僅供銜接語氣，嚴禁重複譯出')
 
 BOOKS = {
     '業疏': dict(src='TXT_分卷_標點/03_業疏_標註', skip=0, nicao=False),
@@ -26,6 +30,30 @@ BOOKS = {
 }
 
 SENT_END = '。！？；'
+# 無標點底本（尼鈔／行事鈔）可用的句義邊界：句首虛字／連詞
+SOFT_HEAD = ('若', '故', '此', '今', '又', '而', '則', '然', '但', '如', '所', '是', '其', '乃', '當', '應', '由', '從')
+
+
+class UnsafeSplit(Exception):
+    """找不到句義邊界，硬切會劈開字詞：保留缺口，不硬切。"""
+
+
+def _best_cut(p, lo, hi):
+    """在 [lo,hi) 內找最靠後的句義邊界；標點優先，其次句首虛字。找不到回 -1。"""
+    lo = max(0, lo)
+    hi = min(len(p), hi)
+    if hi - lo < 2:
+        return -1
+    seg = p[lo:hi]
+    for ch in ('。', '！', '？', '；', '，', '、', '：'):
+        i = seg.rfind(ch)
+        if i >= 0:
+            return lo + i + 1
+    for i in range(len(seg) - 1, 0, -1):
+        if p[lo + i] in SOFT_HEAD:
+            return lo + i
+    return -1
+
 
 from mk_blind_materials import BLIND_PROMPT  # 共用同一份盲翻模板
 
@@ -50,15 +78,13 @@ def split_sentences(text, max_len):
     out = []
     for p in parts:
         while len(p) > max_len * 1.8:
-            _cut = max(p.rfind('，', 0, max_len), p.rfind('、', 0, max_len),
-                       p.rfind('；', 0, max_len), p.rfind('。', 0, max_len),
-                       p.rfind('！', 0, max_len), p.rfind('？', 0, max_len))
-            if _cut >= int(max_len * 0.6):
-                out.append(p[:_cut + 1])
-                p = p[_cut + 1:]
+            _cut = _best_cut(p, int(max_len * 0.5), int(max_len * 1.6))
+            if _cut >= int(max_len * 0.4):
+                out.append(p[:_cut])
+                p = p[_cut:]
             else:
-                out.append(p[:max_len])
-                p = p[max_len:]
+                # 找不到句義邊界：不可硬劈字詞
+                raise UnsafeSplit('無句義邊界（餘 %d 字）' % len(p))
         if p:
             out.append(p)
     # 進得來（原文已 > min）就必須至少兩段，否則下游會整段漏掉
@@ -73,11 +99,10 @@ def split_sentences(text, max_len):
                     break
             out = [''.join(out2), ''.join(chunks[len(out2):])]
         else:
-            mid = len(text) // 2
-            _q = text.rfind('，', 0, mid)
-            if _q > mid * 0.6:
-                mid = _q + 1
-            out = [text[:mid], text[mid:]]
+            _mid = _best_cut(text, int(max_len * 0.5), int(max_len * 1.6))
+            if _mid < int(max_len * 0.4):
+                raise UnsafeSplit('全段無句義邊界（%d 字）' % len(text))
+            out = [text[:_mid], text[_mid:]]
     return [x for x in out if x]
 
 
@@ -109,6 +134,7 @@ def main():
     jionly = spec.get('jionly', False)
 
     mapping = []
+    unsafe = []
     n = 0
     for fn in sorted(os.listdir(sd)):
         if not fn.endswith('.txt'):
@@ -123,8 +149,16 @@ def main():
             lab = re.match(r'^【(.)】', line)
             lab = lab.group(1) if lab else ('記' if jionly else ('鈔' if nicao else '疏'))
             fmt = '【%s文】……' % lab
-            parts = split_sentences(body, args.max)
+            try:
+                parts = split_sentences(body, args.max)
+            except UnsafeSplit as e:
+                print('  ⚠ 切點不安全（%s），保留缺口：%s 第 %d 段（%d 字）'
+                      % (e, fn, idx + 1, len(body)))
+                unsafe.append('%s\t第%d段\t%s\t%d字' % (chunk, idx + 1, e, len(body)))
+                continue
             if len(parts) < 2:
+                print('  ⚠ 長段未切開（max=%d，原文 %d 字），略過：%s 第 %d 段'
+                      % (args.max, len(body), fn, idx + 1))
                 continue
             pre_lines = []
             _acc = 0
@@ -151,23 +185,43 @@ def main():
                 if pi < len(parts):
                     post_seg = ['【%s】（本段後文）%s' % (lab, parts[pi][:260])]
                 _cfg = BC.cfg(args.book)
-                _bctx = _cfg.get('ctx', ('', ''))[0]
-                if _cfg.get('note') and not _bctx:
+                _lab_full = lab + '文'
+                _scope = _lab_full if args.book in ('業疏', '戒疏') else ('鈔文' if nicao else '記文')
+                _bctx = _cfg.get('ctx', ('', ''))[0] if _lab_full in ('疏文', '記文') else ''
+                if _lab_full == '疏文':
+                    _sr = ''
+                    _ban = _cfg.get('shuji_ban', '')
+                elif _lab_full == '記文' and args.book in ('業疏', '戒疏'):
+                    _sr = '記文釋義與科判動詞須與前文疏義相契，記中「疏云／鈔云／文云／注云」依所釋之書判讀；'
+                    _ban = ''
+                else:
+                    _sr = _cfg.get('ctx', ('', ''))[1] if _lab_full in ('疏文', '記文') else ''
+                    _ban = _cfg.get('shuji_ban', '') if _lab_full == '疏文' else ''
+                if _lab_full not in ('疏文', '記文'):
+                    _bctx = _sr = _ban = ''
+                if (not _bctx and _cfg.get('note') and (args.book not in ('業疏', '戒疏') or _lab_full in ('疏文', '記文'))):
                     _bctx = _cfg['note']
                 prompt = BLIND_PROMPT.format(
-                    scope=('鈔文' if nicao else ('記文' if jionly else '疏文與記文')),
-                    book_ctx=_bctx,
-                    shuji_rule=_cfg.get('ctx', ('', ''))[1],
-                    shuji_ban=_cfg.get('shuji_ban', ''),
-                    tail_rule=LONG_TAIL, out_format=fmt)
-                prompt += '\n\n（本單元為長文第 %d/%d 部分，只譯這一部分，勿補前後文。）' % (pi, len(parts))
+                    scope=_scope, book_ctx=_bctx, shuji_rule=_sr, shuji_ban=_ban,
+                    tail_rule=LONG_TAIL, logic_checklist=BC.LOGIC_CHECKLIST, style_spec=BC.STYLE_SPEC, out_format=fmt)
+                _pn = "\n\n（本單元為長文第 %d/%d 部分，只譯這一部分，勿補前後文。）" % (pi, len(parts))
+                _j = prompt.find("照下列完整標籤輸出")
+                prompt = (prompt[:_j] + _pn + "\n" + prompt[_j:]) if _j >= 0 else (prompt + _pn)
                 L = [prompt, '', '---', '',
-                     '（出處：%s，第 %d 段之 %d/%d）' % (chunk, idx + 1, pi, len(parts)), '']
+                     '（出處：《%s》%s，第 %d 段之 %d/%d）' % (args.book, chunk, idx + 1, pi, len(parts)), '']
                 if pre:
                     L += ['【前文背景（僅供參考，嚴禁譯入正文）】', ''] + pre + ['']
                 L += ['【本次待譯單元】', '', '■ %s文（原文）' % lab, '', seg, '']
                 if post_lines or post_seg:
                     L += ['【後文背景（僅供參考，嚴禁譯入正文）】', ''] + post_seg + post_lines + ['']
+                if args.book == '資持記':
+                    try:
+                        import mother_corpus as MC
+                        _mch = MC.chao_for(seg) or MC.chao_for(body)
+                        if _mch:
+                            L += ['【所釋鈔文（僅供對照，嚴禁譯入正文）】', '', _mch, '']
+                    except Exception:
+                        pass
 
                 n += 1
                 name = '%s_%04d_%02d.md' % (chunk, idx, pi)
@@ -178,8 +232,12 @@ def main():
 
     json.dump(mapping, io.open(os.path.join(out, '_對應.json'), 'w', encoding='utf-8'),
               ensure_ascii=False, indent=1)
+    if unsafe:
+        io.open(os.path.join(out, '_切點不安全.log'), 'w', encoding='utf-8').write('\n'.join(unsafe) + '\n')
     print('%s：長段切出 %d 小段（含前 %d 後 %d 背景）→ 測試/重譯/%s/_長段'
           % (args.book, n, args.front, args.back, args.book))
+    if unsafe:
+        print('  切點不安全 %d 段（已保留缺口，見 _切點不安全.log）' % len(unsafe))
 
 
 if __name__ == '__main__':

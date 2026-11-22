@@ -18,12 +18,12 @@ B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 
 
 def _strip_head_paren(s):
-    s = (s or '').lstrip('*：: \t\r\n')
+    s = (s or '').lstrip('】*：: \t\r\n')
     if s[:1] in ('（', '('):
         m = re.match(r'[（(][^）)]*[）)]\s*[：:*]*\s*\n?', s)
         if m and re.search(r'註|注|按|說明|沿用|未改|以下|全文|白話|修訂|完整', m.group(0)):
             s = s[m.end():]
-    return s.lstrip('*：: \t\r\n')
+    return s.lstrip('】*：: \t\r\n')
 
 
 _MARK = 'PASS_A_KEEP_A'
@@ -37,11 +37,11 @@ def _from_jia(md_text):
 
 def _plain_revise(rt):
     txt = (rt or '').strip()
-    _mh = re.search(r'(?m)^\s*(?:#+\s*)?(?:3[.、]\s*)?(?:\*\*)?\s*(?:修正後|修訂後)的譯文', txt)
+    _mh = re.search(r'(?m)^\s*(?:#+\s*)?(?:3[.、]\s*)?(?:\*\*)?\s*(?:修正後|修訂後|修正|修訂)(?:的)?譯文', txt)
     i = _mh.start() if _mh else -1
     if i >= 0:
         _end = _mh.end() if _mh else i + 6
-        txt = txt[_end:].lstrip('*：: \t\r\n')
+        txt = txt[_end:].lstrip('】*：: \t\r\n')
     else:
         _m = re.search(r'【(?:疏文|記文|鈔文|律文|註文|序文)】', txt)
         if _m:
@@ -54,14 +54,19 @@ def col3(rt):
         r'(?:^|\n)\s*[#*\s]*(?:第\s*)?(?:3|三)\s*(?:(?:欄\s*[｜|：:]|[.、．：:]|\*\*)\s*)*(?:修正後|修訂後|定稿|最終)(?:的)?譯文\**\s*[：:\s]*\n?',
         rt)
     if m:
-        body = _strip_head_paren(rt[m.end():].lstrip('*：: \t\r\n'))
+        body = _strip_head_paren(rt[m.end():].lstrip('】*：: \t\r\n'))
         if body:
             return re.sub(r'\n{3,}', '\n\n', _strip_head_paren(body)).strip()
     i = rt.rfind('修正後的譯文')
     if i >= 0:
-        body = _strip_head_paren(rt[i + len('修正後的譯文'):].lstrip('*：: \t\r\n'))
+        body = _strip_head_paren(rt[i + len('修正後的譯文'):].lstrip('】*：: \t\r\n'))
         if body:
             return re.sub(r'\n{3,}', '\n\n', _strip_head_paren(body)).strip()
+    _k = rt.rfind('分歧與裁決')
+    _from = _k if _k >= 0 else 0
+    mm = re.compile(r'(?m)^\s*【(?:疏文|記文|鈔文|律文|註文|序文)】').search(rt, _from)
+    if mm:
+        return re.sub(r'\n{3,}', '\n\n', rt[mm.start():].lstrip('】*：: \t\r\n')).strip()
     raise ValueError('找不到「修正後的譯文」欄位')
 
 
@@ -96,10 +101,17 @@ def main():
     os.makedirs(out, exist_ok=True)
 
     keys = sorted(f[:-3] for f in os.listdir(base) if f.endswith('.md'))
+    for _f in os.listdir(out):
+        if _f.endswith('.txt') and _f[:-4] not in keys:
+            try:
+                os.remove(os.path.join(out, _f))
+            except Exception:
+                pass
     fix = pass_ = 0
     missing = []
     unaudited = []
     unfixed = []
+    over = []
     for key in keys:
         ap_ = os.path.join(audit, '回覆', key + '_回.txt')
         rp = os.path.join(revise, '回覆', key + '_回.txt')
@@ -110,18 +122,28 @@ def main():
             continue
         else:
             v = io.open(ap_, encoding='utf-8').read()
-            is_fix = MI.verdict(v) == 'FIX'
+            _vd = MI.verdict(v)
+            if _vd == 'ERROR':
+                unaudited.append(key)
+                continue
+            is_fix = _vd == 'FIX'
         if is_fix and os.path.exists(rp):
             _rt = io.open(rp, encoding='utf-8').read()
             try:
-                txt = col3(_rt)
+                txt = col3(_rt) if re.search(r'(?:修正後|修訂後|定稿|最終)(?:的)?譯文', _rt) else None
             except Exception:
                 txt = None
             if not txt:
-                txt = _plain_revise(norm.normalize(_rt))
+                _md = MI.load(base, key) or {}
+                _lab0 = next((u.get('lab') for u in (_md.get('units') or []) if u.get('lab')), '')
+                _rt0 = re.sub(r'【(?:修訂後的譯文|修訂後譯文|修訂譯文|修正後的譯文|修正譯文)】', '', _rt)
+                txt = _plain_revise(_rt0)
+                if _lab0 and not re.search(r'【(?:疏文|記文|鈔文|律文|註文|序文)】', txt or ''):
+                    txt = '【%s】\n' % _lab0 + (txt or '')
             if txt is not None:
                 txt = _strip_head_paren(txt).strip()
-                txt = re.sub(r'[（(](?:按|註|注|駁回|維持原譯)[：:][^）)]*[）)]\s*(?=\n|$)', '', txt).strip()
+                txt = re.sub(r'[（(](?:按|註|注|駁回|維持原譯|校按|修訂說明|說明|備註)[：:][^）)]*[）)]\s*(?=\n|$)', '', txt).strip()
+                txt = re.sub(r'[（(](?:按|駁回|維持原譯|校按|修訂說明)[：:][^）)]*[）)]\s*(?=\n|$)', '', txt).strip()
             if not txt or len(txt.strip()) < 1:
                 txt = None
             if txt is None and os.path.exists(bp):
@@ -137,6 +159,16 @@ def main():
                 continue
             if key not in unfixed:
                 fix += 1
+                if os.path.exists(bp):
+                    _old_txt = col3_soft(io.open(bp, encoding='utf-8').read()) or ''
+                    if MI.is_keep_a(_old_txt):
+                        _old_txt = MI.from_jia(io.open(os.path.join(base, key + '.md'), encoding='utf-8').read()) or ''
+                    _ob = len(re.sub(r'\s', '', _old_txt))
+                    _nb = len(re.sub(r'\s', '', txt or ''))
+                    if _ob and (_nb > _ob * 1.25 or _nb < _ob * 0.7):
+                        over.append('%s\t%d→%d' % (key, _ob, _nb))
+                        io.open(os.path.join(out, '_修訂幅度警報.log'), 'a', encoding='utf-8').write(
+                            '%s\t%d→%d\n' % (key, _ob, _nb))
         else:
             if not os.path.exists(bp):
                 missing.append(key)
@@ -170,23 +202,66 @@ def main():
                 missing.append(key)
                 continue
             pass_ += 1
+        _md_chk = MI.load(base, key) or {}
+        if _md_chk.get('packed'):
+            _need = len(_md_chk.get('segments') or []) or len(_md_chk.get('members') or [])
+            _chk = re.sub(r'(?m)^【(?:疏文|記文|鈔文|律文|註文|序文)】\s*', '', txt or '')
+            _nums = [int(n) for n in re.findall(r'(?m)^\s*\[\s*(\d+)\s*\]', _chk)]
+            if _need and _nums != list(range(1, _need + 1)):
+                print('  ✗ 打包段編號不完整（需 1..%d，得 %s）：%s' % (_need, sorted(set(_nums)), key))
+                missing.append(key)
+                continue
+        _labs_exp = {u.get('lab') for u in (_md_chk.get('units') or []) if u.get('lab')}
+        if (_md_chk.get('book') == '資持記' or '資持記' in str(base)) and _labs_exp == {'鈔文'}:
+            _labs_exp = {'記文'}
+        _got = set(re.findall(r'【(疏文|記文|鈔文|律文|註文|序文)】', txt))
+        if len(_labs_exp) == 1 and not _got:
+            _only = next(iter(_labs_exp))
+            txt = '【%s】\n' % _only + txt
+            _got = {_only}
+        if len(_labs_exp) == 1 and _got and _got != _labs_exp:
+            # 修訂模型自創標籤（如【修訂譯文】）經 norm 轉成預設【鈔文】時，改回本段應有標籤
+            _only = next(iter(_labs_exp))
+            txt = re.sub(r'【(?:疏文|記文|鈔文|律文|註文|序文)】', '【%s】' % _only, txt, count=1)
+            _got = {_only}
+        _extra = _got - _labs_exp
+        if _extra:
+            print('  ✗ 譯文多出非本段欄位（%s），不寫入定稿：%s' % ('／'.join(sorted(_extra)), key))
+            missing.append(key)
+            continue
+        if len(_labs_exp) > 1:
+            _lack = sorted(_labs_exp - _got)
+        elif _got:
+            _lack = sorted(_labs_exp - _got)
+        else:
+            _lack = []
+        if _lack:
+            print('  ✗ 譯文缺欄（%s），不寫入定稿：%s' % ('／'.join(_lack), key))
+            missing.append(key)
+            continue
         if re.search(r'(?:local_search|web_search|web_fetch)\s*\(', txt):
             print('  ⚠ 含工具呼叫字面，判為異常：', key)
             missing.append(key)
             continue
-        io.open(os.path.join(out, key + '.txt'), 'w', encoding='utf-8').write(norm.normalize(txt))
+        _src_txt = ''.join((u.get('orig') or '') for u in (_md_chk.get('units') or []))
+        io.open(os.path.join(out, key + '.txt'), 'w', encoding='utf-8').write(norm.normalize(txt, _src_txt))
 
-    print('定稿：FIX %d、沿用 %d、缺 %d、未審核 %d、未修訂 %d → %s'
-          % (fix, pass_, len(missing), len(unaudited), len(unfixed), args.out))
-    for name, lst in (('_未審核清單.log', unaudited), ('_未修訂清單.log', unfixed)):
+    print('定稿：FIX %d、沿用 %d、缺 %d、未審核 %d、未修訂 %d、幅度異常 %d → %s'
+          % (fix, pass_, len(missing), len(unaudited), len(unfixed), len(over), args.out))
+    for name, lst in (('_未審核清單.log', unaudited), ('_未修訂清單.log', unfixed),
+                      ('_未完成清單.log', over)):
         if lst:
             io.open(os.path.join(out, name), 'w', encoding='utf-8').write('\n'.join(lst))
     if missing:
         print('  缺：', missing[:10])
     json.dump({'base': args.base, 'audit': args.audit, 'revise': args.revise,
-               'fix': fix, 'pass': pass_, 'missing': missing},
+               'fix': fix, 'pass': pass_, 'missing': missing,
+               'unaudited': unaudited, 'unfixed': unfixed, 'over': over},
               io.open(os.path.join(out, '索引.json'), 'w', encoding='utf-8'),
               ensure_ascii=False, indent=1)
+    if missing or unaudited or unfixed or over:
+        print('  有缺檔／未審核／未修訂／修訂幅度異常，回傳非零')
+        raise SystemExit(1)
 
 
 if __name__ == '__main__':

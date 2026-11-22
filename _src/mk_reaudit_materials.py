@@ -72,38 +72,7 @@ _NUM_KEY = re.compile(r'^(\d+)([a-z]?)_([^_]+)_(\d+)(?:-(\d+))?$')
 _PLAIN_NUM = re.compile(r'^(\d+)$')
 _LAB_HEAD = re.compile(r'^【(?:疏文|記文|鈔文|律文|註文|序文)】\s*')
 
-RA_PROMPT = (
-    '你是南山律典 20K 再審校閱員，對照【原文】逐段核對【現譯】，只抓實質錯誤。\n\n'
-    '### 範圍與讀法\n'
-    '1. 本檔含多個獨立單位，每單位以 `### [編號]（key: …）` 起始，其下交錯'
-    '`■ 段別（原文）[編號]` 與 `■ 段別（現譯）[編號]`；逐單位獨立核對，'
-    '不得跨單位合併、改寫、重排或增刪單位。\n'
-    '2. 先遮蔽【現譯】單讀【原文】，獨立拆解文法、主客施受、條件界限與律義，再反向驗收【現譯】，'
-    '切勿順著譯文流暢度讀過；已發現硬傷仍須核完其餘單位。\n'
-    '3. 【前文背景】【後文背景】僅供銜接理解，嚴禁譯入正文；背景或段間若見【正文缺口提示】，'
-    '該缺口係定稿未收錄之正文，禁止代譯、補譯或憑上下文虛構，亦不得據此判現譯漏譯。\n'
-    '4. {book_note}\n'
-    '5. 只改實質錯誤、硬性語病及違反【全書體例與格式規範】之處（不挑純修辭）：\n'
-    '{logic_checklist}\n'
-    '6. 不判 FIX：純換詞潤飾；簡繁／異體字、戒名引號、典籍簡稱展開等純表面格式；'
-    '依體例保留之被訓釋原詞、專名、儀軌稱謂「某甲」、度量、「某某反」與未定校勘〔…〕；'
-    '合乎原文脈絡之簡短消歧括注。\n\n'
-    '{style_spec}\n\n'
-    '### 輸出（勿改寫整段、勿代寫完整替換句、勿輸出前言）\n'
-    '【分段核驗表】\n'
-    '[01] 通過\n'
-    '[02] 通過\n'
-    '[03] 硬傷 1 項\n'
-    '……（每個單位一行，編號自 [01] 起連續到本檔最後一號，不得跳號、不得合併、不得省略；'
-    '本表須完整涵蓋本檔全部單位，缺一號即視為回覆失敗。）\n\n'
-    '【必改硬傷】\n'
-    '- 無硬傷只寫「無」一字，勿寫「經核對…」等說明。\n'
-    '- 有硬傷每項一行，行首必須標明所屬單位編號（如 `[03]`），未經點名之單位視為 PASS：\n'
-    '  `[03] 【疏文】原文「……」→ 現譯「……」｜問題：……｜依據：……｜修正方向：……`\n'
-    '- 同一單位多項硬傷，每項都重寫該編號，勿用「同上」或省略編號；'
-    '修正方向只寫須補齊或糾正之要素，勿照抄半文半白用詞。\n'
-    '- 依據欄須引原文或書名卷次；外部查證須摘錄關鍵原句 1–2 句；無據不得強令猜補。\n'
-)
+RA_PROMPT = BC.REAUDIT_PACK_PROMPT
 
 NONBODY_HINTS = (
     '大覺慈父', '九十單提法', '百眾學法', '四分戒本》者', '甞聞毗尼藏', '原夫大雄',
@@ -468,15 +437,13 @@ def render_material(book, pack, idx, book_id, key, pre, post, gaps, mode, raws,
     src_chars = sum(len(p['orig']) for u in pack for p in u['parts'])
     tr_chars = sum(len(p['tr']) for u in pack for p in u['parts'])
     labs = sorted({p['lab'] for u in pack for p in u['parts']})
-    dual = book in ('業疏', '戒疏') and {'疏文', '記文'} <= set(labs)
-    note = BC.note_for(book, labs)
-    if dual:
-        note += ('\n此兩欄同屬一個單位，須雙向互核：【疏文】與【記文】之科判、釋義、'
-                 '列舉項數與施受主語須前後相契，並確認【疏文】未隱沒【記文】所牒實詞；'
-                 '【疏文】為消歧、還原指代或補全必要量詞之極簡實指不判 FIX。')
-    prompt = (RA_PROMPT.replace('{book_note}', note)
-              .replace('{logic_checklist}', BC.LOGIC_CHECKLIST)
-              .replace('{style_spec}', BC.STYLE_SPEC))
+    src_all = '\n'.join(p['orig'] for u in pack for p in u['parts'])
+    tr_all = '\n'.join(p['tr'] for u in pack for p in u['parts'])
+    long_ = any(re.search(r'_L\d{3,}', u['key']) for u in pack) \
+        or '（本段前文）' in src_all or '（本段後文）' in src_all
+    notes = BC.notes_for(book, labs, src_all, tr_all, long=long_,
+                         key=pack[0]['key'])
+    prompt = BC.render(BC.REAUDIT_PACK_PROMPT_TMPL, scope_note=BC.PACK_SCOPE, **notes)
     L = [prompt, '', '---', '',
          '（出處：《%s》%s，%s｜單位 %d–%d｜原文 %s 字＋現譯 %s 字）'
          % (book, vol, key, 1, n, _fmt(src_chars), _fmt(tr_chars)), '']

@@ -169,6 +169,9 @@ def main():
                         over.append('%s\t%d→%d' % (key, _ob, _nb))
                         io.open(os.path.join(out, '_修訂幅度警報.log'), 'a', encoding='utf-8').write(
                             '%s\t%d→%d\n' % (key, _ob, _nb))
+                        io.open(os.path.join(out, '_待驗收清單.txt'), 'a', encoding='utf-8').write(
+                            '%s\t幅度 %d→%d（%.2f）須 VERIFY 或人工複核\n'
+                            % (key, _ob, _nb, (float(_nb) / _ob) if _ob else 0.0))
         else:
             if not os.path.exists(bp):
                 missing.append(key)
@@ -244,7 +247,16 @@ def main():
             missing.append(key)
             continue
         _src_txt = ''.join((u.get('orig') or '') for u in (_md_chk.get('units') or []))
-        io.open(os.path.join(out, key + '.txt'), 'w', encoding='utf-8').write(norm.normalize(txt, _src_txt))
+        _labs_norm = [u.get('lab') or '' for u in (_md_chk.get('units') or []) if u.get('lab')]
+        if len(set(_labs_norm)) > 1:
+            # 雙欄必須分欄各自對位原文 normalize：否則一欄的《毗尼母》會關掉另一欄的《母論》還原
+            _orig_by_lab = {}
+            for _u in (_md_chk.get('units') or []):
+                _orig_by_lab.setdefault(_u.get('lab') or '', []).append(_u.get('orig') or '')
+            _out_final = norm.normalize_labeled(txt, _orig_by_lab, _src_txt)
+        else:
+            _out_final = norm.normalize(txt, _src_txt)
+        io.open(os.path.join(out, key + '.txt'), 'w', encoding='utf-8').write(_out_final)
 
     print('定稿：FIX %d、沿用 %d、缺 %d、未審核 %d、未修訂 %d、幅度異常 %d → %s'
           % (fix, pass_, len(missing), len(unaudited), len(unfixed), len(over), args.out))

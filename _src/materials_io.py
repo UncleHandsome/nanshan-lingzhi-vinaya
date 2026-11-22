@@ -111,10 +111,12 @@ def verdict(rt):
     """回傳 'FIX' / 'PASS' / 'ERROR'（審核成果判定，統一邏輯）。"""
     rt = rt or ''
     # 「不應 PASS，應判 FIX」這類否定式不得當成 PASS
-    rt = re.sub(r'(?:不應|不該|不得|不宜|不可|不能|不|非|不是|未可|難以)\s*'
-                r'(?:判為|判作|判定|判|視為|視作|算作|作)?\s*(?:PASS_A|PASS)\b', '', rt)
+    rt = re.sub(r'(?:不應|不該|不得|不宜|不可|不能|不|非|不是|未可|難以|勿|莫)\s*'
+                r'(?:判為|判作|判定|判|列為|予|視為|視作|算作|作)?\s*'
+                r'(?:PASS_A|PASS)(?![A-Za-z_])', '', rt)
     # 「無須 FIX，判定 PASS」這類否定式不得當成 FIX
-    rt = re.sub(r'(?:無須|不需|不必|不用|不判|未判|非屬|免|無|非)\s*(?:改判|列為|判為|作)?\s*FIX', '', rt)
+    rt = re.sub(r'(?:無須|不需|不必|不用|不判|未判|非屬|免|無|非|勿|莫)\s*'
+                r'(?:改判|列為|判為|作)?\s*FIX', '', rt)
 
     def _looks_empty(s):
         s = (s or '').strip().lstrip('*：: -')
@@ -164,3 +166,43 @@ def verdict(rt):
     if m2:
         return 'PASS' if _looks_empty(m2.group(1)) else 'FIX'
     return 'ERROR'
+
+
+def verify_verdict(rt):
+    """VERIFY 回覆判定：'OK' / 'RETRY' / 'ERROR'。
+
+    只認【結論】後 20 字內的 OK／RETRY；否定式（不 OK、勿判 OK）與未過原因不誤判。
+    """
+    s = re.sub(r'[`*_#]', '', rt or '')
+    if not s.strip():
+        return 'ERROR'
+    m = re.search(r'【結論】\s*([^\n]{0,30})', s)
+    seg = m.group(1) if m else ''
+    if not seg:
+        # 無【結論】時取第一個非空行
+        _lines = [x.strip() for x in s.split('\n') if x.strip()]
+        seg = _lines[0][:30] if _lines else ''
+    seg = re.sub(r'(?:不|非|勿|莫|未)\s*(?:判|算|視為)?\s*OK', '', seg, flags=re.I)
+    if re.search(r'RETRY|重跑|退回', seg, re.I):
+        return 'RETRY'
+    if re.search(r'\bOK\b', seg, re.I):
+        return 'OK'
+    # 退而求其次：全文只出現一種判定
+    _has_retry = bool(re.search(r'\bRETRY\b', s, re.I))
+    _has_ok = bool(re.search(r'\bOK\b', s, re.I))
+    if _has_retry and not _has_ok:
+        return 'RETRY'
+    if _has_ok and not _has_retry:
+        return 'OK'
+    return 'ERROR'
+
+
+def verify_reasons(rt):
+    """取 VERIFY 回覆的【未過原因】（供併回修訂清單）。"""
+    m = re.search(r'【未過原因】\s*(.+?)(?=\n【|\Z)', rt or '', re.S)
+    if not m:
+        return ''
+    body = m.group(1).strip()
+    if re.fullmatch(r'[`*\s]*(?:無|无|無。|无须|無須)[`*\s。]*', body):
+        return ''
+    return body

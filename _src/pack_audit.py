@@ -119,18 +119,18 @@ def main():
         body = '\n\n'.join(lines)
 
         _book = pack[0]['md'].get('book') or BC.book_of(os.path.join(jd, pack[0]['key'] + '.md'))
-        _cfg = BC.cfg(_book)
         _labs = set()
         for _it in pack:
             for _u in (_it['md'].get('units') or []):
                 if _u.get('lab'):
                     _labs.add(_u['lab'])
-        _has_dual = _book in ('業疏', '戒疏') and {'疏文', '記文'} <= _labs
-        _dual = ('\n\n**【疏】【記】須雙向互核**：【疏文】與【記文】之科判、釋義、列舉項數與施受主語須前後相契，'
-                 '並確認【疏文】未隱沒【記文】所牒實詞；【疏文】為消歧、還原指代或補全必要量詞之極簡實指不判 FIX，'
-                 '僅將【記文】整句專論或無據情節硬搬入【疏文】者始判 FIX。' if _has_dual else '')
-        _note = BC.note_for(_book, _labs)
-        _prompt = MA.render_audit(_note, _dual, '')
+        _src = ''.join((_u.get('orig') or '') for _it in pack
+                       for _u in (_it['md'].get('units') or []))
+        _long = any(it['md'].get('long') for it in pack)
+        _notes = BC.notes_for(_book, _labs, _src, body, long=_long,
+                              key=pack[0]['key'])
+        _prompt = MA.render_audit(_notes['book_note'], _notes['dual_note'],
+                                  _notes['long_note'], extra=_notes)
         L = [_prompt, '', '---', '', '（出處：%s）' % pack[0]['md'].get('ex', ''), '']
         _packed = len(pack) > 1 or bool(pack[0]['md'].get('packed'))
         pre = pack[0]['md'].get('pre', '')

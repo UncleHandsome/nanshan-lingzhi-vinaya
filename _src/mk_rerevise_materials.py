@@ -41,27 +41,7 @@ POST_TR_CAP = 300
 TERM_CAP = 12
 FIX_TERM_CAP = 6
 
-RA_REVISE_PROMPT = (
-    '你是南山律典譯文修訂編輯（本段所屬：{book_note}）。'
-    '下面只有一個再審單位：先核對【原文】與前後背景，再依【必改硬傷】逐項定點修訂【目前譯文】。\n\n'
-    '### 修訂原則\n'
-    '1. **嚴格定點局部修改**：只改硬傷所涉句；清單未涉及之句一律照【目前譯文】保留，'
-    '不得為修辭改動；惟修改硬傷句時，須同步微調同句（或緊鄰承接句）因該處改動而衝突的'
-    '領起語或關聯詞，使全句邏輯自洽，並勿刪去原譯正確之主詞、出處限定或條件。\n'
-    '2. **跨段一致**：清單若修正專詞譯法、列舉分合或施受主語，須同步檢查同段他句是否因而矛盾，'
-    '並依【跨段統一基準】與前後鄰段用詞對齊；但不得把鄰段內容抄入本段，亦不得為對齊而改動未涉硬傷之句。\n'
-    '3. **查證護欄**：可先核對【初審檢索摘錄】；摘錄僅供查證，嚴禁將書名卷次按語或未譯原文照抄入譯文'
-    '（原文本身所引除外）。查無依據時寧用中性泛稱，嚴禁猜補情節、身分或條件。\n'
-    '4. **駁回**：僅當清單明顯違背原文與典據顯義、強求補出原文所無之情節，'
-    '或所引檢索屬跨書／跨篇／同篇異節誤引時，得駁回該項並維持原譯該句（或改中性泛稱）；'
-    '駁回時只保留原句，勿輸出理由、按語或說明括號。\n'
-    '5. {cite_style}\n\n'
-    '### 必改硬傷：\n{fixes}\n\n'
-    '### 輸出（完整譯文，勿重貼原文、勿輸出清單、勿加前言或總標題）\n'
-    '{out_format}\n'
-    '段別標籤僅限【疏文】【記文】【鈔文】【律文】【註文】【序文】，須與【原文】區塊一致；'
-    '同一段別標籤只寫一次，不得自創如【修訂譯文】。\n'
-)
+RA_REVISE_PROMPT = BC.REVISE_PROMPT
 
 
 def _resolve(p):
@@ -365,10 +345,13 @@ def main():
             except Exception:
                 evid = ''
         note = BC.note_for(book, unit.get('labs') or [])
-        prompt = (RA_REVISE_PROMPT.replace('{book_note}', note)
-                  .replace('{fixes}', fixes)
-                  .replace('{cite_style}', BC.CITE_STYLE_MIN)
-                  .replace('{out_format}', _out_format(unit.get('labs') or [])))
+        _src = '\n'.join((p.get('orig') or '') for p in unit.get('parts') or [])
+        _tr = '\n'.join((p.get('tr') or '') for p in unit.get('parts') or [])
+        prompt = BC.revise_prompt(
+            book, note, unit.get('labs') or [], _src, _tr,
+            long=bool(re.search(r'_L\d{3,}', key)),
+            key=key, fixes=fixes,
+            out_format=_out_format(unit.get('labs') or []))
         md = _render(prompt, book, vol, key, pack_key, no, ctx, unit, fixes,
                      terms, fix_terms, evid)
         io.open(os.path.join(out, key + '.md'), 'w', encoding='utf-8').write(md)

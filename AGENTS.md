@@ -1,6 +1,6 @@
 # AGENTS.md — 南山律典白話專案：完整專案手冊
 
-最後更新：2026-11-21  
+最後更新：2026-11-22  
 對象：任何接手的 AGENT。  
 **先讀完這份，再開工。遇到不確定，查原檔，不要猜。**
 
@@ -366,6 +366,7 @@ docs/<book>/卷*.html
 再審前先做，不可跳過：
 
 ```text
+0. 先跑 _src/recheck_scan.py 產 risk_flags（0 成本；見 7A.0.1）
 1. 全量掃 translation 空白、提示詞背景殘留（【前文背景】等）
 2. 全量掃 source 開頭 closing 引號／缺【，結尾缺句末標點
 3. 抽樣比對：譯文有完整句、source 卻截斷 → 先修 raw_start／raw_end
@@ -373,7 +374,26 @@ docs/<book>/卷*.html
 5. 定稿凍結後才產 20K 材料
 ```
 
-若 source 邊界未修就送再審，模型會把譯文正確補出的「如前文已釋」「等諸法」判成無據增補。
+**次序不可顛倒：先修 source 邊界，再做再審。** 若 source 邊界未修就送再審，模型會把譯文正確補出的「如前文已釋」「等諸法」判成無據增補。
+
+### 7A.0.1 確定性前置掃描（`recheck_scan.py`）
+
+只讀 `定稿/*.jsonl`，輸出 report／JSON，不改資料；`--strict` 有致命旗標即 rc=1。
+
+```powershell
+python -X utf8 _src/recheck_scan.py --book 尼鈔
+python -X utf8 _src/recheck_scan.py --book 戒疏 --json 重作材料_長段/_掃描/戒疏.json
+python -X utf8 _src/recheck_scan.py --out 重作材料_長段/再審前置掃描.md --strict
+```
+
+10 類旗標：空白／缺欄／source 頭尾、缺開頭標籤、背景外洩、GAP／BLIND／JE-／YE-、
+第三人稱旁白、引號內 BAD_VAR、`〔` 溢出、句末冒號／「的等。」／「？等等。」、
+膨脹 >1.9／縮水 <0.5／孤立『』、雙欄總數詞／無標點多「云言問答曰」／破折號／序跋。
+另加 `FALSE_FRIEND_HIT`（全書通用高危假朋友）與 `BOOK_TERM_HIT`（各書抽樣已證實具體詞）。
+
+**具體詞例只活在程式裡。** `recheck_scan.py` 的 `FALSE_FRIEND`／`BOOK_TERMS` 是 0 成本觸發器；
+`SYSTEM_PROMPT`、`REAUDIT`／`REVISE`／`VERIFY`、`book_config.py` 各書 note **不得**再抄這些詞例
+（避免關鍵字反射誤殺原文真有該詞的段落）。提示詞只留抽象錯誤類型，每類最多 1 個最泛用例子。
 
 已證實案例：
 
@@ -407,7 +427,7 @@ docs/<book>/卷*.html
 
 `--group-by vol` 是預設；`--group-by chunk` 只在該卷材料足夠時使用。
 
-### 7A.3 四支腳本
+### 7A.3 六支主線腳本＋三支驗收
 
 ```text
 _src/mk_reaudit_materials.py
@@ -419,8 +439,20 @@ _src/split_reaudit.py
 _src/mk_rerevise_materials.py
   只為 FIX 單位產生單段修訂材料
 
+_src/verify_reaudit.py
+  VERIFY 回退閉環：OK 寫候選、RETRY 併硬傷重跑一次、二次 RETRY 進人工清單
+
 _src/apply_reaudit.py
   FIX 回寫 定稿_v2/<book>.jsonl、qc、source==raw、變更對照
+
+_src/check_final_merge.py --final
+  7 項最終驗收（source==raw、未定位、重疊、空譯、標籤、缺口紀錄、非正文）
+
+_src/book_consistency.py
+  全書稱謂／專詞／性別代詞／標籤統計（只報告）
+
+_src/recheck_scan.py
+  0 成本前置掃描（見 7A.0.1）
 ```
 
 ### 7A.4 材料格式
@@ -455,7 +487,38 @@ idx / key / chunk / raw_start / raw_end / labs / parts / src_hash
 資持記所釋鈔文：≤2500 字
 ```
 
+### 7A.5b 提示詞與去過擬合原則（2026-11-22）
+
+四支提示詞與 note 的分工：
+
+```text
+SYSTEM_PROMPT（qwen_local.py）
+  全域只留「按需檢索、材料已附親註勿重搜、跨書僅供釐清本段詞義」；
+  不列抽樣詞例、不強制每個疑點都搜、反切不強制補音。
+
+REAUDIT_PROMPT（book_config.py；20K 版為 REAUDIT_PACK_PROMPT）
+  只抓實質義理、文法邏輯與嚴重界線；恢復「合理顯義／必要消歧不判 FIX」護欄；
+  純簡稱展開、反切、標點、單層引號不判 FIX（交 norm.py）。
+  具體高危詞例只在 recheck_scan.py。
+
+REVISE_PROMPT（book_config.py）
+  三分法：(A) 無據增補與越界混入（含旁白、假引號）→ 刪除或還原中性泛稱；
+  (B) 原典雙行夾注漏補 → 圓括號；(C) 實質誤譯與邏輯斷裂 → 正句重譯。
+  允許正當駁回（硬傷誤判／必要語法消歧／強求他書細節），不輸出駁回按語。
+
+VERIFY_PROMPT（book_config.py）
+  只驗有實際改動的句段；未改項目回頭核原文，屬正當駁回或硬傷誤判者不判 RETRY。
+  **VERIFY 用 QWEN_EFFORT='high'（不是 medium）**，避免「弱否決強」。
+```
+
+`book_config.notes_for()` 依段別與風險訊號掛載 `{dual_note}`（疏＋記）、`{long_note}`
+（長段切片）、`{preface_note}`（序跋）、`{dangling_note}`（句末引導詞）、`{typo_note}`
+（預檢疑訛）。`mk_audit_materials.py`／`pack_audit.py`／`mk_reaudit_materials.py`／
+`mk_rerevise_materials.py` 都必須經 `BC.render()` 填滿佔位符，**不得再留死碼**。
+
 ### 7A.6 qwen 環境
+
+再審（Step 2）：
 
 ```powershell
 $env:QWEN_SHUJI_SRC='重譯/<book>/_再審'
@@ -472,15 +535,51 @@ $env:QWEN_EFFORT='xhigh'; $env:QWEN_KEEP_THINKING='1'
 python -X utf8 _src/qwen_local.py
 ```
 
+修訂（Step 3）：`QWEN_SHUJI_SRC='重譯/<book>/_再審修訂'`、`QWEN_MAX_SEARCH='1'`、`QWEN_NO_CITE='1'`、`QWEN_EFFORT='xhigh'`。
+
+驗收（Step 4）：`QWEN_SHUJI_SRC='重譯/<book>/_再驗'`、`QWEN_NO_WEB='1'`、`QWEN_MAX_LOCAL='2'`、**`QWEN_EFFORT='high'`**、`QWEN_KEEP_THINKING='1'`。
+
 ### 7A.7 執行順序
 
 ```powershell
+# 0) 前置（0 成本）
+python -X utf8 _src/recheck_scan.py --book 義鈔 --out 重作材料_長段/再審前置掃描.md
+
+# 1) 再審材料 → 再審
 python -X utf8 _src/mk_reaudit_materials.py --book 義鈔 --target-chars 20000 --check-raw
 python -X utf8 _src/qwen_local.py
+
+# 2) 拆回 → 修訂材料 → 修訂
 python -X utf8 _src/split_reaudit.py --book 義鈔 --bisect
 python -X utf8 _src/mk_rerevise_materials.py --book 義鈔
 python -X utf8 _src/qwen_local.py
-python -X utf8 _src/apply_reaudit.py --book 義鈔
+
+# 3) 驗收（只驗有改動的段；RETRY 自動產第二次修訂材料）
+python -X utf8 _src/verify_reaudit.py --book 義鈔 --dry-run
+python -X utf8 _src/verify_reaudit.py --book 義鈔
+#    若 _待重跑清單.txt 有 _再修/*.md，再跑一次 REVISE 與 VERIFY（至多 1 次）
+
+# 4) 套用（寫 定稿_v2，不動 定稿）
+python -X utf8 _src/apply_reaudit.py --book 義鈔 --revise 重作材料_長段/_驗收/義鈔
+
+# 5) 全書一致性＋最終驗收
+python -X utf8 _src/book_consistency.py --book 義鈔
+python -X utf8 _src/check_final_merge.py --book 義鈔 --final --strict
+```
+
+### 7A.7b 黃金回歸與防過擬合驗證（跑批前必做）
+
+```text
+A. 黃金 50 段：尼鈔10＋行事鈔10＋義鈔10＋業疏10＋戒疏10（重作材料_長段/五書抽樣10）
+   驗收三條件：召回 100%（專家清單實質誤譯全部 FIX 並修對）、
+   無副作用（原本正確句不得改壞，VERIFY 攔下修 A 壞 B）、成本可控。
+
+B. 負樣本 20 段（防誤殺）：抽「原文真的有高危詞或夾注、譯文原本正確」的段落，
+   看 REAUDIT 假 FIX 率是否 >20%、VERIFY 是否誤打正當駁回為 RETRY。
+
+C. 盲測 25 段（泛化）：五書各再抽 5 段完全沒參與設計的段落，人工快檢新錯誤類型。
+
+清單產生：`python -X utf8 _src/mk_regression_sets.py`（只產清單，不跑 qwen）。
 ```
 
 ### 7A.8 驗收
@@ -493,10 +592,14 @@ source == raw：0 錯
 未定位：0
 重疊：0
 qc_scan：0 致命
-幅度警報：人工核對
+VERIFY：OK 候選；二次 RETRY 進 _人工複核清單.txt（不得無限重跑）
+幅度警報：>1.25／<0.70 強制 VERIFY 或人工核對
+book_consistency：稱謂／專詞／代詞離群清單人工核對
+check_final_merge --final：7 項全達標
 ```
 
 `apply_reaudit.py` 只替換 FIX 單位；PASS 單位從原定稿原樣複製，不得重譯。
+`verify_reaudit.py` 只把 VERIFY 判 OK（或合法未改動）者寫入候選 `回覆/`；未驗者不得進候選。
 
 ### 7A.9 禁止
 
@@ -511,13 +614,38 @@ qc_scan：0 致命
 ### 7A.10 目前狀態
 
 ```text
-mk_reaudit_materials.py：已存在
+mk_reaudit_materials.py：已存在（2026-11-22 改用新版 REAUDIT_PROMPT＋動態 note）
 split_reaudit.py：已存在
-mk_rerevise_materials.py：已存在
+mk_rerevise_materials.py：已存在（改用新版 REVISE_PROMPT）
+verify_reaudit.py：新增（VERIFY 閉環；尚未跑批）
 apply_reaudit.py：已存在（尚未正式跑批）
+recheck_scan.py／book_consistency.py／check_final_merge.py：新增（只讀／只報告）
 ```
 
-先以《義鈔》單卷試跑；確認 20K 檔長、漏號率、FIX 比例與變更對照後，才放量到其他書。
+程式與提示詞已就緒，**尚未跑任何再審批次**（未呼叫 qwen、未寫 定稿_v2）。
+
+### 7A.11 六書推進策略
+
+**《資持記》接軌（免重工）**
+
+```text
+_終審_拆回 926 單位（PASS 778、FIX 148）；其餘 3,256 單位未終審。
+1. 已拆回 148 筆 FIX：直接用新版 REVISE＋VERIFY 修訂驗收。
+2. 未終審 3,256 筆：不再走舊 AUDIT_PROMPT，直接 REAUDIT（打包）＋REVISE＋VERIFY。
+3. 已 PASS 778 筆：先跑 recheck_scan＋norm，有高風險旗標者才進 REAUDIT。
+```
+
+**其餘五書（成本分級）**
+
+```text
+先對全量 定稿/*.jsonl 跑 0 成本 recheck_scan（含 FALSE_FRIEND／BOOK_TERM）。
+1. 義鈔（約 215）、尼鈔（約 805）：規模小、底本問題多 → 100% 全量 REAUDIT。
+2. 行事鈔（1,574）、業疏（2,627）、戒疏（4,644）：
+   a. 命中任一 risk_flag（GAP/BLIND/JE/YE、無標點、缺夾注、雙欄總數、假朋友、
+      截斷修復、序跋、膨脹／縮水）→ 100% 必進 REAUDIT。
+   b. 未命中者先抽 100 段探測：FIX 率 <5% 可只跑 norm＋qc_scan；>8–10% 則全量。
+3. 每書寫回前必跑 book_consistency＋check_final_merge --final。
+```
 
 ---
 

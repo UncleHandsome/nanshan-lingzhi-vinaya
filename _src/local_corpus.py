@@ -27,21 +27,32 @@ EXTRA = {
 PUNCT_RE = re.compile(r"[^\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaffA-Za-z0-9]")
 
 
-_VAR_MAP = str.maketrans('煑竪虗汙竝説爲於着衆盋鉢艸壍婬呪眞敎菓覩羣牀裏徧却麤廻敍祕衞弃処体无証堕徳毗鶴玅葢冐輭徤帀墻鬬襵',
-                         '煮豎虛污並說為于著眾缽缽草塹淫咒真教果睹群床裡遍卻粗迴敘秘衛棄處體無證墮德毘鶴妙蓋冒軟健匝牆鬥攝')
+_VAR_MAP = str.maketrans('煑竪虗汙竝説爲於着衆盋鉢艸壍婬呪眞敎菓覩羣牀裏徧却麤廻敍祕衞弃処体无証堕徳毗鶴玅葢冐輭徤帀墻鬬襵㭊',
+                         '煮豎虛污並說為于著眾缽缽草塹淫咒真教果睹群床裡遍卻粗迴敘秘衛棄處體無證墮德毘鶴妙蓋冒軟健匝牆鬥攝析')
 
 # 底本用字與通行字之整詞對應（先於逐字轉換）
 _PRE_MAP = (('窯治', '窯冶'),)
 
 # 尼鈔校閱時，直引母律優先於《辭典》《資持記》
-NICAO_MOTHER = ('四分律', '摩訶僧祇律', '五分律', '十誦律', '毘尼母經')
+NICAO_MOTHER = ('四分律', '摩訶僧祇律', '五分律', '十誦律', '毘尼母經', '四分比丘尼戒本')
+
+# 各書校閱時，鄰近書（同層優先、每書多給 1 名額）
+CTX_MORE = {
+    '資持記': {'行事鈔', '業疏'},
+    '業疏': {'隨機羯磨', '四分律'},
+    '戒疏': {'含注戒本', '四分律'},
+    '尼鈔': set(NICAO_MOTHER),
+    # 《義鈔輔要記》目前 原文/ 書庫未收，僅保留介面；有檔案時自動生效
+    '義鈔': {'義鈔輔要記', '戒疏', '行宗記', '資持記', '行事鈔'},
+}
 
 
 def _plain(s):
     s = str(s)
     for _a, _b in _PRE_MAP:
         s = s.replace(_a, _b)
-    return PUNCT_RE.sub("", s).translate(_VAR_MAP)
+    # 先轉異體字再過濾標點：避免相容區罕見字（如 U+FA2D／增補區字）被當標點洗掉
+    return PUNCT_RE.sub("", s.translate(_VAR_MAP))
 
 
 ALIASES = [
@@ -371,10 +382,7 @@ def find(query, work=None, limit=6, pad=240, per_book=None, ctx_book=None):
         layer['南山律學辭典'] = 1
         layer['資持記'] = 1
         layer['行事鈔'] = 1
-    _ctx_more = {'資持記': {'行事鈔', '業疏'},
-                 '業疏': {'隨機羯磨', '四分律'},
-                 '戒疏': {'含注戒本', '四分律'},
-                 '尼鈔': set(NICAO_MOTHER)}.get(ctx_book or '', set())
+    _ctx_more = CTX_MORE.get(ctx_book or '', set())
     hits.sort(key=lambda x: (
         layer.get(x[1]['book'], 3),
         0 if (not work and (x[1]['book'] == ctx_book or x[1]['book'] in _ctx_more)) else 1,
@@ -400,10 +408,7 @@ def find(query, work=None, limit=6, pad=240, per_book=None, ctx_book=None):
     out = []
     used = {}
     for idx, r in ordered:
-        _ctx_more = {'資持記': {'行事鈔', '業疏'},
-                     '業疏': {'隨機羯磨', '四分律'},
-                     '戒疏': {'含注戒本', '四分律'},
-                     '尼鈔': set(NICAO_MOTHER)}.get(ctx_book or '', set())
+        _ctx_more = CTX_MORE.get(ctx_book or '', set())
         _pb = 2 if (ctx_book and not work and
                     (r['book'] == ctx_book or r['book'] in _ctx_more)) else per_book
         if used.get(r['book'], 0) >= _pb:

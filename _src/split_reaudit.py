@@ -59,6 +59,11 @@ def _block(text, name):
                     % '|'.join(re.escape(x) for x in names))
     marks = [(m.start(), m.end(), m.group(1).strip())
              for m in rx.finditer(text or '')]
+    # 相容 markdown 標題：### 分段核驗表／### 必改硬傷
+    for m in re.finditer(r'(?m)^#{1,6}\s*(%s)\s*$'
+                         % '|'.join(re.escape(x) for x in names), text or ''):
+        marks.append((m.start(), m.end(), m.group(1).strip()))
+    marks.sort()
     for i, (s, e, title) in enumerate(marks):
         if title == name or title.startswith(name):
             end = marks[i + 1][0] if i + 1 < len(marks) else len(text)
@@ -98,7 +103,7 @@ def _is_none(txt):
     if s.startswith(('無', '无')) and not re.search(r'\[\d', s) \
             and not re.search(r'問題[:：]|修正方向[:：]', s):
         return True
-    return False
+    return MI.verdict('【必改硬傷】\n' + (txt or '')) == 'PASS'
 
 
 def _parse_items(body, n_units):

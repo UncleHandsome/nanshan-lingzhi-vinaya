@@ -82,6 +82,7 @@ BOOK_TERMS = {
 FATAL = {'EMPTY_TR', 'MISSING_FIELD', 'DUAL_MISSING_COL', 'SRC_HEAD_CLOSE',
          'SRC_TAIL_NO_END', 'BG_LEAK', 'BAD_VAR_QUOTE',
          'BRACKET_OVERFLOW', 'TAIL_COLON', 'DE_DENG', 'Q_WENDENG'}
+SOURCE_STRICT = {'MISSING_FIELD', 'SRC_HEAD_CLOSE', 'SRC_TAIL_NO_END'}
 FLAG_ORDER = (
     'EMPTY_TR', 'MISSING_FIELD', 'DUAL_MISSING_COL', 'SRC_HEAD_CLOSE',
     'SRC_TAIL_NO_END', 'NO_LEAD_LABEL', 'BG_LEAK', 'GAP_SEG', 'THIRD_PERSON',
@@ -190,8 +191,8 @@ def scan_row(book, row, raw_h=None, inflate_thr=1.9, shrink_thr=0.5):
     if _bv_out:
         add('BAD_VAR_OUTSIDE', chars=_bv_out)
 
-    # 尼鈔 203 標籤／display 篇題疑點：只報告，不改資料
-    if book == '尼鈔' and key == '203':
+    # 義鈔 203 標籤／display 篇題疑點：只報告，不改資料
+    if book == '義鈔' and key == '203':
         labs = [p.get('lab') for p in parts if p.get('lab')]
         disp = row.get('display_source') or ''
         if labs and set(labs) == {'鈔文'} and re.search(r'卷[一二三四]|篇|章', disp[:120]):
@@ -358,7 +359,7 @@ def write_report(path, all_res, sums, generated):
           '| SRC_HEAD_CLOSE | source 開頭為 】」、，。；： 等（邊界截斷） |',
           '| SRC_TAIL_NO_END | source 結尾非句末標點 |',
           '| BAD_VAR_OUTSIDE | 引號外殘留却／鉢／厨／徧／牀／説／衆（只報告） |',
-          '| LABEL_203_REVIEW | 尼鈔 203 標籤或 display 篇題疑點（只報告） |',
+          '| LABEL_203_REVIEW | 義鈔 203 標籤或 display 篇題疑點（只報告） |',
           '| NO_LEAD_LABEL | 譯文開頭缺白名單段別標籤 |',
           '| BG_LEAK | 譯文殘留材料背景／清單標籤 |',
           '| GAP_SEG | key 屬 GAP／BLIND／JE-／YE- 缺口段（必再審） |',
@@ -391,7 +392,11 @@ def main():
                     metavar='PATH', help='輸出 JSON（不給 PATH 則印到 stdout）')
     ap.add_argument('--out', default='', help='輸出 Markdown 報告（選填）')
     ap.add_argument('--strict', action='store_true',
-                    help='有致命旗標（FATAL）即回傳 rc=1')
+                    help='相容舊參數：等同 --strict-all')
+    ap.add_argument('--strict-source', action='store_true',
+                    help='只檢查 source 邊界旗標；有則 rc=1')
+    ap.add_argument('--strict-all', action='store_true',
+                    help='所有致命旗標（含譯文）有則 rc=1')
     ap.add_argument('--limit', type=int, default=0,
                     help='只掃前 N 筆（除錯用；0＝全部）')
     args = ap.parse_args()
@@ -411,6 +416,8 @@ def main():
         print(_fmt_summary(s))
     tot_rows = sum(s['rows'] for s in sums)
     tot_fatal = sum(s['fatal_rows'] for s in sums)
+    src_bad = sum(1 for r in results for it in (r.get('items') or [])
+                  if SOURCE_STRICT & set(it.get('flags') or []))
     print('\n合計 %d 筆；致命 %d 筆；有旗標 %d 筆'
           % (tot_rows, tot_fatal, sum(s['flagged'] for s in sums)))
 
@@ -438,8 +445,11 @@ def main():
                 os.makedirs(d, exist_ok=True)
             io.open(json_path, 'w', encoding='utf-8').write(txt)
             print('JSON → %s' % json_path)
-    if args.strict and tot_fatal:
-        print('（--strict）有 %d 筆致命旗標，rc=1' % tot_fatal)
+    if args.strict_source and src_bad:
+        print('（--strict-source）有 %d 筆 source 邊界旗標，rc=1' % src_bad)
+        raise SystemExit(1)
+    if (args.strict or args.strict_all) and tot_fatal:
+        print('（--strict-all）有 %d 筆致命旗標，rc=1' % tot_fatal)
         raise SystemExit(1)
 
 

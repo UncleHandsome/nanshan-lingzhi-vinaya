@@ -478,7 +478,14 @@ def _parallel_notes(book, src, cap=900, limit=2):
         import local_corpus as LC
     except Exception:
         return ''
-    q = han(src)[:14]
+    h = han(src)
+    if book == '尼鈔':
+        # 不只用前 14 字：抽本段 2 個稀有實詞共現查
+        gs = sorted((g for g in _grams(h[:160], ns=(3,)) if len(g) >= 3),
+                    key=lambda x: len(x), reverse=True)[:2]
+        q = ' '.join(gs) if len(gs) == 2 else h[:14]
+    else:
+        q = h[:14]
     if len(q) < 6:
         return ''
     try:
@@ -554,7 +561,8 @@ def _yichao_parallel(src, cap=1400, limit=3):
         return ''
     # 1) 取樣句與候選
     cands = set()
-    for s in _sampled_sentences(src, per=4):
+    _per = 4 if len(han(src)) < 600 else 2
+    for s in _sampled_sentences(src, per=_per):
         cands |= _grams(s)
     if not cands:
         return ''
@@ -581,7 +589,7 @@ def _yichao_parallel(src, cap=1400, limit=3):
     rank = {g: i for i, g in enumerate(top)}
     # 3) 每句取「最稀有且不重疊」的兩詞作共現查詢（最多 8 組），不先 break
     pairs, seen_p = [], set()
-    for s in _sampled_sentences(src, per=4):
+    for s in _sampled_sentences(src, per=_per):
         h = han(s)
         spans = []
         for g in set(_grams(s)):

@@ -1060,7 +1060,7 @@ def run(f):
     _bonus = int(os.environ.get('QWEN_LOCAL_BONUS', '0') or '0')
     stats_cap = min(6 + _bonus, stats_cap + _bonus + max(0, _pn - 1))
     _env_cap = os.environ.get('QWEN_MAX_LOCAL')
-    if _env_cap and _env_cap.isdigit():
+    if _env_cap and _env_cap.isdigit() and _raw_len(text) >= 30:
         stats_cap = int(_env_cap)
     stats['local_cap'] = stats_cap
     stats['book'] = stats_book

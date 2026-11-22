@@ -232,8 +232,26 @@ def _context_from_material(md):
     return '\n\n'.join(out)
 
 
+def _evid_text(revise, key, cap=1600):
+    p = os.path.join(revise, '回覆', key + '_evid.json')
+    if not os.path.exists(p):
+        return ''
+    try:
+        items = json.load(io.open(p, encoding='utf-8'))
+    except Exception:
+        return ''
+    out = []
+    for it in (items if isinstance(items, list) else []):
+        t = (it.get('text') or '').strip()
+        if t:
+            out.append(t)
+        if sum(len(x) for x in out) >= cap:
+            break
+    return '\n\n'.join(out)[:cap]
+
+
 def _verify_material(book, key, parts, fixes, before_text, after_text, vol='',
-                     context=''):
+                     context='', evid=''):
     """產出 VERIFY 材料：原文＋前後文／對照層＋硬傷清單＋修訂前後譯文。"""
     src = '\n'.join('■ %s（原文）\n\n%s\n' % (p['lab'], (p.get('display') or p['orig']).strip())
                     for p in parts if (p.get('display') or p.get('orig') or '').strip())
@@ -241,6 +259,8 @@ def _verify_material(book, key, parts, fixes, before_text, after_text, vol='',
          '---', '', '（出處：《%s》%s，%s）' % (book, vol or '（未分卷）', key), '']
     if context:
         L += ['【前後文與對照層（僅供核對，嚴禁抄入譯文）】', '', context, '']
+    if (evid or '').strip():
+        L += ['【REVISE 檢索證據（僅供核對，嚴禁抄入譯文）】', '', evid.strip(), '']
     L += ['【原文】', '', src, '',
           '【硬傷清單】', '', (fixes or '（無）').strip(), '',
           '【修訂前譯文】', '', before_text.strip(), '',
@@ -375,7 +395,7 @@ def main():
                        _verify_material(_book, key, parts, fixes,
                                         '\n'.join('【%s】\n%s' % (p['lab'], p['tr'])
                                                   for p in parts), cand1, vol,
-                                        context=_ctx))
+                                        context=_ctx, evid=_evid_text(revise, key)))
             continue
         vd = MI.verify_verdict(v1)
         if vd == 'OK':
@@ -427,7 +447,7 @@ def main():
                 _ctx = _context_from_material(_read(os.path.join(revise, key + '.md')))
                 _write(os.path.join(verify, key + '_再驗.md'),
                        _verify_material(_book, key, parts, merged, cand1, cand2, vol,
-                                        context=_ctx))
+                                        context=_ctx, evid=_evid_text(revise, key)))
             continue
         vd2 = MI.verify_verdict(v2)
         if vd2 == 'OK':

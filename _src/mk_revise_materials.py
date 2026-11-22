@@ -140,7 +140,8 @@ def evidence_block(aud_rep, key, fixes_txt, max_chars=2200):
         scored.append((sc, -idx, it, raw_txt))
 
     scored.sort(reverse=True)
-    has_hit = any(sc >= 5 for sc, _, _, _ in scored)
+    has_hit = any(sc >= 5 or (sc >= 3 and (it.get('src') or '').startswith('web'))
+                  for sc, _, it, _ in scored)
     if not has_hit:
         return ''
     budget = max_chars

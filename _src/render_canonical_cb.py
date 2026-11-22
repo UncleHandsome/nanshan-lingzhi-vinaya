@@ -15,8 +15,7 @@ def norm(v):
 PUNCT = re.compile(r'[，。；：！？、]')
 def fmt(s):
  s=html.escape(s)
- s=re.sub('\u3000{2,}','<br><br>',s)
- return s.replace('\n','<br>')
+ return re.sub(r'(?:\u3000{2,}|\n)+','<br>',s)
 def pick(src, disp):
  return disp if disp and PUNCT.search(disp) else src
 def pairs(row):

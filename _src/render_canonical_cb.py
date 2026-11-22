@@ -44,6 +44,7 @@ for book in ([args.book] if args.book else list(BOOKS)):
  if intervals: intervals[0]=(intervals[0][0],0,intervals[0][2])
  rows=[json.loads(x) for x in io.open(os.path.join(C,book+'.jsonl'),encoding='utf-8') if x.strip()]
  rows=[r for r in rows if r.get('raw_start',-1)>=0]
+ rows.sort(key=lambda r:(r['raw_start'],r['raw_end']))
  for v,a,b in intervals:
   sel=[r for r in rows if r['raw_start']<b and r['raw_end']>a]
   body=['<h1>%s・%s</h1>'%(name,v),'<p class="byline">%d 單元；依 CBETA 卷題區間，跨頁單元前後並見。</p>'%len(sel)]

@@ -6,7 +6,7 @@ p = os.path.join(B, 'docs', 'nav.json')
 d = json.load(io.open(p, encoding='utf-8'))
 for book in d['books']:
     bid = book.get('out')
-    if bid not in ('xingshichao', 'yeshu', 'nicao'):
+    if bid not in ('xingshichao', 'jieshu', 'yeshu', 'nicao', 'yichao'):
         continue
     vols = []
     for v in book.get('vols', []):

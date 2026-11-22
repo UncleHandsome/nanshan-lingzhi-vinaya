@@ -65,7 +65,9 @@ def _unit_tr(u):
 
 
 def _unit_orig(u):
-    return '\n'.join(p.get('orig', '') for p in (u.get('parts') or []))
+    # 送審用句讀版；raw orig 只供 source==raw 驗證
+    return '\n'.join((p.get('display') or p.get('orig') or '')
+                     for p in (u.get('parts') or []))
 
 
 def _frag(text, term, radius=14):
@@ -245,7 +247,7 @@ def _render(prompt, book, vol, key, pack_key, no, contexts, unit, fixes,
         L += ['■ %s（原文）' % p.get('lab', ''), '']
         if p.get('dirty_orig'):
             L += ['〔定稿殘留：此段含 %s；逐字照錄〕' % '／'.join(p['dirty_orig']), '']
-        L += [(p.get('orig') or '').strip(), '']
+        L += [((p.get('display') or p.get('orig')) or '').strip(), '']
     L += ['【目前譯文】', '']
     for p in unit.get('parts') or []:
         L += ['【%s】' % p.get('lab', '')]
@@ -383,7 +385,8 @@ def main():
             except Exception:
                 evid = ''
         note = BC.note_for(book, unit.get('labs') or [])
-        _src = '\n'.join((p.get('orig') or '') for p in unit.get('parts') or [])
+        _src = '\n'.join(((p.get('display') or p.get('orig')) or '')
+                         for p in unit.get('parts') or [])
         _tr = '\n'.join((p.get('tr') or '') for p in unit.get('parts') or [])
         prompt = BC.revise_prompt(
             book, note, unit.get('labs') or [], _src, _tr,
@@ -407,6 +410,8 @@ def main():
             'vol': vol, 'labs': unit.get('labs') or [],
             'fixes': fixes,
             'parts': [{'lab': p.get('lab'), 'orig': p.get('orig'), 'tr': p.get('tr'),
+                       'display': p.get('display') or '',
+                       'orig_display': p.get('display') or '',
                        'dirty': list(p.get('dirty') or []),
                        'dirty_orig': list(p.get('dirty_orig') or []),
                        'dirty_tr': list(p.get('dirty_tr') or []),

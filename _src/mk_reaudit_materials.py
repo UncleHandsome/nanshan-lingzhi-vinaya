@@ -241,13 +241,15 @@ def _parts_of(row):
         disp = (s.get('display_source') or '').strip()
         if not orig and not tr:
             continue
-        parts.append({'lab': lab, 'orig': orig, 'tr': tr, 'display': disp})
+        parts.append({'lab': lab, 'orig': orig, 'tr': tr, 'display': disp,
+                      'orig_display': disp})
     if not parts:
         lab = row.get('label') or '鈔文'
         orig = (row.get('source') or '').strip()
         tr = _LAB_HEAD.sub('', (row.get('translation') or '').strip())
+        disp = (row.get('display_source') or '').strip()
         parts.append({'lab': lab, 'orig': orig, 'tr': tr,
-                      'display': (row.get('display_source') or '').strip()})
+                      'display': disp, 'orig_display': disp})
     return parts
 
 
@@ -359,7 +361,7 @@ def context_before(order, i0, pre_src=None, pre_tr=None):
         for j in range(i0 - 1, -1, -1):
             if order[j]['vol'] != u0['vol']:
                 break
-            t = '\n'.join(p['orig'] for p in order[j]['parts'])
+            t = '\n'.join((p.get('display') or p['orig']) for p in order[j]['parts'])
             buf.append(t)
             acc += len(han(t))
             if acc >= pre_src:
@@ -379,7 +381,7 @@ def context_after(order, i1, post_src=None, post_tr=None):
         for j in range(i1 + 1, len(order)):
             if order[j]['vol'] != u1['vol']:
                 break
-            t = '\n'.join(p['orig'] for p in order[j]['parts'])
+            t = '\n'.join((p.get('display') or p['orig']) for p in order[j]['parts'])
             buf.append(t)
             acc += len(han(t))
             if acc >= post_src:
@@ -464,7 +466,9 @@ def _interlinear_notes(unit, cap=None):
 
 
 def _plain_src(unit):
-    return '\n'.join(p['orig'] for p in unit['parts'] if (p.get('orig') or '').strip())
+    # 送審／對照用句讀版；raw orig 只供 source==raw 驗證
+    return '\n'.join((p.get('display') or p['orig']) for p in unit['parts']
+                     if (p.get('display') or p.get('orig') or '').strip())
 
 
 def _parallel_notes(book, src, cap=900, limit=2):
@@ -982,10 +986,10 @@ def render_material(book, pack, idx, book_id, key, pre, post, gaps, mode, raws,
                     mother='', refs=None):
     vol = pack[0]['vol'] or '（未分卷）'
     n = len(pack)
-    src_chars = sum(len(p['orig']) for u in pack for p in u['parts'])
+    src_chars = sum(len(p.get('display') or p['orig']) for u in pack for p in u['parts'])
     tr_chars = sum(len(p['tr']) for u in pack for p in u['parts'])
     labs = sorted({p['lab'] for u in pack for p in u['parts']})
-    src_all = '\n'.join(p['orig'] for u in pack for p in u['parts'])
+    src_all = '\n'.join((p.get('display') or p['orig']) for u in pack for p in u['parts'])
     tr_all = '\n'.join(p['tr'] for u in pack for p in u['parts'])
     long_ = any(re.search(r'_L\d{3,}', u['key']) for u in pack) \
         or '（本段前文）' in src_all or '（本段後文）' in src_all
@@ -1032,7 +1036,7 @@ def render_material(book, pack, idx, book_id, key, pre, post, gaps, mode, raws,
             L += ['■ %s（原文）%s' % (p['lab'], tag), '']
             if p.get('dirty_orig'):
                 L += ['〔定稿殘留：此段含 %s；逐字照錄〕' % '／'.join(p['dirty_orig']), '']
-            L += [p['orig'].strip(), '']
+            L += [(p.get('display') or p['orig']).strip(), '']
             L += ['■ %s（現譯）%s' % (p['lab'], tag), '']
             if p.get('dirty_tr'):
                 L += ['〔定稿殘留：此段含 %s；逐字照錄〕' % '／'.join(p['dirty_tr']), '']
@@ -1055,10 +1059,14 @@ def _unit_json(idx, u):
         parts.append({
             'lab': p['lab'],
             'orig': p['orig'],
+            'display': p.get('display') or '',
+            'orig_display': p.get('display') or '',
             'tr': p['tr'],
             'src_len': len(p['orig']),
+            'display_len': len(p.get('display') or p['orig']),
             'tr_len': len(p['tr']),
             'src_han': len(han(p['orig'])),
+            'display_han': len(han(p.get('display') or p['orig'])),
             'tr_han': len(han(p['tr'])),
             'start': p.get('start', -1),
             'end': p.get('end', -1),

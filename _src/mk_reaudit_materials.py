@@ -481,14 +481,33 @@ def _parallel_notes(book, src, cap=900, limit=2):
     h = han(src)
     works = ('行事鈔', '資持記', '四分律', '摩訶僧祇律', '五分律', '十誦律') \
         if book == '尼鈔' else None
-    # 前、中、後三段各抽 2 個稀有 3 字實詞
-    segs = [h[:100], h[max(0, len(h) // 2 - 50):len(h) // 2 + 50], h[-100:]]
     queries = []
-    for seg in segs:
-        gs = sorted((g for g in _grams(seg, ns=(3,)) if len(g) >= 3),
-                    key=lambda x: (-len(x), x))[:2]
-        if len(gs) == 2:
-            queries.append(' '.join(gs))
+    if book == '尼鈔':
+        try:
+            if not LC.BOOK_BLOB:
+                LC.load()
+        except Exception:
+            pass
+        b1 = LC.BOOK_BLOB.get('行事鈔') or ''
+        b2 = LC.BOOK_BLOB.get('資持記') or ''
+        segs = [h[:100], h[max(0, len(h) // 2 - 50):len(h) // 2 + 50], h[-100:]]
+        seen_q = set()
+        for seg in segs:
+            gs = [g for g in _grams(seg, ns=(2, 3))
+                  if len(g) >= 2 and g in b1 and g in b2]
+            gs.sort(key=lambda g: (b1.count(g) + b2.count(g), -len(g), g))
+            picked = []
+            for g in gs:
+                if any(g in p or p in g for p in picked):
+                    continue
+                picked.append(g)
+                if len(picked) >= 2:
+                    break
+            if len(picked) == 2:
+                q = ' '.join(picked)
+                if q not in seen_q:
+                    seen_q.add(q)
+                    queries.append(q)
     if not queries:
         queries = [h[:14]]
     hits = []
@@ -691,10 +710,15 @@ def _fuyao_rows():
 
 
 def _fuyao_terms(src, cap=12):
-    """義鈔：挑在本段出現、且在《輔要記》也出現的 3–4 字詞（長詞／少見優先）。"""
+    """義鈔：先過異體字正規化，再挑本段出現且輔要記也有的 3–4 字詞。"""
     rows = _fuyao_rows()
     if not rows:
         return []
+    try:
+        import local_corpus as LC
+        src = LC._plain(src)
+    except Exception:
+        pass
     blob = _FUYAO_CACHE['blob']
     cand = set()
     for s in _sampled_sentences(src, per=3):
@@ -706,26 +730,23 @@ def _fuyao_terms(src, cap=12):
     picked = []
     for g in keep:
         if any(g in p or p in g for p in picked):
-            continue        # 同一詞幹的 3-gram 不重複計分
+            continue
         picked.append(g)
         if len(picked) >= cap:
             break
     return picked
 
 
-def _fuyao_note(src, cap=1600, min_score=6.0):
-    """義鈔：《義鈔輔要記》（X44n0748 宋・允堪述）同段釋文。
-
-    輔要記是《拾毗尼義鈔》的部帙直註，逐句釋義而少整段引鈔文；
-    故以「本段 3–4 字詞在輔要記同時出現」的稀有詞計分，取最集中的一段原文，
-    分數不足即不掛（寧缺勿濫），只列原文、不生成文字。
-    """
+def _fuyao_note(src, cap=1600, min_score=None):
+    """義鈔：《義鈔輔要記》同段釋文；分數門檻依原文長度調整。"""
     rows = _fuyao_rows()
     if not rows or len(han(src)) < 12:
         return ''
     terms = _fuyao_terms(src)
     if len(terms) < 2:
         return ''
+    if min_score is None:
+        min_score = 3.0 if len(han(src)) < 250 else 4.0
     pl = _FUYAO_CACHE['plain']
     best_sc, best_i = -1.0, -1
     for i in range(len(rows)):
@@ -1006,33 +1027,33 @@ def _quote_note(src):
     raw = re.sub(r'\s+', '', src or '')
     out, seen = [], set()
     for short, work in _QUOTE_WORKS:
-        # 允許「《輔要記》云：」「五分律云」「善見云」等寫法；引文可帶開引號。
-        # 云／言／說／曰 後可再帶冒號，避免只吃掉「云」而卡在「：」上。
-        m = re.search(re.escape(short) + r'[論律經]?》?\s*'
-                      r'(?:[云言說曰]+[：:]?|[：:])\s*[「『（(]?\s*'
-                      r'([\u4e00-\u9fff]{4,24})', raw)
-        if not m:
-            continue
-        q = m.group(1)
-        cands = [q]
-        if len(q) >= 9:
-            cands.append(' '.join(q[i:i + 3] for i in range(0, len(q) - 2, 3)))
-        else:
-            # 短引文：兩兩 2-gram 共現退路
-            cands.append(' '.join(q[i:i + 2] for i in range(0, len(q) - 1, 2)))
-        for qq in cands:
-            try:
-                hs = LC.find(qq, work, limit=1, pad=240)
-            except Exception:
-                hs = []
-            if hs:
-                kw = (hs[0].get('kwic') or '').strip()
-                sig = (hs[0].get('book') or work, kw[:30])
-                if kw and sig not in seen:
-                    seen.add(sig)
-                    out.append('《%s》%s：%s'
-                               % (hs[0].get('book') or work,
-                                  (hs[0].get('juan') or '').replace('卷第', '卷'), kw))
+        pat = (re.escape(short) + r'[論律經]?》?\s*'
+               r'(?:[云言說曰]+[：:]?|[：:])\s*[「『（(]?\s*'
+               r'([\u4e00-\u9fff]{4,24})')
+        got = False
+        for m in re.finditer(pat, raw):
+            q = m.group(1)
+            cands = [q]
+            if len(q) >= 9:
+                cands.append(' '.join(q[i:i + 3] for i in range(0, len(q) - 2, 3)))
+            else:
+                cands.append(' '.join(q[i:i + 2] for i in range(0, len(q) - 1, 2)))
+            for qq in cands:
+                try:
+                    hs = LC.find(qq, work, limit=1, pad=240)
+                except Exception:
+                    hs = []
+                if hs:
+                    kw = (hs[0].get('kwic') or '').strip()
+                    sig = (hs[0].get('book') or work, kw[:30])
+                    if kw and sig not in seen:
+                        seen.add(sig)
+                        out.append('《%s》%s：%s'
+                                   % (hs[0].get('book') or work,
+                                      (hs[0].get('juan') or '').replace('卷第', '卷'), kw))
+                    got = True
+                    break
+            if got:
                 break
         if len(out) >= 3:
             break
@@ -1410,7 +1431,7 @@ def generate_single(book, outdir, keys, pre_cap=PRE_SRC_CAP, post_cap=POST_SRC_C
 
     - 前文 ≤pre_cap（預設 1800）、後文 ≤post_cap（預設 600）。
     - 尼鈔：原典雙行夾注（display_source〔…〕）；行事鈔：資持記相關釋文；
-      義鈔：補標點原文＋平行釋文；業疏／戒疏：所釋疏文＋科判。
+      義鈔：輔要記直註＋平行釋文；業疏／戒疏：所釋疏文＋科判。
     - 雙欄逐段對位（mk_reaudit._parts_of 保留 lab/source/translation）。
     """
     raws = load_raw(book)
@@ -1488,7 +1509,7 @@ def generate_single(book, outdir, keys, pre_cap=PRE_SRC_CAP, post_cap=POST_SRC_C
     L = ['# 單段材料索引（%s）' % book, '',
          '- 來源：`定稿/%s.jsonl`（只讀）' % bid,
          '- 每段一份 `.md`／`.json`；前文 ≤%d、後文 ≤%d。' % (pre_cap, post_cap),
-         '- 對照層：' + ('尼鈔原典夾注／行事鈔資持記釋文／義鈔輔要記平行與標點原文／'
+         '- 對照層：' + ('尼鈔原典夾注／行事鈔資持記釋文／義鈔輔要記直註與平行釋文／'
                         '業疏戒疏所釋疏文與科判'), '',
          '| # | key | 卷 | 原文 | 現譯 | md | 對照層 |',
          '|--:|:--|:--|--:|--:|--:|:--|']

@@ -447,7 +447,10 @@ def main():
                 _ctx = _context_from_material(_read(os.path.join(revise, key + '.md')))
                 _write(os.path.join(verify, key + '_再驗.md'),
                        _verify_material(_book, key, parts, merged, cand1, cand2, vol,
-                                        context=_ctx, evid=_evid_text(revise, key)))
+                                        context=_ctx,
+                                        evid='\n\n'.join(x for x in (
+                                            _evid_text(revise, key),
+                                            _evid_text(retry_dir, key)) if x)))
             continue
         vd2 = MI.verify_verdict(v2)
         if vd2 == 'OK':

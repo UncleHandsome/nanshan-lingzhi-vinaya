@@ -38,9 +38,12 @@
   }
 
   /* 索引 anchor 由 build_search_index.py 依實際頁面產生：
-     pair-N（六書，第 N 個 pair）或頁面原有 id（合編 sN、篇名 pN）。 */
-  function hitHref(x) {
-    return x.bid + '/' + x.v + '.html' + (x.i ? '#' + x.i : '');
+     pair-N（六書，第 N 個 pair）或頁面原有 id（合編 sN、篇名 pN）。
+     帶上 ?q=，著陸後 nav.js 才能在該段內標出關鍵字。 */
+  function hitHref(x, q) {
+    var url = x.bid + '/' + x.v + '.html';
+    if (q) url += '?q=' + encodeURIComponent(q);
+    return url + (x.i ? '#' + x.i : '');
   }
 
   function highlight(text, terms) {
@@ -174,7 +177,7 @@
     if (!items.length) { quickEl.innerHTML = ''; quickEl.hidden = true; return; }
     var html = '<h2 class="quicktitle">篇目捷徑</h2><div class="quicklist">';
     items.forEach(function (x) {
-      var href = x.bid + '/' + x.v + '.html' + (x.i ? '#' + x.i : '');
+      var href = hitHref(x, q);
       html += '<a class="quickhit" href="' + href + '"><span class="qkind">' + esc(x.kind) + '</span>' +
         '<span class="qtext">' + highlight(x.title, terms) + '</span></a>';
     });
@@ -211,7 +214,7 @@
       arr.slice(0, perBook).forEach(function (x) {
         var a = document.createElement('a');
         a.className = 'hit';
-        a.href = hitHref(x);
+        a.href = hitHref(x, q);
         a.innerHTML = '<div class="meta">' + esc(x.v) +
           (x.n ? '　·　第 ' + esc(x.n) + ' 段' : '') +
           '　<span>跳到該段 →</span></div>' +

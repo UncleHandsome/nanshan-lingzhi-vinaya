@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-"""網站驗收：導覽錨點必須存在，長原文必須有句讀，且不得有 <br><br>。"""
+"""網站驗收：導覽錨點必須存在、搜尋索引錨點必須落在實際 pair、長原文必須有句讀，且不得有 <br><br>。"""
 import argparse
 import io
 import json
 import os
 import re
 import sys
+
+import build_search_index as BSI
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 BOOKS = {
@@ -32,6 +34,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--book', action='append', choices=sorted(BOOKS))
     ap.add_argument('--suffix', default='', help='例如 .new：優先檢查尚未套用的頁面')
+    ap.add_argument('--no-search', dest='search', action='store_false',
+                    help='略過搜尋索引錨點檢查')
     args = ap.parse_args()
     books = args.book or list(BOOKS)
 
@@ -79,9 +83,18 @@ def main():
 
     for b in bad[:20]:
         print(b)
-    print('pages %d anchors %d brbr %d punct %d issues %d'
-          % (n_pages, n_anchor, n_brbr, n_punct, len(bad)))
-    sys.exit(1 if bad else 0)
+
+    n_search = n_search_bad = 0
+    if args.search:
+        counts, issues = BSI.verify(books=set(books))
+        n_search = counts['entries']
+        n_search_bad = len(issues)
+        for it in issues[:20]:
+            print(('SEARCH',) + tuple(it))
+
+    print('pages %d anchors %d brbr %d punct %d search %d searchbad %d issues %d'
+          % (n_pages, n_anchor, n_brbr, n_punct, n_search, n_search_bad, len(bad)))
+    sys.exit(1 if (bad or n_search_bad) else 0)
 
 
 if __name__ == '__main__':

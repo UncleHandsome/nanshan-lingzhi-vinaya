@@ -459,6 +459,22 @@ mark { background: var(--mark-bg); color: var(--mark-fg); padding: 0 .08em; bord
     background-color: var(--mark-bg);
   }
 }
+/* 著陸後段內關鍵字（nav.js 包成 <mark class="kw">） */
+mark.kw {
+  background: #ffd23f;
+  color: #2b1a00;
+  padding: 0 1px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 2px rgba(168, 118, 63, .5);
+}
+.pair.searchhit mark.kw { background: #ffc400; }
+@media (prefers-color-scheme: dark) {
+  mark.kw {
+    background: #d6a419;
+    color: #150e00;
+    box-shadow: 0 0 0 2px #ffe28a;
+  }
+}
 #colophon, .sitefoot {
   margin-top: 3rem; padding-top: 1.2rem;
   border-top: 1px solid var(--line);

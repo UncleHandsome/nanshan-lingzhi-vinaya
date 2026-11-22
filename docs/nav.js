@@ -364,6 +364,77 @@
     el.classList.add('searchhit');
   }
 
+  // ── 段內關鍵字高亮 ────────────────────────────────────────
+  // 著陸後只換目標段內的文字節點，包成 <mark class="kw">；原文／譯文文字不變。
+  function getQueryParam() {
+    var q = '';
+    try { q = new URLSearchParams(location.search).get('q') || ''; }
+    catch (e) {
+      var mm = location.search.match(/[?&]q=([^&]*)/);
+      if (mm) {
+        try { q = decodeURIComponent(mm[1].replace(/\+/g, ' ')); } catch (err) { q = ''; }
+      }
+    }
+    return q;
+  }
+
+  function escRe(s) {
+    return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  var kwKey = '';
+  function clearKw() {
+    var marks = document.querySelectorAll('mark.kw');
+    for (var i = 0; i < marks.length; i++) {
+      var m = marks[i], p = m.parentNode;
+      if (!p) continue;
+      p.replaceChild(document.createTextNode(m.textContent || ''), m);
+      p.normalize();
+    }
+    kwKey = '';
+  }
+
+  function markQuery(el) {
+    if (!el) return;
+    if (!el.classList.contains('pair') && !el.classList.contains('sec')) { clearKw(); return; }
+    var terms = getQueryParam().split(/\s+/).filter(function (t) { return t.length > 0; });
+    if (!terms.length) { clearKw(); return; }
+    terms.sort(function (a, b) { return b.length - a.length; });
+    var list = document.querySelectorAll('main .pair');
+    var key = (el.id || ('pair-' + Array.prototype.indexOf.call(list, el))) + '|' + terms.join(' ');
+    if (key === kwKey && el.querySelector('mark.kw')) return;
+    clearKw();
+    var re;
+    try { re = new RegExp('(' + terms.map(escRe).join('|') + ')', 'gi'); }
+    catch (e) { return; }
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    var nodes = [], n;
+    while ((n = walker.nextNode())) {
+      if (!n.nodeValue || !/\S/.test(n.nodeValue)) continue;
+      var tag = n.parentNode ? n.parentNode.nodeName : '';
+      if (/^(SCRIPT|STYLE|MARK|TEXTAREA)$/.test(tag)) continue;
+      re.lastIndex = 0;
+      if (re.test(n.nodeValue)) nodes.push(n);
+    }
+    nodes.forEach(function (node) {
+      var text = node.nodeValue, frag = document.createDocumentFragment(), last = 0, m;
+      re.lastIndex = 0;
+      while ((m = re.exec(text)) !== null) {
+        if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+        var mk = document.createElement('mark');
+        mk.className = 'kw';
+        mk.textContent = m[0];
+        frag.appendChild(mk);
+        last = m.index + m[0].length;
+        if (m.index === re.lastIndex) re.lastIndex++;
+      }
+      if (!frag.childNodes.length) return;
+      if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+    });
+    kwKey = key;
+  }
+
   function jumpToHash() {
     if (!location.hash) return;
     var id;
@@ -372,6 +443,7 @@
     var el = resolveAnchor(id);
     if (!el) return;
     markHit(el);
+    markQuery(el);
 
     var seq = ++jumpSeq;
     userMoved = false;

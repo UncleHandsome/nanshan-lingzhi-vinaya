@@ -164,7 +164,7 @@ def ji_for_chao(text, limit=6, cap=2200):
     超過 cap 時保留首 2 條＋尾 2 條（確保末句不被切），再均勻補中間。
     """
     u = han(text)
-    if len(u) < 10:
+    if not u:
         return ''
     seq = _seq_json()
     if not seq:

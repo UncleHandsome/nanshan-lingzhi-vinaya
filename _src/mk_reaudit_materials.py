@@ -889,7 +889,8 @@ def _reverse_ji_note(src, cap=900):
 
 _QUOTE_WORKS = (
     ('伽論', '薩婆多部毘尼摩得勒伽'), ('婆沙', '薩婆多毘尼毘婆沙'),
-    ('多論', '薩婆多毘尼毘婆沙'), ('五分', '五分律'), ('十誦', '十誦律'),
+    ('婆論', '薩婆多毘尼毘婆沙'), ('多論', '薩婆多毘尼毘婆沙'),
+    ('五分', '五分律'), ('十誦', '十誦律'),
     ('僧祇', '摩訶僧祇律'), ('善見', '善見律毘婆沙'), ('母論', '毘尼母經'),
     ('隨機羯磨', '隨機羯磨'), ('戒本', '含注戒本'),
 )
@@ -972,7 +973,11 @@ def reference_blocks(book, unit, order, i):
                                                 hits[0].get('kwic') or '')).strip()))
             except Exception:
                 pass
-    if book in ('戒疏', '業疏', '義鈔', '行事鈔'):
+    if book == '尼鈔':
+        par = _parallel_notes(book, src)
+        if par:
+            blocks.append(('平行釋文（僅供訓釋，嚴禁搬入正文）', par))
+    if book in ('尼鈔', '戒疏', '業疏', '義鈔', '行事鈔'):
         dn = _dict_notes(src)
         if dn:
             blocks.append(('南山律學辭典條目參考（僅供訓釋，嚴禁搬入正文）', dn))

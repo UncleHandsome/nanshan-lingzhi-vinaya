@@ -110,7 +110,7 @@ def _stale_reason(meta_u, row, parts):
     for a, b in zip(mp, parts):
         if a.get('lab') != b['lab']:
             return '材料段別與現定稿不符（定稿已更新）'
-        if _raw_han(a.get('orig') or '') != _raw_han(b['orig'] or ''):
+        if _han(a.get('orig') or '') != _han(b['orig'] or ''):
             return '材料原文與現定稿不符（定稿已更新）'
         if _LAB_HEAD.sub('', a.get('tr') or '') != _LAB_HEAD.sub('', b['tr'] or ''):
             return '材料現譯與現定稿不符（定稿已更新，請重產材料）'
@@ -133,7 +133,7 @@ def _load_raw(book):
     fp = os.path.join(B, p.replace('/', os.sep))
     if not os.path.exists(fp):
         return None, ''
-    return _han(io.open(fp, encoding='utf-8').read()), p
+    return _raw_han(io.open(fp, encoding='utf-8').read()), p
 
 
 # ---------------------------------------------------------------- 回覆解析
@@ -260,11 +260,11 @@ def _part_spans(row, raw_h):
     """回傳 parts 的 raw 起迄（累加漢字長；與 mk_reaudit_materials 同法）。"""
     a, b = int(row.get('raw_start', -1) or -1), int(row.get('raw_end', -1) or -1)
     parts = _parts_of(row)
-    hs = [_han(p['orig']) for p in parts]
+    hs = [_raw_han(p['orig']) for p in parts]
     if raw_h is None:
         return [(None, None) for _ in parts]
-    unit_h = _han(row.get('source', ''))
-    if 0 <= a < b <= len(raw_h) and raw_h[a:b] == unit_h \
+    unit_h = _raw_han(row.get('source', ''))
+    if 0 <= a < b <= len(raw_h) and _han(raw_h[a:b]) == _han(row.get('source', '')) \
             and sum(len(x) for x in hs) == len(unit_h):
         out, cur = [], a
         for h in hs:
@@ -430,12 +430,12 @@ def main():
             raw_note = 'raw 未驗（無底本）'
         else:
             a, b = int(row.get('raw_start', -1) or -1), int(row.get('raw_end', -1) or -1)
-            if not (0 <= a < b <= len(raw_h) and raw_h[a:b] == _han(row.get('source', ''))):
+            if not (0 <= a < b <= len(raw_h) and _han(raw_h[a:b]) == _han(row.get('source', ''))):
                 blocked.append((key, 'source≠raw（定稿定位與底本不符）'))
                 new_rows.append(row)
                 continue
             for p, (pa, pb) in zip(parts, spans):
-                if pa is None or _han(p['orig']) != raw_h[pa:pb]:
+                if pa is None or _han(_raw_han(p['orig'])) != _han(raw_h[pa:pb]):
                     raw_note = 'part 定位僅估算'
                     break
         new_trs, why = _parse_reply(rt, parts)

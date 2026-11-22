@@ -13,6 +13,10 @@ BOOKS = {
 def norm(v):
  m=re.match(r'卷([上中下]|[一二三四])',v); return '卷'+m.group(1) if m else v
 PUNCT = re.compile(r'[，。；：！？、]')
+def fmt(s):
+ s=html.escape(s)
+ s=re.sub('\u3000{2,}','<br><br>',s)
+ return s.replace('\n','<br>')
 def pick(src, disp):
  return disp if disp and PUNCT.search(disp) else src
 def pairs(row):
@@ -52,7 +56,7 @@ for book in ([args.book] if args.book else list(BOOKS)):
     if not s or not tr: continue
     pc={'疏文':'s','記文':'j','註文':'z','律文':'lv','序文':'x'}.get(lab,'')
     oc={'疏文':'shu','記文':'ji','註文':'zhu','律文':'lv','序文':'xu'}.get(lab,'')
-    body.append('<div class="pair %s"><div class="o %s">【%s】%s</div><div class="t">【%s】%s</div></div>'%(pc,oc,lab,html.escape(s).replace('\n','<br>'),lab,html.escape(tr).replace('\n','<br>')))
+    body.append('<div class="pair %s"><div class="o %s">【%s】%s</div><div class="t">【%s】%s</div></div>'%(pc,oc,lab,fmt(s),lab,fmt(tr)))
   p=os.path.join(B,'docs',book,v+'.html'); t=io.open(p,encoding='utf-8').read(); m=re.search(r'<main id="main">.*?</main>',t,re.S)
   new=t[:m.start()]+'<main id="main">'+''.join(body)+'</main>'+t[m.end():]
   io.open(p+'.new','w',encoding='utf-8').write(new)

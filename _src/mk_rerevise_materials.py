@@ -1,0 +1,410 @@
+# -*- coding: utf-8 -*-
+"""只為 FIX 單位產生「單段修訂」材料（第二階段再審後的定點修訂）。
+
+材料內容：
+  - 【原文】：該單位的全部段別（parts；疏＋記不拆）
+  - 【目前譯文】：該單位現譯（逐段標籤，供修訂後同位輸出）
+  - 前後原文（前 ≤1500 字、後 ≤600 字）與前後鄰既有譯文（前 ≤400、後 ≤300）
+  - 【跨段統一基準】：鄰段共用譯詞對照＋硬傷所涉原詞在鄰段的譯法
+  - 【必改硬傷】：來自 _再審拆回_計畫.json 的該單位項目
+  - 【初審檢索摘錄】：由該再審包的 <pack>_evid.json 依硬傷過濾（mk_revise_materials.evidence_block）
+
+用法：
+  python -X utf8 _src/mk_rerevise_materials.py \
+      --materials 重作材料_長段/_再審材料/業疏 \
+      --out 重作材料_長段/_再審修訂/業疏
+
+輸出：
+  <out>/<unit_key>.md／.json、<out>/索引.json；修訂回覆放 <out>/回覆/<unit_key>_回.txt。
+"""
+import argparse
+import hashlib
+import io
+import json
+import os
+import re
+import sys
+
+B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
+_HERE = os.path.dirname(os.path.abspath(__file__))
+if _HERE not in sys.path:
+    sys.path.insert(0, _HERE)
+
+import book_config as BC  # noqa: E402
+import mk_reaudit_materials as RA  # noqa: E402  只用常數與 clip 工具
+
+PLAN_NAME = '_再審拆回_計畫.json'
+PRE_SRC_CAP = 1500
+PRE_TR_CAP = 400
+POST_SRC_CAP = 600
+POST_TR_CAP = 300
+TERM_CAP = 12
+FIX_TERM_CAP = 6
+
+RA_REVISE_PROMPT = (
+    '你是南山律典譯文修訂編輯（本段所屬：{book_note}）。'
+    '下面只有一個再審單位：先核對【原文】與前後背景，再依【必改硬傷】逐項定點修訂【目前譯文】。\n\n'
+    '### 修訂原則\n'
+    '1. **嚴格定點局部修改**：只改硬傷所涉句；清單未涉及之句一律照【目前譯文】保留，'
+    '不得為修辭改動；惟修改硬傷句時，須同步微調同句（或緊鄰承接句）因該處改動而衝突的'
+    '領起語或關聯詞，使全句邏輯自洽，並勿刪去原譯正確之主詞、出處限定或條件。\n'
+    '2. **跨段一致**：清單若修正專詞譯法、列舉分合或施受主語，須同步檢查同段他句是否因而矛盾，'
+    '並依【跨段統一基準】與前後鄰段用詞對齊；但不得把鄰段內容抄入本段，亦不得為對齊而改動未涉硬傷之句。\n'
+    '3. **查證護欄**：可先核對【初審檢索摘錄】；摘錄僅供查證，嚴禁將書名卷次按語或未譯原文照抄入譯文'
+    '（原文本身所引除外）。查無依據時寧用中性泛稱，嚴禁猜補情節、身分或條件。\n'
+    '4. **駁回**：僅當清單明顯違背原文與典據顯義、強求補出原文所無之情節，'
+    '或所引檢索屬跨書／跨篇／同篇異節誤引時，得駁回該項並維持原譯該句（或改中性泛稱）；'
+    '駁回時只保留原句，勿輸出理由、按語或說明括號。\n'
+    '5. {cite_style}\n\n'
+    '### 必改硬傷：\n{fixes}\n\n'
+    '### 輸出（完整譯文，勿重貼原文、勿輸出清單、勿加前言或總標題）\n'
+    '{out_format}\n'
+    '段別標籤僅限【疏文】【記文】【鈔文】【律文】【註文】【序文】，須與【原文】區塊一致；'
+    '同一段別標籤只寫一次，不得自創如【修訂譯文】。\n'
+)
+
+
+def _resolve(p):
+    p = p.replace('/', os.sep)
+    return p if os.path.isabs(p) else os.path.join(B, p)
+
+
+def _rel(p):
+    try:
+        return os.path.relpath(p, B)
+    except ValueError:
+        return p
+
+
+def _h12(s):
+    return hashlib.md5((s or '').encode('utf-8')).hexdigest()[:12]
+
+
+def _unit_tr(u):
+    return '\n'.join(p.get('tr', '') for p in (u.get('parts') or []))
+
+
+def _unit_orig(u):
+    return '\n'.join(p.get('orig', '') for p in (u.get('parts') or []))
+
+
+def _frag(text, term, radius=14):
+    i = (text or '').find(term)
+    if i < 0:
+        return '—'
+    a = max(0, i - radius)
+    b = min(len(text), i + len(term) + radius)
+    return text[a:b].replace('\n', ' ')
+
+
+STOP_CHARS = set(
+    '的了著是在把被將與及或而則以於之其此彼所為無有不得應須當如若使皆並又即乃但故'
+    '也矣焉哉乎者我汝今昔上下前後中內外一二三四五六七八九十百千萬箇些更最亦皆')
+
+
+def _cands(text):
+    out = {}
+    for run in re.findall(r'[\u4e00-\u9fff]{2,}', text or ''):
+        for n in (2, 3, 4):
+            for i in range(0, len(run) - n + 1):
+                g = run[i:i + n]
+                if all(c in STOP_CHARS for c in g):
+                    continue
+                out[g] = out.get(g, 0) + 1
+    return out
+
+
+def _term_table(unit, prev_u, next_u, cap=TERM_CAP):
+    """本單位現譯與前／後鄰現譯共用、且多見於原文的專詞（2–4 字）。"""
+    tr = _unit_tr(unit)
+    prev = _unit_tr(prev_u) if prev_u else ''
+    nxt = _unit_tr(next_u) if next_u else ''
+    if not (prev or nxt):
+        return []
+    orig = RA.han(_unit_orig(unit) + (_unit_orig(prev_u) if prev_u else '')
+                  + (_unit_orig(next_u) if next_u else ''))
+    c_unit = _cands(tr)
+    c_prev = _cands(prev)
+    c_next = _cands(nxt)
+    forced = set()
+    for g in re.findall(r'《([^》]{2,20})》', tr):
+        if g in prev or g in nxt:
+            forced.add(g)
+    for g in re.findall(r'[「『]([^」』]{2,10})[」』]', tr):
+        if len(g) <= 8 and (g in prev or g in nxt):
+            forced.add(g)
+    blocked = []
+    for _s in (tr, prev, nxt):
+        blocked += re.findall(r'《([^》]{2,30})》', _s)
+        blocked += re.findall(r'[「『]([^」』]{2,30})[」』]', _s)
+    scored = {}
+    for g, c in c_unit.items():
+        in_prev = g in c_prev
+        in_next = g in c_next
+        in_orig = g in orig
+        both = in_prev and in_next
+        if not (in_prev or in_next):
+            continue
+        if not (in_orig or both or c >= 2):
+            continue
+        if any(g in b and g != b for b in blocked):
+            continue
+        sc = (3 if in_orig else 0) + (2 if both else 1) + min(c, 3) \
+            + (3 if g in forced else 0) + 0.5 * len(g)
+        scored[g] = sc
+    keys = sorted(scored, key=lambda g: (-scored[g], -len(g), g))
+    keep = []
+    for g in keys:
+        if any(g != k and g in k for k in keep):
+            continue
+        keep.append(g)
+        if len(keep) >= cap:
+            break
+    for g in sorted(forced, key=lambda s: -len(s)):
+        if g in keep or any(g in k for k in keep) or any(k in g for k in keep):
+            continue
+        keep.append(g)
+        if len(keep) >= cap:
+            break
+    return [(g, _frag(prev, g) if prev else '—',
+             _frag(nxt, g) if nxt else '—') for g in keep]
+
+
+def _fix_terms(fixes, prev_u, next_u, cap=FIX_TERM_CAP):
+    """硬傷清單中「原文『X』」的 X，在鄰段現譯的用法（多為保留原詞）。"""
+    terms = []
+    for t in re.findall(r'原文[「『]([^」』]{1,40})[」』]', fixes or ''):
+        t = t.strip()
+        if t and t not in terms:
+            terms.append(t)
+    prev = _unit_tr(prev_u) if prev_u else ''
+    nxt = _unit_tr(next_u) if next_u else ''
+    return [(t, _frag(prev, t) if prev else '—',
+             _frag(nxt, t) if nxt else '—') for t in terms[:cap]]
+
+
+def _neighbors(pack, no):
+    us = pack.get('units') or []
+    prev_u = us[no - 2] if no - 2 >= 0 else None
+    next_u = us[no] if no < len(us) else None
+    return prev_u, next_u
+
+
+def _contexts(pack, no):
+    us = pack.get('units') or []
+    prev_u, next_u = _neighbors(pack, no)
+    if prev_u:
+        pre_src = RA._clip_tail(_unit_orig(prev_u), PRE_SRC_CAP)
+        pre_tr = RA._clip_tail(_unit_tr(prev_u), PRE_TR_CAP)
+    else:
+        pre_src, pre_tr = pack.get('pre_src', ''), pack.get('pre_tr', '')
+    if next_u:
+        post_src = RA._clip_head(_unit_orig(next_u), POST_SRC_CAP)
+        post_tr = RA._clip_head(_unit_tr(next_u), POST_TR_CAP)
+    else:
+        post_src, post_tr = pack.get('post_src', ''), pack.get('post_tr', '')
+    return {'pre_src': pre_src, 'pre_tr': pre_tr,
+            'post_src': post_src, 'post_tr': post_tr,
+            'prev_key': (prev_u or {}).get('key', pack.get('prev_unit', '')),
+            'next_key': (next_u or {}).get('key', pack.get('next_unit', ''))}
+
+
+def _out_format(labs):
+    labs = list(dict.fromkeys(labs)) or ['鈔文']
+    return '\n'.join('【%s】……' % lab for lab in labs)
+
+
+def _render(prompt, book, vol, key, pack_key, no, contexts, unit, fixes,
+            terms, fix_terms, evid):
+    L = [prompt, '', '---', '',
+         '（出處：《%s》%s，%s｜再審包 %s 第 %d 號）'
+         % (book, vol or '（未分卷）', key, pack_key, no), '']
+    if contexts['pre_src'].strip():
+        L += ['【前文背景（原文，僅供銜接，嚴禁譯入正文）】', '',
+              contexts['pre_src'], '']
+    L += ['【原文】', '']
+    for p in unit.get('parts') or []:
+        L += ['■ %s（原文）' % p.get('lab', ''), '']
+        if p.get('dirty_orig'):
+            L += ['〔定稿殘留：此段含 %s；逐字照錄〕' % '／'.join(p['dirty_orig']), '']
+        L += [(p.get('orig') or '').strip(), '']
+    L += ['【目前譯文】', '']
+    for p in unit.get('parts') or []:
+        L += ['【%s】' % p.get('lab', '')]
+        if p.get('dirty_tr'):
+            L += ['〔定稿殘留：此段含 %s；逐字照錄〕' % '／'.join(p['dirty_tr'])]
+        L += [(p.get('tr') or '').strip(), '']
+    if contexts.get('pre_tr', '').strip() or contexts.get('post_tr', '').strip():
+        L += ['【前後鄰既有譯文（僅供對齊用詞，嚴禁照抄整句）】', '']
+        if contexts.get('pre_tr', '').strip():
+            L += ['■ 前鄰單位（%s）' % (contexts.get('prev_key') or '—'), '',
+                  contexts['pre_tr'], '']
+        if contexts.get('post_tr', '').strip():
+            L += ['■ 後鄰單位（%s）' % (contexts.get('next_key') or '—'), '',
+                  contexts['post_tr'], '']
+    L += ['【跨段統一基準（僅供對齊用詞，嚴禁照抄整句）】', '']
+    L += ['- 段別：%s；%s' % ('、'.join('【%s】' % x for x in unit.get('labs') or []),
+                            BC.note_for(book, unit.get('labs')))]
+    L += ['- 體例底線：%s' % BC.CITE_STYLE_MIN]
+    if contexts['prev_key'] or contexts['next_key']:
+        L += ['- 前鄰單位：%s；後鄰單位：%s'
+              % (contexts['prev_key'] or '（無）', contexts['next_key'] or '（無）')]
+    if terms:
+        L += ['', '| 共用譯詞 | 前鄰段現譯片段 | 後鄰段現譯片段 |',
+              '|:--|:--|:--|']
+        for t, a, b in terms:
+            L.append('| %s | %s | %s |' % (t, a, b))
+        L += ['', '（上列為本單位現譯與前／後鄰現譯共用的譯詞；修訂涉及其一者須全段一致，'
+              '不得為對齊抄入鄰段整句。）']
+    else:
+        L += ['- 本單位與前後鄰段無明顯共用譯詞；仍須保持段別體例與專詞一致。']
+    if fix_terms:
+        L += ['', '| 硬傷所涉原詞 | 前鄰段現譯用法 | 後鄰段現譯用法 |',
+              '|:--|:--|:--|']
+        for t, a, b in fix_terms:
+            L.append('| %s | %s | %s |' % (t, a, b))
+    L += ['', '【必改硬傷】', '', fixes.strip(), '']
+    if evid:
+        L += ['【初審檢索摘錄（僅供核對依據，嚴禁抄入譯文）】', '', evid, '']
+    if contexts['post_src'].strip():
+        L += ['【後文背景（原文，僅供銜接，嚴禁譯入正文）】', '',
+              contexts['post_src'], '']
+    return '\n'.join(L)
+
+
+def main():
+    ap = argparse.ArgumentParser(
+        description='只為再審 FIX 單位產生單段修訂材料（不呼叫 qwen）')
+    ap.add_argument('--book', default='', help='書別（決定 --materials／--out 預設）')
+    ap.add_argument('--materials', default='',
+                    help='再審材料目錄（預設 測試/重譯/<book>/_再審）')
+    ap.add_argument('--plan', default='', help='拆回計畫（預設 <materials>/%s）' % PLAN_NAME)
+    ap.add_argument('--out', default='', help='修訂材料輸出目錄（預設 測試/重譯/<book>/_再審修訂）')
+    ap.add_argument('--max-evidence', type=int, default=2200,
+                    help='檢索摘錄字數上限（預設 2200）')
+    ap.add_argument('--no-evidence', action='store_true', help='不附檢索摘錄')
+    ap.add_argument('--force', action='store_true', help='允許覆寫既有材料')
+    ap.add_argument('--dry-run', action='store_true', help='只統計，不寫檔')
+    args = ap.parse_args()
+
+    if not args.materials:
+        if not args.book:
+            raise SystemExit('需要 --materials 或 --book（例：--book 義鈔）')
+        args.materials = '測試/重譯/%s/_再審' % args.book
+    if not args.out:
+        if not args.book:
+            raise SystemExit('需要 --out（或加 --book 用預設目錄）')
+        args.out = '測試/重譯/%s/_再審修訂' % args.book
+    mdir = _resolve(args.materials)
+    plan_path = (_resolve(args.plan) if args.plan
+                 else os.path.join(mdir, PLAN_NAME))
+    if not os.path.exists(plan_path):
+        raise SystemExit('找不到拆回計畫：' + plan_path)
+    plan = json.load(io.open(plan_path, encoding='utf-8'))
+    fix = plan.get('fix') or {}
+    out = _resolve(args.out)
+    rep = os.path.join(mdir, '回覆')
+    if not fix:
+        print('計畫內沒有 FIX 單位；不產材料。')
+        return
+    if args.dry_run:
+        print('FIX 單位 %d 個；--dry-run 不寫檔。' % len(fix))
+        for k, v in list(fix.items())[:5]:
+            print('  %s（%s 第 %d 號，%d 項）'
+                  % (k, v.get('pack', ''), v.get('no', 0), len(v.get('items') or [])))
+        return
+    os.makedirs(out, exist_ok=True)
+    _rep = os.path.join(out, '回覆')
+    if os.path.isdir(_rep) and any(f.endswith('_回.txt') for f in os.listdir(_rep)) \
+            and not args.force:
+        raise SystemExit('（已中止）輸出目錄已有修訂回覆，重產材料會錯位：%s\n'
+                         '  確定重跑請加 --force，或改用新目錄。' % out)
+    for f in list(os.listdir(out)):
+        if f.endswith(('.md', '.json')) and not f.startswith('索引'):
+            try:
+                os.remove(os.path.join(out, f))
+            except OSError:
+                pass
+
+    packs = {}
+    order = {}
+    n = 0
+    skipped = []
+    for key, info in sorted(fix.items(),
+                            key=lambda kv: (kv[1].get('pack', ''), kv[1].get('no', 0))):
+        pack_key = info.get('pack') or ''
+        no = int(info.get('no') or 0)
+        if pack_key not in packs:
+            p = os.path.join(mdir, pack_key + '.json')
+            if not os.path.exists(p):
+                skipped.append((key, '缺材料 %s' % pack_key))
+                continue
+            packs[pack_key] = json.load(io.open(p, encoding='utf-8'))
+        pack = packs[pack_key]
+        us = pack.get('units') or []
+        if not (1 <= no <= len(us)) or us[no - 1].get('key') != key:
+            skipped.append((key, '計畫編號與材料不符（%s 第 %d 號）' % (pack_key, no)))
+            continue
+        unit = us[no - 1]
+        book = pack.get('book') or ''
+        vol = unit.get('vol') or pack.get('vol') or ''
+        fixes = '\n'.join(it.get('text', '') for it in (info.get('items') or []))
+        if not fixes.strip():
+            skipped.append((key, '無硬傷文字'))
+            continue
+        ctx = _contexts(pack, no)
+        prev_u, next_u = _neighbors(pack, no)
+        terms = _term_table(unit, prev_u, next_u)
+        fix_terms = _fix_terms(fixes, prev_u, next_u)
+        evid = ''
+        if not args.no_evidence:
+            try:
+                from mk_revise_materials import evidence_block
+                evid = evidence_block(rep, pack_key, fixes,
+                                      max_chars=args.max_evidence)
+            except Exception:
+                evid = ''
+        note = BC.note_for(book, unit.get('labs') or [])
+        prompt = (RA_REVISE_PROMPT.replace('{book_note}', note)
+                  .replace('{fixes}', fixes)
+                  .replace('{cite_style}', BC.CITE_STYLE_MIN)
+                  .replace('{out_format}', _out_format(unit.get('labs') or [])))
+        md = _render(prompt, book, vol, key, pack_key, no, ctx, unit, fixes,
+                     terms, fix_terms, evid)
+        io.open(os.path.join(out, key + '.md'), 'w', encoding='utf-8').write(md)
+        meta = {
+            'key': key, 'pack': pack_key, 'book': book, 'chunk': unit.get('chunk', ''),
+            'vol': vol, 'labs': unit.get('labs') or [],
+            'fixes': fixes,
+            'parts': [{'lab': p.get('lab'), 'orig': p.get('orig'), 'tr': p.get('tr'),
+                       'dirty': list(p.get('dirty') or []),
+                       'dirty_orig': list(p.get('dirty_orig') or []),
+                       'dirty_tr': list(p.get('dirty_tr') or []),
+                       'hash': p.get('hash')} for p in unit.get('parts') or []],
+            'pre_src': ctx['pre_src'], 'pre_tr': ctx['pre_tr'],
+            'post_src': ctx['post_src'], 'post_tr': ctx['post_tr'],
+            'prev_unit': ctx['prev_key'], 'next_unit': ctx['next_key'],
+            'evidence': bool(evid),
+            'hash': unit.get('hash') or _h12(fixes),
+            'chars': {'src': sum(len(RA.han(p.get('orig', '')))
+                                 for p in unit.get('parts') or []),
+                      'tr': sum(len(RA.han(p.get('tr', '')))
+                                for p in unit.get('parts') or [])},
+        }
+        io.open(os.path.join(out, key + '.json'), 'w', encoding='utf-8').write(
+            json.dumps(meta, ensure_ascii=False, indent=1))
+        order[key] = n + 1
+        n += 1
+    json.dump({'plan': _rel(plan_path), 'book': plan.get('book', ''),
+               'FIX': list(order), 'materials': n},
+              io.open(os.path.join(out, '索引.json'), 'w', encoding='utf-8'),
+              ensure_ascii=False, indent=1)
+    if skipped:
+        print('  ⚠ 略過 %d 個 FIX 單位：' % len(skipped))
+        for k, why in skipped[:10]:
+            print('    %s：%s' % (k, why))
+    print('已產生 %d 份單段修訂材料 → %s' % (n, _rel(out)))
+
+
+if __name__ == '__main__':
+    main()

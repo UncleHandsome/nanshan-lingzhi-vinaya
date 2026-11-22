@@ -489,7 +489,7 @@ qc_scan：0 致命
 mk_reaudit_materials.py：已存在
 split_reaudit.py：已存在
 mk_rerevise_materials.py：已存在
-apply_reaudit.py：待補
+apply_reaudit.py：已存在（尚未正式跑批）
 ```
 
 先以《義鈔》單卷試跑；確認 20K 檔長、漏號率、FIX 比例與變更對照後，才放量到其他書。

@@ -156,6 +156,49 @@ def chao_for_units(texts, per=300):
     return '\n'.join(out)
 
 
+def ji_for_chao(text, limit=2, cap=900):
+    """反向對照：給《行事鈔》文句，回傳所對應的《資持記》釋文（≤cap 字）。
+
+    與 chao_for() 相反：chao_for 是「記文→所釋鈔文」，本函式是
+    「鈔文→資持記相關釋文」，供再審材料掛【資持記相關釋文】。
+    """
+    u = han(text)
+    if len(u) < 10:
+        return ''
+    seq = _seq_json()
+    if not seq:
+        return ''
+    tiers = (
+        lambda ch: len(ch) >= 15 and ch in u,
+        lambda ch: len(ch) >= 12 and (ch[:12] in u or ch[-12:] in u),
+        lambda ch: len(ch) >= 10 and (ch[:10] in u or ch[-10:] in u),
+        lambda ch: len(ch) >= 12 and any(ch[j:j + 8] in u
+                                        for j in range(0, len(ch) - 7, 4)),
+    )
+    for ok in tiers:
+        hits = []
+        for i, x in enumerate(seq):
+            ch = han(x.get('chao') or '')
+            if ch and ok(ch):
+                hits.append((len(ch), i))
+        if not hits:
+            continue
+        hits.sort(reverse=True)
+        out, seen, acc = [], set(), 0
+        for _, i in hits[:limit]:
+            ji = (seq[i].get('ji') or '').strip()
+            if not ji or ji in seen:
+                continue
+            if acc + len(ji) > cap:
+                break
+            seen.add(ji)
+            out.append(ji)
+            acc += len(ji)
+        if out:
+            return '\n'.join(out)
+    return ''
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--test', type=int, default=20)

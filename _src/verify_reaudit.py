@@ -177,16 +177,37 @@ def _merge_fixes(old_fixes, reasons):
     return out.strip()
 
 
-def _verify_material(book, key, parts, fixes, before_text, after_text, vol=''):
-    """產出 VERIFY 材料：原文＋硬傷清單＋修訂前／後譯文（不附長背景）。"""
+def _context_from_material(md):
+    """從修訂材料抽出【前文背景】【對照層】【後文背景】，供 VERIFY 參閱。"""
+    if not md:
+        return ''
+    out = []
+    for prefix in ('前文背景', '對照層', '後文背景'):
+        m = re.search(r'(?m)^【%s[^】]*】\s*$' % prefix, md)
+        if not m:
+            continue
+        tail = md[m.end():]
+        nxt = re.search(r'(?m)^【[^】\n]{1,30}】\s*$', tail)
+        body = tail[:nxt.start()] if nxt else tail
+        head = md[m.start():m.end()].strip()
+        if body.strip():
+            out.append(head + '\n\n' + body.strip())
+    return '\n\n'.join(out)
+
+
+def _verify_material(book, key, parts, fixes, before_text, after_text, vol='',
+                     context=''):
+    """產出 VERIFY 材料：原文＋前後文／對照層＋硬傷清單＋修訂前後譯文。"""
     src = '\n'.join('■ %s（原文）\n\n%s\n' % (p['lab'], p['orig'].strip())
                     for p in parts if (p.get('orig') or '').strip())
     L = [BC.verify_prompt(book, BC.note_for(book, [p['lab'] for p in parts])), '',
-         '---', '', '（出處：《%s》%s，%s）' % (book, vol or '（未分卷）', key), '',
-         '【原文】', '', src, '',
-         '【硬傷清單】', '', (fixes or '（無）').strip(), '',
-         '【修訂前譯文】', '', before_text.strip(), '',
-         '【修訂後譯文】', '', after_text.strip(), '']
+         '---', '', '（出處：《%s》%s，%s）' % (book, vol or '（未分卷）', key), '']
+    if context:
+        L += ['【前後文與對照層（僅供核對，嚴禁抄入譯文）】', '', context, '']
+    L += ['【原文】', '', src, '',
+          '【硬傷清單】', '', (fixes or '（無）').strip(), '',
+          '【修訂前譯文】', '', before_text.strip(), '',
+          '【修訂後譯文】', '', after_text.strip(), '']
     return '\n'.join(L)
 
 
@@ -300,10 +321,12 @@ def main():
                 '%s\t%s' % (key, '幅度 %.2f 須驗收' % ratio if
                             (ratio > MAX_RATIO or ratio < MIN_RATIO) else '有改動待 VERIFY'))
             if not args.no_materials and not args.dry_run:
+                _ctx = _context_from_material(_read(os.path.join(revise, key + '.md')))
                 _write(os.path.join(verify, key + '.md'),
                        _verify_material(_book, key, parts, fixes,
                                         '\n'.join('【%s】\n%s' % (p['lab'], p['tr'])
-                                                  for p in parts), cand1, vol))
+                                                  for p in parts), cand1, vol,
+                                        context=_ctx))
             continue
         vd = MI.verify_verdict(v1)
         if vd == 'OK':
@@ -337,8 +360,10 @@ def main():
         if not v2.strip():
             buckets['second_pending'].append(key)
             if not args.no_materials and not args.dry_run:
+                _ctx = _context_from_material(_read(os.path.join(revise, key + '.md')))
                 _write(os.path.join(verify, key + '_再驗.md'),
-                       _verify_material(_book, key, parts, merged, cand1, cand2, vol))
+                       _verify_material(_book, key, parts, merged, cand1, cand2, vol,
+                                        context=_ctx))
             continue
         vd2 = MI.verify_verdict(v2)
         if vd2 == 'OK':

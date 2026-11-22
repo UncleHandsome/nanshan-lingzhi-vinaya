@@ -229,20 +229,24 @@ def dirty_hits(text):
 
 
 def _parts_of(row):
+    """定稿 segments → parts。雙欄（疏／記）必須逐段保留 lab／source／translation 對位，
+    不可把兩欄合併成單欄；無 segments 時才退回頂層 label／source／translation。"""
     segs = row.get('segments') or []
     parts = []
     for s in segs:
         lab = s.get('label') or row.get('label') or '鈔文'
         orig = (s.get('source') or '').strip()
         tr = _LAB_HEAD.sub('', (s.get('translation') or '').strip())
+        disp = (s.get('display_source') or '').strip()
         if not orig and not tr:
             continue
-        parts.append({'lab': lab, 'orig': orig, 'tr': tr})
+        parts.append({'lab': lab, 'orig': orig, 'tr': tr, 'display': disp})
     if not parts:
         lab = row.get('label') or '鈔文'
         orig = (row.get('source') or '').strip()
         tr = _LAB_HEAD.sub('', (row.get('translation') or '').strip())
-        parts.append({'lab': lab, 'orig': orig, 'tr': tr})
+        parts.append({'lab': lab, 'orig': orig, 'tr': tr,
+                      'display': (row.get('display_source') or '').strip()})
     return parts
 
 
@@ -343,11 +347,13 @@ def _clip_head(s, cap):
     return s
 
 
-def context_before(order, i0):
+def context_before(order, i0, pre_src=None, pre_tr=None):
+    pre_src = PRE_SRC_CAP if pre_src is None else pre_src
+    pre_tr = PRE_TR_CAP if pre_tr is None else pre_tr
     u0 = order[i0]
     src, tr = '', ''
     if i0 > 0 and order[i0 - 1]['vol'] == u0['vol']:
-        tr = _clip_tail(order[i0 - 1]['parts'][-1]['tr'], PRE_TR_CAP)
+        tr = _clip_tail(order[i0 - 1]['parts'][-1]['tr'], pre_tr)
         buf, acc = [], 0
         for j in range(i0 - 1, -1, -1):
             if order[j]['vol'] != u0['vol']:
@@ -355,17 +361,19 @@ def context_before(order, i0):
             t = '\n'.join(p['orig'] for p in order[j]['parts'])
             buf.append(t)
             acc += len(han(t))
-            if acc >= PRE_SRC_CAP:
+            if acc >= pre_src:
                 break
-        src = _clip_tail('\n'.join(reversed(buf)), PRE_SRC_CAP)
+        src = _clip_tail('\n'.join(reversed(buf)), pre_src)
     return src, tr
 
 
-def context_after(order, i1):
+def context_after(order, i1, post_src=None, post_tr=None):
+    post_src = POST_SRC_CAP if post_src is None else post_src
+    post_tr = POST_TR_CAP if post_tr is None else post_tr
     u1 = order[i1]
     src, tr = '', ''
     if i1 + 1 < len(order) and order[i1 + 1]['vol'] == u1['vol']:
-        tr = _clip_head(order[i1 + 1]['parts'][0]['tr'], POST_TR_CAP)
+        tr = _clip_head(order[i1 + 1]['parts'][0]['tr'], post_tr)
         buf, acc = [], 0
         for j in range(i1 + 1, len(order)):
             if order[j]['vol'] != u1['vol']:
@@ -373,9 +381,9 @@ def context_after(order, i1):
             t = '\n'.join(p['orig'] for p in order[j]['parts'])
             buf.append(t)
             acc += len(han(t))
-            if acc >= POST_SRC_CAP:
+            if acc >= post_src:
                 break
-        src = _clip_head('\n'.join(buf), POST_SRC_CAP)
+        src = _clip_head('\n'.join(buf), post_src)
     return src, tr
 
 
@@ -430,8 +438,195 @@ def mother_text(pack, book):
         return ''
 
 
+# ---------------------------------------------------------------- 對照層（v2）
+REF_CAP = 1400
+
+
+SINGLE_SCOPE = (
+    '### 範圍與讀法\n'
+    '1. 本檔只含一個單位 [01]（單段送審）；核對範圍就是這一段，不得自行擴大或合併其他段落。\n'
+    '2. 先遮蔽【現譯】單讀【原文】，獨立拆解文法、主客施受、條件界限與律義，再反向驗收【現譯】，'
+    '切勿順著譯文流暢度讀過。\n'
+    '3. 【前文背景】【後文背景】僅供銜接理解；【對照層】僅供校勘，兩者都嚴禁譯入正文。\n'
+)
+
+
+def _interlinear_notes(unit, cap=900):
+    """原典雙行夾注：取 display_source 的〔…〕（CBETA 尼鈔 X40n0724 還原）。"""
+    notes = []
+    for p in unit['parts']:
+        disp = p.get('display') or ''
+        for m in re.finditer(r'〔([^〕]{2,})〕', disp):
+            a = max(0, m.start() - 10)
+            notes.append('%s〔%s〕' % (disp[a:m.start()].strip(), m.group(1).strip()))
+    return '\n'.join(notes[:10])[:cap]
+
+
+def _plain_src(unit):
+    return '\n'.join(p['orig'] for p in unit['parts'] if (p.get('orig') or '').strip())
+
+
+def _parallel_notes(book, src, cap=900, limit=2):
+    """書庫平行釋文：優先同宗註疏（戒疏／行宗記／資持記／行事鈔／婆沙）。"""
+    try:
+        import local_corpus as LC
+    except Exception:
+        return ''
+    q = han(src)[:14]
+    if len(q) < 6:
+        return ''
+    try:
+        hits = LC.find(q, None, limit=limit, pad=150,
+                       ctx_book=('義鈔' if book == '義鈔' else book))
+    except Exception:
+        return ''
+    out = []
+    for h in hits or []:
+        b = h.get('book') or ''
+        if b == book or b in ('義鈔輔要記',):
+            continue
+        kw = (h.get('kwic') or '').strip()
+        if kw:
+            out.append('《%s》%s：%s' % (b, h.get('juan') or '', kw))
+    return '\n'.join(out)[:cap]
+
+
+# 義鈔平行釋文用的律學主題詞（只作檢索鍵，不進提示詞）
+YICHAO_TOPICS = ('三衣', '說淨', '坐具', '臥具', '波羅夷', '僧殘', '捨墮', '目連',
+                 '耆婆', '黃門', '二形', '上中下', '戒體', '無作', '覆藏', '懺',
+                 '羯磨', '二篇', '眾學', '滅擯')
+
+
+def _yichao_parallel(src, cap=900, limit=2):
+    """義鈔：以主題詞檢索戒疏／行宗記／資持記／行事鈔的平行釋文。"""
+    try:
+        import local_corpus as LC
+    except Exception:
+        return ''
+    out = []
+    for term in YICHAO_TOPICS:
+        if term not in src:
+            continue
+        for work in ('戒疏', '行宗記', '資持記', '行事鈔'):
+            try:
+                hs = LC.find(term, work, limit=1, pad=110)
+            except Exception:
+                hs = []
+            if hs:
+                h = hs[0]
+                out.append('《%s》%s（因「%s」檢得）：%s'
+                           % (h.get('book'), h.get('juan') or '', term,
+                              (h.get('kwic') or '').strip()))
+                break
+        if len(out) >= limit:
+            break
+    return '\n'.join(out)[:cap]
+
+
+def _ke_note(book, src, cap=360):
+    """科判位置：業疏科／戒疏科取最相近一筆。"""
+    try:
+        import local_corpus as LC
+        work = '業疏科' if book == '業疏' else '戒疏科'
+        q = han(src)[:10]
+        if len(q) < 5:
+            return ''
+        hits = LC.find(q, work, limit=1, pad=80)
+        if hits:
+            return ('《%s》%s：%s' % (hits[0].get('book'), hits[0].get('juan') or '',
+                                     hits[0].get('kwic') or '')).strip()[:cap]
+    except Exception:
+        return ''
+    return ''
+
+
+def _suoshu_text(order, i, cap=1200):
+    """單邊記文（含 JE-/YE-/GAP/BLIND 殘片）：往前找同一卷最近的【疏文】，作為【所釋疏文】。
+
+    已含【疏文】的雙欄單位不重複掛（那屬雙向對賬，不是單邊記文）。
+    """
+    u = order[i]
+    _is_ji = any(p['lab'] == '記文' and (p.get('orig') or '').strip()
+                 for p in u['parts'])
+    _has_su = any(p['lab'] == '疏文' and (p.get('orig') or '').strip()
+                  for p in u['parts'])
+    _gap = bool(re.match(r'(?:JE|YE|GAP|BLIND)', u['key'] or ''))
+    # 單邊記文＝只有記文沒有疏文；缺口殘片（JE/YE/GAP/BLIND）即使是單欄也掛，
+    # 但已同時含疏＋記的雙欄單位不重複掛。
+    if not ((_is_ji and not _has_su) or (_gap and not (_has_su and _is_ji))):
+        return ''
+    for j in range(i - 1, max(-1, i - 10), -1):
+        v = order[j]
+        if u['vol'] and v['vol'] and v['vol'] != u['vol']:
+            break
+        if v['raw_start'] >= u['raw_start'] and u['raw_start'] > 0:
+            continue
+        if u['raw_start'] > 0 and v['raw_end'] >= 0 \
+                and u['raw_start'] - v['raw_end'] > 6000:
+            continue
+        sus = [p['orig'] for p in v['parts']
+               if p['lab'] == '疏文' and (p.get('orig') or '').strip()]
+        if sus:
+            return _clip_tail('\n'.join(sus), cap)
+    return ''
+
+
+def reference_blocks(book, unit, order, i):
+    """回傳 [(標題, 內文)]：只掛本段可用且有據的對照層。"""
+    blocks = []
+    src = _plain_src(unit)
+    if book == '尼鈔':
+        notes = _interlinear_notes(unit)
+        if notes:
+            blocks.append((
+                '原典雙行夾注（CBETA X40n0724；〔…〕內為夾注）',
+                '下列夾注皆為原典所有，譯文以圓括號（）對譯者必須保留，'
+                '不得當作「自加解說括號」刪除；亦不得把夾注內容改寫成正文。\n' + notes))
+    if book == '行事鈔':
+        try:
+            import mother_corpus as MC
+            if not getattr(MC, '_RA_SEQ_READY', False):
+                _seq = MC._seq_json()
+                MC._seq_json = (lambda: _seq)
+                MC._RA_SEQ_READY = True
+            ji = MC.ji_for_chao(src, cap=900)
+        except Exception:
+            ji = ''
+        if ji:
+            blocks.append(('資持記相關釋文（僅供訓釋字義，嚴禁搬入正文）', ji))
+    if book == '義鈔':
+        disp = '\n'.join(p.get('display') or '' for p in unit['parts']
+                         if (p.get('display') or '').strip())
+        if not disp:
+            disp = (unit.get('row') or {}).get('display_source') or ''
+        if disp and han(disp):
+            blocks.append(('原典補標點原文（僅供斷句對照）', disp[:REF_CAP]))
+        par = _yichao_parallel(src)
+        if par:
+            blocks.append(('平行釋文（戒疏／行宗記／資持記／行事鈔；僅供訓釋，嚴禁搬入正文）', par))
+    if book in ('業疏', '戒疏'):
+        sus = _suoshu_text(order, i)
+        if sus:
+            blocks.append(('所釋疏文（單邊記文之母文，僅供對讀，嚴禁抄入記文）', sus))
+        ke = _ke_note(book, src)
+        if ke:
+            blocks.append(('所屬科判位置（僅供定位，勿改寫正文）', ke))
+        if book == '戒疏' and ('文云' in src or '注云' in src):
+            try:
+                import local_corpus as LC
+                q = han(src)[:12]
+                hits = LC.find(q, '含注戒本', limit=1, pad=120)
+                if hits:
+                    blocks.append(('《含注戒本》對照（文云／注云出處）',
+                                   ('%s：%s' % (hits[0].get('juan') or '',
+                                                hits[0].get('kwic') or '')).strip()))
+            except Exception:
+                pass
+    return blocks
+
+
 def render_material(book, pack, idx, book_id, key, pre, post, gaps, mode, raws,
-                    mother=''):
+                    mother='', refs=None):
     vol = pack[0]['vol'] or '（未分卷）'
     n = len(pack)
     src_chars = sum(len(p['orig']) for u in pack for p in u['parts'])
@@ -443,7 +638,9 @@ def render_material(book, pack, idx, book_id, key, pre, post, gaps, mode, raws,
         or '（本段前文）' in src_all or '（本段後文）' in src_all
     notes = BC.notes_for(book, labs, src_all, tr_all, long=long_,
                          key=pack[0]['key'])
-    prompt = BC.render(BC.REAUDIT_PACK_PROMPT_TMPL, scope_note=BC.PACK_SCOPE, **notes)
+    prompt = BC.render(BC.REAUDIT_PACK_PROMPT_TMPL,
+                       scope_note=(SINGLE_SCOPE if n == 1 else BC.PACK_SCOPE),
+                       **notes)
     L = [prompt, '', '---', '',
          '（出處：《%s》%s，%s｜單位 %d–%d｜原文 %s 字＋現譯 %s 字）'
          % (book, vol, key, 1, n, _fmt(src_chars), _fmt(tr_chars)), '']
@@ -462,6 +659,12 @@ def render_material(book, pack, idx, book_id, key, pre, post, gaps, mode, raws,
         L += ['■ 前鄰現譯', '', pre[1], '']
     if not pre[0].strip() and not pre[1].strip():
         L += ['（本卷開頭，無前文背景）', '']
+    if refs:
+        L += ['【對照層（僅供校勘，嚴禁譯入正文）】', '']
+        for title, body in refs:
+            if not (body or '').strip():
+                continue
+            L += ['■ %s' % title, '', body.strip(), '']
     _dirty = [(i, u) for i, u in enumerate(pack, 1) if u.get('dirty')]
     if _dirty:
         L += ['【定稿殘留提示】', '',
@@ -616,13 +819,14 @@ def build_packs(book, order, target, mode, gap_mode, gap_min, raw_h, group_by):
 
 # ---------------------------------------------------------------- 輸出
 def emit_pack(outdir, pack, idx, book, book_id, mode, gaps, raws,
-              pre=None, post=None, parent='', part='', key='', target=TARGET_CHARS):
+              pre=None, post=None, parent='', part='', key='', target=TARGET_CHARS,
+              refs=None):
     key = key or '%s_r%04d' % (book_id, idx)
     pre = pre if pre is not None else ('', '')
     post = post if post is not None else ('', '')
     mother = mother_text(pack, book)
     md = render_material(book, pack, idx, book_id, key, pre, post, gaps, mode,
-                         raws, mother)
+                         raws, mother, refs=refs)
     io.open(os.path.join(outdir, key + '.md'), 'w', encoding='utf-8').write(md)
     units_json = [_unit_json(i, u) for i, u in enumerate(pack, 1)]
     meta = {
@@ -651,6 +855,7 @@ def emit_pack(outdir, pack, idx, book, book_id, mode, gaps, raws,
         'pre_src': pre[0], 'pre_tr': pre[1],
         'post_src': post[0], 'post_tr': post[1],
         'mother': mother,
+        'refs': [t for t, _b in (refs or [])],
         'parent': parent, 'part': part,
         'units': units_json,
         'hash': _h12('|'.join(u['hash'] for u in pack)),
@@ -658,6 +863,98 @@ def emit_pack(outdir, pack, idx, book, book_id, mode, gaps, raws,
     io.open(os.path.join(outdir, key + '.json'), 'w', encoding='utf-8').write(
         json.dumps(meta, ensure_ascii=False, indent=1))
     return key, meta
+
+
+def _safe_key(k):
+    return re.sub(r'[^\w\u4e00-\u9fff.-]', '_', str(k))
+
+
+def generate_single(book, outdir, keys, pre_cap=PRE_SRC_CAP, post_cap=POST_SRC_CAP,
+                    check_raw=False, force=False, verbose=True):
+    """單段材料（v2）：每個 key 一份 .md／.json，附前後文與對照層。
+
+    - 前文 ≤pre_cap（預設 1800）、後文 ≤post_cap（預設 600）。
+    - 尼鈔：原典雙行夾注（display_source〔…〕）；行事鈔：資持記相關釋文；
+      義鈔：補標點原文＋平行釋文；業疏／戒疏：所釋疏文＋科判。
+    - 雙欄逐段對位（mk_reaudit._parts_of 保留 lab/source/translation）。
+    """
+    raws = load_raw(book)
+    raw_h = raws[0]
+    order = make_units(book, raw_h)
+    pos = {u['key']: i for i, u in enumerate(order)}
+    missing = [k for k in keys if k not in pos]
+    if missing:
+        raise SystemExit('以下 key 不在定稿 %s：%s' % (book, missing[:10]))
+    os.makedirs(outdir, exist_ok=True)
+    bid = BOOKS[book]['id']
+    rep = os.path.join(outdir, '回覆')
+    if os.path.isdir(rep) and any(f.endswith('_回.txt') for f in os.listdir(rep)) and not force:
+        raise SystemExit('（已中止）輸出目錄已有回覆：%s；請加 --force 或換目錄' % outdir)
+    for f in list(os.listdir(outdir)):
+        if f.endswith(('.md', '.json')) and (
+                f.startswith(bid + '_') or f.startswith('索引_')
+                or f == '_材料索引.md'):
+            try:
+                os.remove(os.path.join(outdir, f))
+            except OSError:
+                pass
+    metas, bad_units, bad_parts, disorder = [], [], [], []
+    for n, k in enumerate(keys, 1):
+        i = pos[k]
+        u = order[i]
+        pre = context_before(order, i, pre_cap, PRE_TR_CAP)
+        post = context_after(order, i, post_cap, POST_TR_CAP)
+        refs = reference_blocks(book, u, order, i)
+        key = '%s_%s' % (bid, _safe_key(k))
+        _, meta = emit_pack(outdir, [u], n, book, bid, 'body', [], raw_h,
+                            pre=pre, post=post, key=key, target=0, refs=refs)
+        meta['sample_key'] = k
+        meta['n_units'] = 1
+        meta['refs'] = [t for t, _b in refs]
+        io.open(os.path.join(outdir, key + '.json'), 'w', encoding='utf-8').write(
+            json.dumps(meta, ensure_ascii=False, indent=1))
+        metas.append(meta)
+        if u.get('raw_ok') is False:
+            bad_units.append(u)
+        for p in u['parts']:
+            if p.get('raw_ok') is False:
+                bad_parts.append((u, p))
+        if not u.get('mono'):
+            disorder.append(u)
+        if verbose:
+            print('  %-42s 原文 %4d／現譯 %4d｜前文 %4d／後文 %3d｜對照 %s'
+                  % (key, len(han((u.get('row') or {}).get('source', ''))),
+                     sum(len(p['tr']) for p in u['parts']), len(pre[0]), len(post[0]),
+                     '、'.join(meta['refs']) or '—'))
+    json.dump({'generated': _now(), 'book': book, 'book_id': bid, 'single': True,
+               'pre_cap': pre_cap, 'post_cap': post_cap,
+               'n': len(metas), 'keys': keys,
+               'packs': [{k: m[k] for k in ('key', 'sample_key', 'vol', 'chunk',
+                                            'raw_start', 'raw_end', 'chars',
+                                            'md_chars', 'refs')} for m in metas]},
+              io.open(os.path.join(outdir, '索引_%s.json' % bid), 'w', encoding='utf-8'),
+              ensure_ascii=False, indent=1)
+    _write_raw_check(outdir, book, raws, order, bad_units, bad_parts,
+                     disorder, raws[1])
+    L = ['# 單段材料索引（%s）' % book, '',
+         '- 來源：`定稿/%s.jsonl`（只讀）' % bid,
+         '- 每段一份 `.md`／`.json`；前文 ≤%d、後文 ≤%d。' % (pre_cap, post_cap),
+         '- 對照層：' + ('尼鈔原典夾注／行事鈔資持記釋文／義鈔輔要記平行與標點原文／'
+                        '業疏戒疏所釋疏文與科判'), '',
+         '| # | key | 卷 | 原文 | 現譯 | md | 對照層 |',
+         '|--:|:--|:--|--:|--:|--:|:--|']
+    for n, m in enumerate(metas, 1):
+        L.append('| %d | %s | %s | %d | %d | %d | %s |'
+                 % (n, m.get('sample_key'), m.get('vol'),
+                    m['chars']['src'], m['chars']['tr'], m['md_chars'],
+                    '、'.join(m.get('refs') or []) or '—'))
+    io.open(os.path.join(outdir, '_材料索引_%s.md' % bid), 'w', encoding='utf-8').write(
+        '\n'.join(L) + '\n')
+    if verbose:
+        print('已產生 %d 份單段材料 → %s' % (len(metas), outdir))
+    return {'book': book, 'n': len(metas), 'packs': metas,
+            'bad_units': len(bad_units), 'bad_parts': len(bad_parts),
+            'disorder': len(disorder), 'raw': bool(raw_h)}
 
 
 def _write_raw_check(outdir, book, raws, order, bad_units, bad_parts,
@@ -805,7 +1102,7 @@ def generate(book, outdir, target, mode, gap_mode, gap_min, check_raw,
         'packs': [{k: m[k] for k in ('key', 'vol', 'chunk', 'n_units', 'raw_start',
                                      'raw_end', 'chars', 'md_chars', 'hash')}
                   for m in meta_all],
-    }, io.open(os.path.join(outdir, '索引.json'), 'w', encoding='utf-8'),
+    }, io.open(os.path.join(outdir, '索引_%s.json' % bid), 'w', encoding='utf-8'),
         ensure_ascii=False, indent=1)
     if check_raw:
         bad_units = [u for u in order if u.get('raw_ok') is False]
@@ -862,11 +1159,35 @@ def main():
     ap.add_argument('--limit', type=int, default=0, help='只輸出前 N 檔（試跑用）')
     ap.add_argument('--dry-run', action='store_true', help='只統計，不寫任何檔案')
     ap.add_argument('--force', action='store_true', help='允許覆寫既有材料')
+    ap.add_argument('--single', action='store_true',
+                    help='單段模式：每個 key 一份 .md／.json（回歸 50 用）')
+    ap.add_argument('--keys-file', default='',
+                    help='單段模式的 key 清單 JSON：{"書別":["key",…]}')
+    ap.add_argument('--pre-cap', type=int, default=PRE_SRC_CAP,
+                    help='前文原文上限（單段模式預設 1500；v2 回歸用 1800）')
+    ap.add_argument('--post-cap', type=int, default=POST_SRC_CAP,
+                    help='後文原文上限（單段模式預設 600）')
     args = ap.parse_args()
     outdir = (_resolve_path(args.out) if args.out
               else os.path.join(B, default_out(args.book).replace('/', os.sep)))
     if not args.out and not args.dry_run:
         print('（未指定 --out，使用預設：%s）' % default_out(args.book))
+    if args.single:
+        if not args.keys_file:
+            raise SystemExit('--single 需同時給 --keys-file')
+        spec = json.load(io.open(_resolve_path(args.keys_file), encoding='utf-8'))
+        keys = spec.get(args.book) or []
+        if isinstance(keys, dict):
+            keys = keys.get('keys') or []
+        if not keys:
+            raise SystemExit('--keys-file 內沒有《%s》的 key' % args.book)
+        if args.dry_run:
+            print('%s：%d 個 key；--dry-run 不寫檔' % (args.book, len(keys)))
+            return
+        generate_single(args.book, outdir, keys, pre_cap=args.pre_cap,
+                        post_cap=args.post_cap, check_raw=args.check_raw,
+                        force=args.force)
+        return
     generate(args.book, outdir, args.target_chars, args.count_mode,
              args.gap_mode, args.gap_min, args.check_raw, args.limit,
              args.dry_run, args.force, args.group_by)

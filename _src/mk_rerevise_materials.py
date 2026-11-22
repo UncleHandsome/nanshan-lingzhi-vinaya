@@ -194,14 +194,29 @@ def _out_format(labs):
     return '\n'.join('【%s】……' % lab for lab in labs)
 
 
+def _ref_block(path):
+    """從單段再審材料抽出【對照層】，原樣帶進修訂材料。"""
+    if not os.path.exists(path):
+        return ''
+    t = io.open(path, encoding='utf-8').read()
+    m = re.search(r'(?m)^【對照層[^】]*】\s*$', t)
+    if not m:
+        return ''
+    tail = t[m.end():]
+    nxt = re.search(r'(?m)^【[^】\n]{1,30}】\s*$', tail)
+    return (tail[:nxt.start()] if nxt else tail).strip()
+
+
 def _render(prompt, book, vol, key, pack_key, no, contexts, unit, fixes,
-            terms, fix_terms, evid):
+            terms, fix_terms, evid, refs=''):
     L = [prompt, '', '---', '',
          '（出處：《%s》%s，%s｜再審包 %s 第 %d 號）'
          % (book, vol or '（未分卷）', key, pack_key, no), '']
     if contexts['pre_src'].strip():
         L += ['【前文背景（原文，僅供銜接，嚴禁譯入正文）】', '',
               contexts['pre_src'], '']
+    if (refs or '').strip():
+        L += ['【對照層（僅供校勘，嚴禁譯入正文）】', '', refs.strip(), '']
     L += ['【原文】', '']
     for p in unit.get('parts') or []:
         L += ['■ %s（原文）' % p.get('lab', ''), '']
@@ -353,7 +368,8 @@ def main():
             key=key, fixes=fixes,
             out_format=_out_format(unit.get('labs') or []))
         md = _render(prompt, book, vol, key, pack_key, no, ctx, unit, fixes,
-                     terms, fix_terms, evid)
+                     terms, fix_terms, evid,
+                     refs=_ref_block(os.path.join(mdir, pack_key + '.md')))
         io.open(os.path.join(out, key + '.md'), 'w', encoding='utf-8').write(md)
         meta = {
             'key': key, 'pack': pack_key, 'book': book, 'chunk': unit.get('chunk', ''),

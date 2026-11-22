@@ -31,7 +31,14 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
-SRC = os.path.join(B, '測試', os.environ.get('QWEN_SHUJI_SRC', '業疏_疏記20組'))
+_SRC_ENV = os.environ.get('QWEN_SHUJI_SRC', '業疏_疏記20組').strip()
+if os.path.isabs(_SRC_ENV):
+    SRC = _SRC_ENV
+elif _SRC_ENV.startswith(('重作材料_長段', '定稿', '..')):
+    # 2026-11-22 根目錄清理後，測試/ 已不在；允許直接給相對專案根的路徑
+    SRC = os.path.normpath(os.path.join(B, _SRC_ENV))
+else:
+    SRC = os.path.join(B, '測試', _SRC_ENV)
 if '測試' + os.sep + '測試' in SRC or '測試/測試' in SRC:
     raise SystemExit('QWEN_SHUJI_SRC 路徑重複：' + SRC)
 OUT = os.path.join(SRC, '回覆')
@@ -1275,7 +1282,7 @@ def main():
         _p = os.path.join(OUT, _f)
         if os.path.exists(_p):
             os.remove(_p)
-    _files = sorted(x for x in os.listdir(SRC) if x.endswith('.md'))
+    _files = sorted(x for x in os.listdir(SRC) if x.endswith('.md') and not x.startswith('_'))
     _skip400 = os.environ.get('QWEN_SKIP_400', '1') != '0'
     _todo = [x for x in _files
              if not (_skip400 and os.path.exists(os.path.join(OUT, x[:-3] + '_400審查.txt')))
@@ -1283,7 +1290,7 @@ def main():
     if (_todo and os.environ.get('QWEN_NO_WEB') != '1'
             and os.environ.get('QWEN_NO_TOOLS') != '1' and MAX_SEARCH_PER_GROUP > 0):
         test_apis()
-    files = sorted(x for x in os.listdir(SRC) if x.endswith('.md'))
+    files = sorted(x for x in os.listdir(SRC) if x.endswith('.md') and not x.startswith('_'))
     global WORKERS
     if not WORKERS:
         WORKERS = max(1, min(len(files) or 1, 40))

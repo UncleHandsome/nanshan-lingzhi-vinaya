@@ -20,12 +20,13 @@ _VAR_TO = ('煮豎虛污並說為著眾缽缽草塹眾問這為應經說義體�
 assert len(_VAR_FROM) == len(_VAR_TO), 'VAR_MAP 長度不一致'
 VAR_MAP = str.maketrans(dict(zip(_VAR_FROM, _VAR_TO)))
 URL_RE = re.compile(r'https?://[^\s）)」』】]+')
-TAG_RE = re.compile(r'^\s*【(?:疏文|記文|鈔文|律文|註文|序文)】\s*$')
+TAG_RE = re.compile(r'^\s*【(?:疏文|記文|鈔文|律文|註文|序文|記序)】\s*$')
 _HAN_RE = re.compile(r'[^\u4e00-\u9fff]')
 
 # 材料層背景區塊：模型偶爾整段照抄進譯文，先截掉（只取第一個區塊之前的正文）
 BG_CUT_RE = re.compile(
     r'\n*\s*【(?:前文背景|後文背景|所釋鈔文|所釋疏文|本次待審[^】]*|待審譯文|'
+    r'對照層[^】]*|跨段統一基準[^】]*|初審檢索摘錄[^】]*|必改硬傷|'
     r'資持記相關釋文|裁決檢索摘錄|原典雙行夾注|原典夾注|義鈔輔要記)[^】]*】')
 
 
@@ -185,7 +186,7 @@ SIMP = (
 )
 
 _VERNACULAR = re.compile(r'[的了著嗎呢吧這那們]')
-_LAB_LINE = re.compile(r'^(【(?:疏文|記文|鈔文|律文|註文|序文)】)\s*$')
+_LAB_LINE = re.compile(r'^(【(?:疏文|記文|鈔文|律文|註文|序文|記序)】)\s*$')
 
 
 def _plain_han(s):
@@ -209,7 +210,7 @@ def _norm_line(s, src_plain, lab='鈔文'):
                 for _qa, _qb in SIMP:
                     _qs = _qs.replace(_qa, _qb)
                 _qs_norm = _plain_han(_qs).translate(VAR_MAP)
-                _is_verbatim = bool(src_plain and len(_qs_norm) >= 2 and _qs_norm in src_plain)
+                _is_verbatim = bool(src_plain and len(_qs_norm) >= 1 and _qs_norm in src_plain)
                 _conv = _qs.translate(VAR_MAP)
                 if (not _is_verbatim) and (_conv != _qs) and (
                         len(_qs_norm) >= 6 or _VERNACULAR.search(_qs) or _conv != _qs):
@@ -220,7 +221,7 @@ def _norm_line(s, src_plain, lab='鈔文'):
                 _seg = _seg.replace("头", "頭").replace("须发", "鬚髮").replace("须", "須").replace("鬓", "鬢")
                 _seg = re.sub(r'(?<=[剃毛鬚须鬢鬓剪蓄束落青披削])[发發]', '髮', _seg)
                 # 體例：此律／本律 → 《四分律》（引號內原詞不動；避開「律學／律宗」等複合詞）
-                _seg = re.sub(r'(?<![《》])[此本]律(?![學宗門部制藏])', '《四分律》', _seg)
+                _seg = re.sub(r'(?<![《》根資日原])[此本]律(?![學宗門部制藏師條文典儀相家本意義])', '《四分律》', _seg)
                 if _CC:
                     _seg = _CC.convert(_seg)
                 for _a, _b in SIMP:
@@ -249,7 +250,7 @@ def _norm_line(s, src_plain, lab='鈔文'):
     for _a, _target in LABEL_FIX.items():
         if _a in s:
             s = s.replace(_a, _target or ('【%s】' % lab))
-    s = re.sub(r'^(【(?:疏文|記文|鈔文|律文|註文|序文)】)\s*(?=\S)', _tag_newline, s)
+    s = re.sub(r'^(【(?:疏文|記文|鈔文|律文|註文|序文|記序)】)\s*(?=\S)', _tag_newline, s)
     s = re.sub(r'^((?:\[\s*\d+\s*\]\s*)?)(第[一二三四五六七八九十百千零〇\d]+篇[：:][^。\n]{1,20})。$',
                r'\1\2', s, flags=re.M)
     s = re.sub(r'\s+$', '', s)
@@ -259,7 +260,7 @@ def _norm_line(s, src_plain, lab='鈔文'):
 def _normalize_body(text, src=''):
     text = _cut_bg(text)
     lab = '鈔文'
-    for _cand in ('疏文', '記文', '律文', '註文', '序文'):
+    for _cand in ('疏文', '記文', '律文', '註文', '序文', '記序'):
         if '【%s】' % _cand in text or '【%s（修訂）】' % _cand in text:
             lab = _cand
             break
@@ -296,9 +297,9 @@ def normalize_labeled(text, by_lab, fallback_src=''):
     _by = {}
     for _k, _v in by_lab.items():
         _by[_k] = list(_v) if isinstance(_v, (list, tuple)) else [_v]
-    _parts = re.split(r'(?m)^(\s*【(?:疏文|記文|鈔文|律文|註文|序文)】)\s*$', txt)
+    _parts = re.split(r'(?m)^(\s*【(?:疏文|記文|鈔文|律文|註文|序文|記序)】)\s*$', txt)
     if len(_parts) < 3:
-        _parts2 = re.split(r'(【(?:疏文|記文|鈔文|律文|註文|序文)】)', txt)
+        _parts2 = re.split(r'(【(?:疏文|記文|鈔文|律文|註文|序文|記序)】)', txt)
         if len(_parts2) < 2:
             return normalize(txt, fallback_src)
         _parts = [''] + _parts2

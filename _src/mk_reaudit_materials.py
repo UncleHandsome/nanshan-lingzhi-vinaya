@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""20K 再審材料：從 定稿/<book>.jsonl 打包約 20K 字的逐段再審材料（不呼叫 qwen）。
+"""再審材料：現行全量為 --single 單段；10K 多段包 generate() 只留 legacy（不呼叫 qwen）。
 
 規格（AGENTS §7A）：
   - 來源唯一：定稿/<book>.jsonl；依 segments 拆 parts，不讀 docs／舊材料。
@@ -16,7 +16,7 @@
   - 每檔另出 .json，記錄 idx/key/chunk/vol/raw_start/raw_end/labs/parts/src_hash/hash。
 
 用法：
-  python -X utf8 _src/mk_reaudit_materials.py --book 義鈔 --target-chars 20000 --check-raw
+  python -X utf8 _src/mk_reaudit_materials.py --book 義鈔 --single --check-raw
   python -X utf8 _src/mk_reaudit_materials.py --book 業疏 --out 測試/重譯/業疏/_再審
   python -X utf8 _src/mk_reaudit_materials.py --book 業疏 --check-raw --dry-run
 """
@@ -728,13 +728,21 @@ def _ke_volume_excerpt(book, chunk, cap=1200):
     p = os.path.join(B, '原文', name, name + '.txt')
     if not os.path.exists(p):
         return ''
-    m = re.match(r'卷([一二三四])(?:之([一二三四五六]))?', chunk or '')
-    if not m or not m.group(2):
+    m = re.match(r'卷([一二三四])(?:([上下])之([一二三四])|之([一二三四五六]))?', chunk or '')
+    if not m or not (m.group(2) or m.group(4)):
         return ''
     t = io.open(p, encoding='utf-8', errors='ignore').read()
     vol = '卷' + m.group(1)
     _CN = {'一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6}
-    sub = _CN.get(m.group(2) or '一', 1)
+    if m.group(2):
+        _base = 0.0 if m.group(2) == '上' else 0.5
+        sub = _CN.get(m.group(3) or '一', 1)
+        frac0 = _base + (sub - 1) * 0.125
+        frac1 = _base + sub * 0.125
+    else:
+        sub = _CN.get(m.group(4) or '一', 1)
+        frac0 = (sub - 1) / 6.0
+        frac1 = sub / 6.0
     marks = [(x.start(), x.group(0)) for x in re.finditer(r'卷[一二三四]', t)]
     start = None
     end = len(t)
@@ -746,8 +754,8 @@ def _ke_volume_excerpt(book, chunk, cap=1200):
             break
     if start is None or end <= start:
         return ''
-    a = start + int((end - start) * (sub - 1) / 6.0)
-    b = start + int((end - start) * sub / 6.0)
+    a = start + int((end - start) * frac0)
+    b = start + int((end - start) * frac1)
     seg = re.sub(r'[ \t\r]+', ' ', t[a:b]).strip()
     return seg[:cap]
 
@@ -829,7 +837,7 @@ def _reverse_ji_note(src, cap=900):
     h = han(src)
     if len(h) < 8:
         return ''
-    tail = h[-100:]
+    tail = h[-240:]  # 不只看最後 100 字，避免長段落真正的問題詞在前段
     terms = set()
     for q in re.findall(r'「([^」]{2,14})」', src or ''):
         terms.add(q.strip())
@@ -1264,10 +1272,15 @@ def generate_single(book, outdir, keys, pre_cap=PRE_SRC_CAP, post_cap=POST_SRC_C
         post = context_after(order, i, post_cap, POST_TR_CAP)
         refs = reference_blocks(book, u, order, i)
         key = '%s_%s' % (bid, _safe_key(k))
-        _, meta = emit_pack(outdir, [u], n, book, bid, 'body', [], raw_h,
+        gaps = _pack_gaps([u], order, 'note', GAP_MIN, raw_h)
+        _, meta = emit_pack(outdir, [u], n, book, bid, 'body', gaps, raw_h,
                             pre=pre, post=post, key=key, target=0, refs=refs)
         meta['sample_key'] = k
         meta['n_units'] = 1
+        meta['prev_key'] = meta.get('prev_unit', '')
+        meta['next_key'] = meta.get('next_unit', '')
+        meta['pre_src'], meta['pre_tr'] = pre
+        meta['post_src'], meta['post_tr'] = post
         meta['refs'] = [t for t, _b in refs]
         io.open(os.path.join(outdir, key + '.json'), 'w', encoding='utf-8').write(
             json.dumps(meta, ensure_ascii=False, indent=1))
@@ -1501,7 +1514,7 @@ def generate(book, outdir, target, mode, gap_mode, gap_min, check_raw,
 
 def main():
     ap = argparse.ArgumentParser(
-        description='從 定稿/<book>.jsonl 打包約 20K 字的再審材料（不呼叫 qwen）')
+        description='再審材料：--single 單段全量（現行）；10K 多段包 generate() 只留 legacy（不呼叫 qwen）')
     ap.add_argument('--book', default='業疏', choices=list(BOOKS), help='書別（預設 業疏）')
     ap.add_argument('--target-chars', type=int, default=TARGET_CHARS,
                     help='每檔目標字數（預設 10000；全量建議 9000–10000）')
@@ -1521,27 +1534,35 @@ def main():
     ap.add_argument('--dry-run', action='store_true', help='只統計，不寫任何檔案')
     ap.add_argument('--force', action='store_true', help='允許覆寫既有材料')
     ap.add_argument('--single', action='store_true',
-                    help='單段模式：每個 key 一份 .md／.json（回歸 50 用）')
+                    help='單段模式（現行全量正式路線）：每個 unit 一份 .md／.json')
     ap.add_argument('--keys-file', default='',
-                    help='單段模式的 key 清單 JSON：{"書別":["key",…]}')
+                    help='單段模式可選 key 清單 JSON：{"書別":["key",…]}；省略＝全書')
     ap.add_argument('--pre-cap', type=int, default=PRE_SRC_CAP,
-                    help='前文原文上限（單段模式預設 1500；v2 回歸用 1800）')
+                    help='前文原文上限（單段模式預設 1800）')
     ap.add_argument('--post-cap', type=int, default=POST_SRC_CAP,
                     help='後文原文上限（單段模式預設 600）')
     args = ap.parse_args()
-    outdir = (_resolve_path(args.out) if args.out
-              else os.path.join(B, default_out(args.book).replace('/', os.sep)))
+    if args.single and not args.out:
+        outdir = os.path.join(B, '重作材料_長段', '單段再審',
+                              BOOKS[args.book]['id'])
+    else:
+        outdir = (_resolve_path(args.out) if args.out
+                  else os.path.join(B, default_out(args.book).replace('/', os.sep)))
     if not args.out and not args.dry_run:
-        print('（未指定 --out，使用預設：%s）' % default_out(args.book))
+        print('（未指定 --out，使用預設：%s）'
+              % os.path.relpath(outdir, B))
     if args.single:
-        if not args.keys_file:
-            raise SystemExit('--single 需同時給 --keys-file')
-        spec = json.load(io.open(_resolve_path(args.keys_file), encoding='utf-8'))
-        keys = spec.get(args.book) or []
-        if isinstance(keys, dict):
-            keys = keys.get('keys') or []
+        if args.keys_file:
+            spec = json.load(io.open(_resolve_path(args.keys_file), encoding='utf-8'))
+            keys = spec.get(args.book) or []
+            if isinstance(keys, dict):
+                keys = keys.get('keys') or []
+        else:
+            keys = [u['key'] for u in make_units(args.book, load_raw(args.book)[0])]
         if not keys:
-            raise SystemExit('--keys-file 內沒有《%s》的 key' % args.book)
+            raise SystemExit('沒有可產的 key：%s' % args.book)
+        if args.limit:
+            keys = keys[:args.limit]
         if args.dry_run:
             print('%s：%d 個 key；--dry-run 不寫檔' % (args.book, len(keys)))
             return

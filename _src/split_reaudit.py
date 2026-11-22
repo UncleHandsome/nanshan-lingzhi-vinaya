@@ -47,7 +47,7 @@ def _rel(p):
         return p
 
 
-_BLOCK_SECTIONS = ('分段核驗表', '必改硬傷', '可斟酌微瑕', '備註')
+_BLOCK_SECTIONS = ('分段核驗表', '必改硬傷', '可斟酌微瑕', '備註', '結論', '說明', '核驗說明')
 
 
 def _block(text, name):
@@ -60,14 +60,17 @@ def _block(text, name):
     for i, (s, e, title) in enumerate(marks):
         if title == name or title.startswith(name):
             end = marks[i + 1][0] if i + 1 < len(marks) else len(text)
-            return text[e:end].strip()
+            body = text[e:end].strip()
+            body = re.split(r'(?m)^\s*(?:核驗說明|【結論】|【說明】)', body)[0].strip()
+            return body
     i = (text or '').find('【%s】' % name)
     if i < 0:
         return None
     nxt = re.search(r'(?m)^[ \t#*>\-]*【(?:%s)】'
                     % '|'.join(re.escape(x) for x in names), text[i + len(name) + 2:])
     j = i + len(name) + 2 + nxt.start() if nxt else len(text)
-    return text[i + len(name) + 2:j].strip()
+    body = text[i + len(name) + 2:j].strip()
+    return re.split(r'(?m)^\s*(?:核驗說明|【結論】|【說明】)', body)[0].strip()
 
 
 def _nums(s):
@@ -98,6 +101,8 @@ def _parse_items(body, n_units):
         ln = raw.rstrip()
         if not ln.strip():
             continue
+        if re.match(r'^\s*(?:核驗說明|【結論】|【說明】)', ln):
+            break
         m = _ITEM_RE.match(ln)
         if m:
             n = int(m.group(1))
@@ -169,9 +174,9 @@ def _classify(reply_path, meta, key):
         return 'abnormal', '缺【必改硬傷】', rt, []
     if _is_none(fixes):
         return 'ok', '', rt, []
-    src_all = '\n'.join((u.get('source') or '') for u in (meta.get('units') or []))
-    if _unbalanced(rt, src_all):
-        return 'abnormal', '疑似截斷（%s）' % _unbalanced(rt, src_all), rt, []
+    src_all = '\n'.join(p.get('orig') or ''
+                        for u in (meta.get('units') or [])
+                        for p in (u.get('parts') or []))
     items, bad, loose = _parse_items(fixes, n)
     if bad:
         return ('abnormal',

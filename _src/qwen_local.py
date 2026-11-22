@@ -113,9 +113,9 @@ class FatalAPIError(RuntimeError):
 HAN_CHK = re.compile(r'[\u4e00-\u9fff]')
 
 
-SRC_RE_ALL = re.compile(r'■ (?:疏文|記文|鈔文|律文|註文|序文)（原文）(?:\[\d+\])?'
+SRC_RE_ALL = re.compile(r'■ (?:疏文|記文|鈔文|律文|註文|序文|記序)（原文）(?:\[\d+\])?'
                         r'\s*\n(.*?)(?=\n+■ |\n+【(?:後文背景|待審譯文|裁決分歧參考|分段要求|目前譯文|舊譯參考|所釋鈔文|'
-                        r'裁決檢索摘錄|原典夾注|原典雙行夾注|資持記相關釋文|義鈔輔要記)|\Z)', re.S)
+                        r'裁決檢索摘錄|原典夾注|原典雙行夾注|資持記相關釋文|義鈔輔要記|硬傷清單)|\Z)', re.S)
 
 
 def _raw_len(text):
@@ -129,8 +129,10 @@ def _han_len(text):
 
 
 def _local_cap(text):
-    """依待審原文長度決定本地檢索上限。"""
+    """依待審原文長度決定本地檢索上限；短段不強制用全量配額。"""
     n = _raw_len(text)
+    if n < 30:
+        return 2
     if n < 100:
         return 3
     if n <= 300:
@@ -139,9 +141,11 @@ def _local_cap(text):
 
 
 def _quota(text):
-    """依待審原文長度決定 (搜尋上限, 抓取上限)；環境變數可單獨覆寫。"""
+    """依待審原文長度決定 (搜尋上限, 抓取上限)；環境變數可單獨覆寫（短段除外）。"""
     n = _raw_len(text)
     fetch = int(os.environ['QWEN_MAX_FETCH']) if os.environ.get('QWEN_MAX_FETCH') else 1
+    if n < 30:
+        return 1, fetch          # 短段：web 0–1、local 2，不被固定 4/2 覆蓋
     if os.environ.get('QWEN_MAX_SEARCH'):
         return MAX_SEARCH_PER_GROUP, fetch
     if n < 100:
@@ -845,7 +849,7 @@ def _split_col3(out):
 
 def _src_unit(src_text):
     """從材料取出待審原文（■ 疏文（原文）之後那段）。"""
-    m = re.search(r'■ (?:疏文|記文|鈔文|律文|註文|序文)（原文）(?:\[\d+\])?\s*\n+(.+?)(?=\n\n■ |\n+【(?:後文背景|待審譯文|裁決分歧參考|目前譯文|分段要求|舊譯參考|所釋鈔文)|\Z)', src_text, re.S)
+    m = re.search(r'■ (?:疏文|記文|鈔文|律文|註文|序文|記序)（原文）(?:\[\d+\])?\s*\n+(.+?)(?=\n\n■ |\n+【(?:後文背景|待審譯文|裁決分歧參考|目前譯文|分段要求|舊譯參考|所釋鈔文|硬傷清單)|\Z)', src_text, re.S)
     return m.group(1).strip() if m else ''
 
 
@@ -853,21 +857,18 @@ def _strip_fence(out):
     return re.sub(r'(?m)^\s*```[a-zA-Z]*\s*$', '', out or '').strip()
 
 
-def _strip_dup_labels(out):
-    """同一欄位標籤只保留第一次出現，後續段落的重複標籤剝掉。
-
-    只應作用於第 3 欄；若對整份回覆掃描，會誤把第 3 欄開頭的真標籤當重複剝掉。
-    """
-    seen = set()
+def _strip_dup_labels(out, keep=None):
+    """重複標籤剝除；keep={lab:預期段數} 時，前 N 個同標籤保留（同標籤多段不可丟）。"""
+    seen = {}
     res = []
     for ln in out.split('\n'):
-        m = re.match(r'^(【(?:疏文|記文|鈔文|律文|註文|序文)】)\s*', ln)
+        m = re.match(r'^(【(?:疏文|記文|鈔文|律文|註文|序文|記序)】)\s*', ln)
         if m:
             lab = m.group(1)
-            if lab in seen:
+            seen[lab] = seen.get(lab, 0) + 1
+            _keep = (keep or {}).get(lab, 1)
+            if seen[lab] > _keep:
                 ln = ln[m.end():]
-            else:
-                seen.add(lab)
         res.append(ln)
     return '\n'.join(res)
 
@@ -876,7 +877,7 @@ def _looks_pasted(col3, src_unit):
     """第 3 欄開頭若與待審原文前 20 漢字高度重疊，判定為重貼原文。"""
     if not src_unit:
         return False
-    col3 = re.sub(r'^\s*【(?:疏文|記文|鈔文|律文|註文|序文)】\s*', '', col3 or '')
+    col3 = re.sub(r'^\s*【(?:疏文|記文|鈔文|律文|註文|序文|記序)】\s*', '', col3 or '')
     if col3.lstrip().startswith(('「', '『')):
         return False          # 以引文開頭屬注疏體例，不判重貼
     a = ''.join(HAN.findall(col3))[:30]
@@ -935,7 +936,15 @@ def _save_result(dst, choice, stats, extra_tag='', src_text=''):
     else:
         head, col3 = _split_col3(out)
         if '【併批裁決要求】' not in (src_text or ''):
-            col3 = _strip_dup_labels(col3)
+            _keep = {}
+            _mtr = re.search(r'(?m)^【目前譯文】\s*$', src_text or '')
+            if _mtr:
+                _tail = src_text[_mtr.end():]
+                _nxt = re.search(r'(?m)^【[^】\n]{1,30}】\s*$', _tail)
+                _body = _tail[:_nxt.start()] if _nxt else _tail
+                for _lab in re.findall(r'【(疏文|記文|鈔文|律文|註文|序文|記序)】', _body):
+                    _keep['【%s】' % _lab] = _keep.get('【%s】' % _lab, 0) + 1
+            col3 = _strip_dup_labels(col3, keep=_keep)
         if _looks_pasted(col3, _src_unit(src_text)):
             stats['pasted_source'] = True
             extra_tag += ', 疑似重貼原文'

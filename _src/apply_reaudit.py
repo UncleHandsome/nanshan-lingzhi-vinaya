@@ -28,6 +28,7 @@ import json
 import os
 import re
 import sys
+import unicodedata
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -73,7 +74,9 @@ def _rel(p):
 
 
 def _han(s):
-    return ''.join(re.findall(r'[\u4e00-\u9fff]', s or ''))
+    # 異體／相容區先正規化，避免戒疏字形差（如羣/群）把正確 source 全擋
+    s = unicodedata.normalize('NFKC', s or '').translate(NR.VAR_MAP)
+    return ''.join(re.findall(r'[\u4e00-\u9fff]', s))
 
 
 _META_CACHE = {}
@@ -240,11 +243,12 @@ def _parts_of(row):
     segs = [s for s in (row.get('segments') or []) if (s.get('source') or s.get('translation'))]
     if segs:
         return [{'lab': s.get('label') or row.get('label') or '鈔文',
-                 'orig': s.get('source') or '',
-                 'tr': s.get('translation') or '',
+                 'orig': (s.get('source') or '').strip(),
+                 'tr': (s.get('translation') or '').strip(),
                  'display': s.get('display_source') or row.get('display_source') or ''} for s in segs]
-    return [{'lab': row.get('label') or '鈔文', 'orig': row.get('source') or '',
-             'tr': row.get('translation') or '',
+    return [{'lab': row.get('label') or '鈔文',
+             'orig': (row.get('source') or '').strip(),
+             'tr': (row.get('translation') or '').strip(),
              'display': row.get('display_source') or ''}]
 
 
@@ -319,6 +323,8 @@ def main():
     ap.add_argument('--min-ratio', type=float, default=0.55, help='幅度下限（預設 0.55）')
     ap.add_argument('--strict-qc', action='store_true', help='QC 有警示即退回不套用（不含幅度）')
     ap.add_argument('--strict-ratio', action='store_true', help='幅度超出 ±ratio 即退回（預設只警示）')
+    ap.add_argument('--allow-missing-status', action='store_true',
+                    help='缺 _驗收狀態.json 仍允許套用（預設拒絕，避免未驗收初修稿）')
     ap.add_argument('--dry-run', action='store_true', help='只驗證與統計，不寫任何檔案')
     ap.add_argument('--force', action='store_true', help='允許覆寫既有輸出檔')
     args = ap.parse_args()
@@ -339,7 +345,29 @@ def main():
         raise SystemExit('找不到拆回計畫：' + plan_path)
     plan = json.load(io.open(plan_path, encoding='utf-8'))
     fix = plan.get('fix') or {}
-    rep = os.path.join(_resolve(args.revise), '回覆')
+    # 同名 key 可能跨書（如 GAP02-1）；只留本 book_id 的 pack，避免誤套別書
+    fix = {k: v for k, v in fix.items()
+           if str(v.get('pack') or '').startswith(bid + '_')}
+    revdir = _resolve(args.revise)
+    rep = os.path.join(revdir, '回覆')
+    status_path = os.path.join(revdir, '_驗收狀態.json')
+    status = None
+    if os.path.exists(status_path):
+        try:
+            status = json.load(io.open(status_path, encoding='utf-8'))
+        except Exception:
+            status = None
+    allowed = set()
+    if status:
+        _b = status.get('buckets') or {}
+        allowed = set(_b.get('candidate') or []) | set(_b.get('unchanged') or [])
+    manual = set()
+    _mpath = os.path.join(revdir, '_人工複核清單.txt')
+    if os.path.exists(_mpath):
+        for _ln in io.open(_mpath, encoding='utf-8'):
+            _k = (_ln.split('\t')[0] or '').strip()
+            if _k:
+                manual.add(_k)
     out_name = args.out_name or (bid + '.jsonl')
     dst = os.path.join(out, out_name)
     report = (_resolve(args.report) if args.report
@@ -359,6 +387,18 @@ def main():
             new_rows.append(row)
             continue
         info = fix[key]
+        if status is None and not args.allow_missing_status:
+            blocked.append((key, '缺 _驗收狀態.json；未驗收不得套用'))
+            new_rows.append(row)
+            continue
+        if status is not None and key not in allowed:
+            blocked.append((key, '未在 _驗收狀態.json 候選／未改動清單'))
+            new_rows.append(row)
+            continue
+        if key in manual:
+            blocked.append((key, '在 _人工複核清單.txt，需人工'))
+            new_rows.append(row)
+            continue
         rp = os.path.join(rep, key + '_回.txt')
         if not os.path.exists(rp):
             pending.append((key, '缺修訂回覆'))
@@ -416,8 +456,8 @@ def main():
         flags = qc_flags + ratio_flags
         if raw_note:
             flags.append(raw_note)
-        # --strict-qc 只擋 QC；長度倍率另用 --strict-ratio（避免補漏譯被誤退）
-        if ((qc_flags or raw_note) and args.strict_qc) or (
+        # --strict-qc 只擋真正 QC；raw 未驗（如資持記無底本）只作備註
+        if (qc_flags and args.strict_qc) or (
                 ratio_flags and getattr(args, 'strict_ratio', False)):
             blocked.append((key, '；'.join(flags)))
             new_rows.append(row)

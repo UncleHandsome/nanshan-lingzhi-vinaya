@@ -167,6 +167,13 @@ def _neighbors(pack, no):
     us = pack.get('units') or []
     prev_u = us[no - 2] if no - 2 >= 0 else None
     next_u = us[no] if no < len(us) else None
+    # 單段包：用 pack 的前後鄰背景當 pseudo unit，讓詞表／硬傷原詞仍有前後鄰
+    if prev_u is None and (pack.get('pre_tr') or pack.get('pre_src')):
+        prev_u = {'parts': [{'orig': pack.get('pre_src', ''),
+                             'tr': pack.get('pre_tr', '')}]}
+    if next_u is None and (pack.get('post_tr') or pack.get('post_src')):
+        next_u = {'parts': [{'orig': pack.get('post_src', ''),
+                             'tr': pack.get('post_tr', '')}]}
     return prev_u, next_u
 
 
@@ -198,7 +205,7 @@ def _contexts(pack, no):
 
 
 def _out_format(labs):
-    labs = list(dict.fromkeys(labs)) or ['鈔文']
+    labs = list(labs) or ['鈔文']   # 同標籤多段不可去重，否則第 2 段遺失
     return '\n'.join('【%s】……' % lab for lab in labs)
 
 
@@ -383,10 +390,17 @@ def main():
             long=bool(re.search(r'_L\d{3,}', key)),
             key=key, fixes=fixes,
             out_format=_out_format(unit.get('labs') or []))
+        _mother = pack.get('mother') or ''
+        if book == '資持記':
+            try:
+                import mother_corpus as MC
+                _mother = MC.chao_for(_src) or _mother
+            except Exception:
+                pass
         md = _render(prompt, book, vol, key, pack_key, no, ctx, unit, fixes,
                      terms, fix_terms, evid,
                      refs=_ref_block(os.path.join(mdir, pack_key + '.md')),
-                     mother=pack.get('mother') or '')
+                     mother=_mother)
         io.open(os.path.join(out, key + '.md'), 'w', encoding='utf-8').write(md)
         meta = {
             'key': key, 'pack': pack_key, 'book': book, 'chunk': unit.get('chunk', ''),

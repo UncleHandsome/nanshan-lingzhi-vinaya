@@ -77,7 +77,7 @@ def _norm_candidate(rt, parts, book=''):
     if not txt:
         return ''
     labs = [p['lab'] for p in parts if p['lab']]
-    if len(set(labs)) > 1:
+    if len(labs) > 1:
         by = {}
         for p in parts:
             by.setdefault(p['lab'], []).append(p['orig'])
@@ -85,14 +85,19 @@ def _norm_candidate(rt, parts, book=''):
     return NR.normalize(txt, ''.join(p['orig'] for p in parts)).strip()
 
 
-def _changed_parts(before, after):
-    """回傳有實際改動的段別（漢字＋標點；只忽略空白）；空 list＝完全未改。"""
+def _changed_parts(before, after, normalize=False):
+    """回傳有實際改動的段別（漢字＋標點；只忽略空白）；normalize=True 先過 norm。"""
     if len(before) != len(after):
         return ['（段數不符）']
     changed = []
     for a, b in zip(before, after):
-        ta = re.sub(r'\s+', '', a.get('tr') or '')
-        tb = re.sub(r'\s+', '', b.get('tr') or '')
+        ta = a.get('tr') or ''
+        tb = b.get('tr') or ''
+        if normalize:
+            ta = NR.normalize(ta, a.get('orig') or '')
+            tb = NR.normalize(tb, a.get('orig') or '')
+        ta = re.sub(r'\s+', '', ta)
+        tb = re.sub(r'\s+', '', tb)
         if ta != tb:
             changed.append(b.get('lab') or '?')
     return changed
@@ -104,7 +109,7 @@ def _clean_reply(rt, parts):
     if new_parts is None:
         return '', why
     labs = [p.get('lab') or '' for p in parts]
-    if len(set(labs)) > 1:
+    if len(labs) > 1:
         return '\n'.join('【%s】\n%s' % (lab, txt)
                          for lab, txt in zip(labs, new_parts)), ''
     return (new_parts[0] if new_parts else ''), ''
@@ -158,14 +163,21 @@ def _replace_fixes(text, fixes):
 
 
 def _build_retry_material(orig_md, candidate, merged_fixes, reasons, book='', key='',
-                          parts=None):
+                          parts=None, long=False):
     """以原修訂材料為底，換上新版提示詞、目前譯文與併合後的硬傷清單。"""
     txt = orig_md or ''
     _labs = [p['lab'] for p in (parts or []) if p.get('lab')]
     _src = '\n'.join((p.get('orig') or '') for p in (parts or []))
-    _fmt = '\n'.join('【%s】……' % l for l in (list(dict.fromkeys(_labs)) or ['鈔文']))
+    _fmt = '\n'.join('【%s】……' % l for l in (list(_labs) or ['鈔文']))  # 同標籤多段不去重
     _prompt = BC.revise_prompt(book or None, None, _labs, _src, candidate,
-                               key=key, fixes=merged_fixes, out_format=_fmt)
+                               long=long, key=key, fixes=merged_fixes,
+                               out_format=_fmt)
+    # 保留原始譯文基線（原材料的【目前譯文】），供第二次修訂對照
+    _base = ''
+    _b = _sec_bounds(txt, '目前譯文')
+    if _b:
+        _base = txt[_b[0]:_b[1]]
+        _base = re.sub(r'(?m)^【目前譯文】\s*', '', _base).strip()
     if txt.strip() and '\n---\n' in txt:
         # 保留材料層（原文／目前譯文／摘錄），只換掉最前面的提示詞
         _rest = txt.split('\n---\n', 1)[1]
@@ -180,6 +192,8 @@ def _build_retry_material(orig_md, candidate, merged_fixes, reasons, book='', ke
             txt = txt[:b[0]] + '【目前譯文】\n\n' + candidate.strip() + '\n\n' + txt[b[1]:]
     else:
         txt = txt.rstrip() + '\n\n【目前譯文】\n\n' + candidate.strip() + '\n'
+    if _base and '【原始譯文基線' not in txt:
+        txt = txt.rstrip() + '\n\n【原始譯文基線（僅供對照，不得覆蓋目前譯文）】\n\n' + _base + '\n'
     txt = _replace_fixes(txt, merged_fixes)
     return txt
 
@@ -203,7 +217,7 @@ def _context_from_material(md):
     if not md:
         return ''
     out = []
-    for prefix in ('前文背景', '對照層', '後文背景'):
+    for prefix in ('前文背景', '對照層', '後文背景', '所釋鈔文'):
         m = re.search(r'(?m)^【%s[^】]*】\s*$' % prefix, md)
         if not m:
             continue
@@ -330,7 +344,7 @@ def main():
             continue
         cand1 = _norm_candidate(clean1, parts, book)
         after1 = [{'lab': p['lab'], 'tr': t} for p, t in zip(parts, new_parts)]
-        changed = _changed_parts(parts, after1)
+        changed = _changed_parts(parts, after1, normalize=True)
         ratio = _ratio(parts, after1)
 
         if not changed and key not in forced:
@@ -374,10 +388,14 @@ def main():
         if not rt2.strip():
             buckets['retry_material'].append('%s\t%s' % (key, reasons.split('\n')[0][:120]))
             if not args.no_materials and not args.dry_run:
+                _old = os.path.join(retry_dir, '回覆', key + '_回.txt')
+                if os.path.exists(_old):
+                    os.remove(_old)       # 清舊回覆，避免 unchanged 舊檔殘留
                 _write(os.path.join(retry_dir, key + '.md'),
                        _build_retry_material(_read(os.path.join(revise, key + '.md')),
                                              cand1, merged, reasons,
-                                             book=_book, key=key, parts=parts))
+                                             book=_book, key=key, parts=parts,
+                                             long=bool(re.search(r'_L\d{3,}', key))))
             continue
         # 已有第二次修訂：需第二次 VERIFY
         new2, why2 = AR._parse_reply(rt2, parts)

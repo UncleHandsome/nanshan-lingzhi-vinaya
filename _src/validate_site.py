@@ -10,6 +10,7 @@ import sys
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 BOOKS = {
     'xingshichao': ['卷上', '卷中', '卷下'],
+    'jieshu': ['卷一', '卷二', '卷三', '卷四'],
     'yeshu': ['卷一', '卷二', '卷三', '卷四'],
     'nicao': ['卷上', '卷中', '卷下'],
     'yichao': ['卷上', '卷中'],
@@ -66,6 +67,9 @@ def main():
             for m in re.finditer(r'<div class="o[^"]*">(.*?)</div>', t, re.S):
                 x = re.sub('<[^>]+>', '', m.group(1))
                 if BOX.search(x):
+                    continue
+                # 戒疏目錄／條目是列表，不是長句，不套句讀密度檢查
+                if book == 'jieshu' and re.match(r'【[^】]+】【(?:目錄|條目)】', x):
                     continue
                 nh = len(han(x))
                 punct = len(re.findall(r'[，。；：！？、]', x))

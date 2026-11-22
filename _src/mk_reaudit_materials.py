@@ -670,6 +670,79 @@ def _yichao_parallel(src, cap=1400, limit=3):
     return '\n'.join(out)[:cap]
 
 
+_FUYAO_CACHE = {}
+
+
+def _fuyao_rows():
+    """《義鈔輔要記》行快取：rows ＋ 去標點字串（只建一次，509 段共用）。"""
+    if _FUYAO_CACHE:
+        return _FUYAO_CACHE.get('rows') or []
+    try:
+        import local_corpus as LC
+        LC.load()
+    except Exception:
+        return []
+    rows = [x for x in LC.LINES if x.get('book') == '義鈔輔要記']
+    _FUYAO_CACHE['rows'] = rows
+    _FUYAO_CACHE['plain'] = [r.get('plain') or LC._plain(r.get('text') or '')
+                             for r in rows]
+    _FUYAO_CACHE['blob'] = LC.BOOK_BLOB.get('義鈔輔要記') or ''
+    return rows
+
+
+def _fuyao_terms(src, cap=12):
+    """義鈔：挑在本段出現、且在《輔要記》也出現的 3–4 字詞（長詞／少見優先）。"""
+    rows = _fuyao_rows()
+    if not rows:
+        return []
+    blob = _FUYAO_CACHE['blob']
+    cand = set()
+    for s in _sampled_sentences(src, per=3):
+        cand |= _grams(s, ns=(2, 3, 4))
+    keep = [g for g in cand if len(g) >= 3 and g in blob]
+    if not keep:
+        return []
+    keep.sort(key=lambda g: (-len(g), blob.count(g)))
+    picked = []
+    for g in keep:
+        if any(g in p or p in g for p in picked):
+            continue        # 同一詞幹的 3-gram 不重複計分
+        picked.append(g)
+        if len(picked) >= cap:
+            break
+    return picked
+
+
+def _fuyao_note(src, cap=1600, min_score=6.0):
+    """義鈔：《義鈔輔要記》（X44n0748 宋・允堪述）同段釋文。
+
+    輔要記是《拾毗尼義鈔》的部帙直註，逐句釋義而少整段引鈔文；
+    故以「本段 3–4 字詞在輔要記同時出現」的稀有詞計分，取最集中的一段原文，
+    分數不足即不掛（寧缺勿濫），只列原文、不生成文字。
+    """
+    rows = _fuyao_rows()
+    if not rows or len(han(src)) < 12:
+        return ''
+    terms = _fuyao_terms(src)
+    if len(terms) < 2:
+        return ''
+    pl = _FUYAO_CACHE['plain']
+    best_sc, best_i = -1.0, -1
+    for i in range(len(rows)):
+        win = ''.join(pl[j] for j in range(i, min(len(rows), i + 4)))
+        sc = sum((len(t) - 2) for t in terms if t in win)
+        if sc > best_sc:
+            best_sc, best_i = sc, i
+    if best_i < 0 or best_sc < min_score:
+        return ''
+    lo, hi = max(0, best_i - 1), min(len(rows), best_i + 4)
+    body = '\n'.join((rows[j].get('text') or '').strip() for j in range(lo, hi))
+    body = body.strip()
+    if len(body) > cap:
+        body = body[:cap].rstrip() + '…'
+    return '《義鈔輔要記》%s：\n%s' % (rows[best_i].get('juan') or '', body)
+
+
 # ---------------------------------------------------------------- 辭典自動索引（無題庫詞）
 _DICT_INDEX = None
 
@@ -915,6 +988,12 @@ _QUOTE_WORKS = (
     ('五分', '五分律'), ('十誦', '十誦律'),
     ('僧祇', '摩訶僧祇律'), ('善見', '善見律毘婆沙'), ('母論', '毘尼母經'),
     ('隨機羯磨', '隨機羯磨'), ('戒本', '含注戒本'),
+    # 第一優先親註（2026-11-22）：書名／簡稱 → 書庫名
+    ('輔要記', '義鈔輔要記'), ('討要', '毗尼討要'),
+    ('簡正記', '四分律行事鈔簡正記'), ('正源記', '四分律隨機羯磨疏正源記'),
+    ('發揮記', '四分律含注戒本疏發揮記'), ('芝苑遺編', '芝苑遺編'),
+    ('輕重儀', '量處輕重儀'), ('歸敬儀', '釋門歸敬儀'), ('章服儀', '釋門章服儀'),
+    ('行護律儀', '教誡新學比丘行護律儀'), ('六物圖', '佛制比丘六物圖'),
 )
 
 
@@ -927,7 +1006,11 @@ def _quote_note(src):
     raw = re.sub(r'\s+', '', src or '')
     out, seen = [], set()
     for short, work in _QUOTE_WORKS:
-        m = re.search(re.escape(short) + r'[論律經]?[云言說曰：:]\s*([\u4e00-\u9fff]{4,24})', raw)
+        # 允許「《輔要記》云：」「五分律云」「善見云」等寫法；引文可帶開引號。
+        # 云／言／說／曰 後可再帶冒號，避免只吃掉「云」而卡在「：」上。
+        m = re.search(re.escape(short) + r'[論律經]?》?\s*'
+                      r'(?:[云言說曰]+[：:]?|[：:])\s*[「『（(]?\s*'
+                      r'([\u4e00-\u9fff]{4,24})', raw)
         if not m:
             continue
         q = m.group(1)
@@ -986,7 +1069,12 @@ def reference_blocks(book, unit, order, i):
                 blocks.append((
                     '資持記相關釋文（原文稀有詞反查；僅供訓釋，嚴禁搬入正文）', rv))
     if book == '義鈔':
-        # 現譯原文已是 display（句讀版），不再重複附補標點原文；篇幅留給平行文
+        # 現譯原文已是 display（句讀版），不再重複附補標點原文；篇幅留給直註與平行文。
+        # 《義鈔輔要記》是義鈔部帙直註，優先且獨立成塊（X44n0748）。
+        fy = _fuyao_note(src)
+        if fy:
+            blocks.append((
+                '義鈔輔要記相關釋文（X44n0748 宋・允堪述；僅供訓釋，嚴禁搬入正文）', fy))
         par = _yichao_parallel(src)
         if par:
             blocks.append(('平行釋文（戒疏／行宗記／資持記／行事鈔；僅供訓釋，嚴禁搬入正文）', par))

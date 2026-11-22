@@ -48,10 +48,10 @@ BOOKS = {
     '資持記': dict(id='zhichi', raw=''),
 }
 PLAN_NAME = '_再審拆回_計畫.json'
-LABS = ('疏文', '記文', '鈔文', '律文', '註文', '序文')
-_LAB_RE = re.compile(r'(?m)^\s*(?:\*\*)?【(疏文|記文|鈔文|律文|註文|序文)】(?:\*\*)?\s*')
+LABS = ('疏文', '記文', '鈔文', '律文', '註文', '序文', '記序')
+_LAB_RE = re.compile(r'(?m)^\s*(?:\*\*)?【(疏文|記文|鈔文|律文|註文|序文|記序)】(?:\*\*)?\s*')
 _NUM_LEAD = re.compile(r'^\s*\[\s*\d{1,3}\s*\]\s*')
-_LAB_HEAD = re.compile(r'^【(?:疏文|記文|鈔文|律文|註文|序文)】\s*')
+_LAB_HEAD = re.compile(r'^【(?:疏文|記文|鈔文|律文|註文|序文|記序)】\s*')
 FENCE_RE = re.compile(r'(?m)^\s*```[a-zA-Z]*\s*$')
 SIMP_BAD = ('达', '没', '时', '精准', '颗', '过', '与', '现', '实', '际', '种', '样', '动',
             '学', '觉', '见', '观', '识', '论', '证', '众', '问', '这', '为', '应', '经',
@@ -164,6 +164,10 @@ def _parse_reply(rt, parts):
         return None, '回覆為空'
     if len(blocks) != len(parts):
         return None, '段數不符（回覆 %d 段、定稿 %d 段）' % (len(blocks), len(parts))
+    if len(parts) == 1 and len(blocks) == 1:
+        # 單欄單位：模型可能依內容改標（如 JE-G14 定稿標「疏文」、實為記文），
+        # 標籤不作為退回理由，只取正文；多欄仍嚴格比對順序。
+        return [blocks[0][1].strip()], ''
     for (lab, _), want in zip(blocks, labs):
         if lab != want:
             return None, '段別順序不符（回覆【%s】、定稿【%s】）' % (lab, want)
@@ -171,7 +175,7 @@ def _parse_reply(rt, parts):
 
 
 # ---------------------------------------------------------------- 檢查
-def _qc(src, out):
+def _qc(src, out, src_disp=''):
     """qc_scan.py 的逐段同構掃描（該檔僅有 CLI，故於此重現其規則）。"""
     issues = []
     if not _han(out):
@@ -198,7 +202,7 @@ def _qc(src, out):
         issues.append('殘留整合說明')
     if re.search(r'《(?:四分|十誦|五分|僧祇|摩訶僧祇)》', out):
         issues.append('律名簡稱未補「律」字')
-    _labs = re.findall(r'(?m)^【(疏文|記文|鈔文|律文|註文|序文)】', out)
+    _labs = re.findall(r'(?m)^【(疏文|記文|鈔文|律文|註文|序文|記序)】', out)
     if any(_labs.count(x) > 1 for x in set(_labs)):
         issues.append('殘留重複欄位標籤')
     for _q in re.findall(r'[「『]([^」』]{8,})[」』]', out):
@@ -221,7 +225,9 @@ def _qc(src, out):
         issues.append('嚴重縮水（疑漏譯）%d→%d' % (sh, oh))
     if 10 <= sh <= 75 and oh > sh * 2.4:
         issues.append('短文膨脹 %d→%d' % (sh, oh))
-    _src_notes = max(0, src.count('（') + src.count('(') + src.count('〔') - out.count('〔'))
+    _disp_notes = len(re.findall(r'〔[^〕]{2,}〕', src_disp or ''))
+    _src_notes = max(0, src.count('（') + src.count('(') + src.count('〔')
+                     + _disp_notes - out.count('〔'))
     _out_pars = [x.strip() for x in re.findall(r'[（(]([^）)]*)[）)]', out)
                  if not re.fullmatch(r'[一二三四五六七八九十百千\d]+', x.strip())
                  and not re.fullmatch(r'[^，。；]{0,8}反', x.strip())]
@@ -235,9 +241,11 @@ def _parts_of(row):
     if segs:
         return [{'lab': s.get('label') or row.get('label') or '鈔文',
                  'orig': s.get('source') or '',
-                 'tr': s.get('translation') or ''} for s in segs]
+                 'tr': s.get('translation') or '',
+                 'display': s.get('display_source') or row.get('display_source') or ''} for s in segs]
     return [{'lab': row.get('label') or '鈔文', 'orig': row.get('source') or '',
-             'tr': row.get('translation') or ''}]
+             'tr': row.get('translation') or '',
+             'display': row.get('display_source') or ''}]
 
 
 def _part_spans(row, raw_h):
@@ -309,7 +317,8 @@ def main():
     ap.add_argument('--report', default='', help='對照報告路徑（預設 <out>/_再審變更對照.md）')
     ap.add_argument('--max-ratio', type=float, default=1.8, help='幅度上限（預設 1.8）')
     ap.add_argument('--min-ratio', type=float, default=0.55, help='幅度下限（預設 0.55）')
-    ap.add_argument('--strict-qc', action='store_true', help='QC 有警示即退回不套用')
+    ap.add_argument('--strict-qc', action='store_true', help='QC 有警示即退回不套用（不含幅度）')
+    ap.add_argument('--strict-ratio', action='store_true', help='幅度超出 ±ratio 即退回（預設只警示）')
     ap.add_argument('--dry-run', action='store_true', help='只驗證與統計，不寫任何檔案')
     ap.add_argument('--force', action='store_true', help='允許覆寫既有輸出檔')
     args = ap.parse_args()
@@ -395,25 +404,35 @@ def main():
             new_rows.append(row)
             continue
         flags = []
+        ratio_flags = []
         old_han = sum(len(_han(p['tr'])) for p in parts)
         new_han = sum(len(_han(t)) for t in new_trs)
         ratio = (new_han / old_han) if old_han else 0.0
         if ratio and (ratio > args.max_ratio or ratio < args.min_ratio):
-            flags.append('幅度 %.2f（%d→%d）' % (ratio, old_han, new_han))
+            ratio_flags.append('幅度 %.2f（%d→%d）' % (ratio, old_han, new_han))
+        qc_flags = []
         for p, t in zip(parts, new_trs):
-            flags += _qc(p['orig'], t)
+            qc_flags += _qc(p['orig'], t, p.get('display') or '')
+        flags = qc_flags + ratio_flags
         if raw_note:
             flags.append(raw_note)
-        if flags and args.strict_qc:
+        # --strict-qc 只擋 QC；長度倍率另用 --strict-ratio（避免補漏譯被誤退）
+        if ((qc_flags or raw_note) and args.strict_qc) or (
+                ratio_flags and getattr(args, 'strict_ratio', False)):
             blocked.append((key, '；'.join(flags)))
             new_rows.append(row)
             continue
         nr = copy.deepcopy(row)
         nr['translation'] = _rebuild(row.get('translation', ''), parts, new_trs)
         segs = nr.get('segments') or []
-        for s, t in zip(segs, new_trs):
-            s['translation'] = t
-        if not segs and parts:
+        if segs:
+            if len(segs) != len(new_trs):
+                blocked.append((key, '段數不符：segments %d、回覆 %d' % (len(segs), len(new_trs))))
+                new_rows.append(row)
+                continue
+            for s, t in zip(segs, new_trs):
+                s['translation'] = t
+        elif parts:
             nr['label'] = parts[0]['lab']
         nr['revised'] = True
         new_rows.append(nr)
@@ -483,6 +502,9 @@ def main():
           '- 未列 FIX 的單位逐筆原樣複製（欄位、順序不變）。',
           '- 幅度＝新譯漢字／原譯漢字；超出 ±ratio 僅警示，`--strict-qc` 才退回。',
           '- QC 為 `qc_scan.py` 規則的同構掃描（該檔僅有 CLI，無可 import 的逐段函式）。']
+    _rd = os.path.dirname(report)
+    if _rd:
+        os.makedirs(_rd, exist_ok=True)
     io.open(report, 'w', encoding='utf-8').write('\n'.join(L) + '\n')
     print('  輸出 → %s' % _rel(dst))
     print('  對照 → %s' % _rel(report))

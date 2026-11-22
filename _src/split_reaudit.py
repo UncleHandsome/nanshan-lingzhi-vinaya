@@ -30,7 +30,7 @@ if _HERE not in sys.path:
 PLAN_NAME = '_再審拆回_計畫.json'
 _NUM_RE = re.compile(r'\[\s*(\d{1,3})\s*(?:[-–—~～至]\s*(\d{1,3})\s*)?\]')
 _ITEM_RE = re.compile(
-    r'^\s*(?:[-*•]|\d+[.、．])?\s*(?:\*\*|__)?\s*\[\s*(\d{1,3})\s*\]')
+    r'^\s*(?:[-*•]|\d+[.、．])?\s*(?:\*\*|__|`)?\s*\[\s*(\d{1,3})\s*\]')
 _CONT_RE = re.compile(r'^(?:\s{2,}|\t|(?:問題|依據|修正方向|→|說明)[：:])')
 _SEC_RE = re.compile(r'(?m)^[ \t#*>\-]*【([^】\n]{1,24})】')
 
@@ -47,10 +47,16 @@ def _rel(p):
         return p
 
 
+_BLOCK_SECTIONS = ('分段核驗表', '必改硬傷', '可斟酌微瑕', '備註')
+
+
 def _block(text, name):
-    """取【name】區塊；標題可帶 markdown 前綴，區塊止於下一個【…】標題。"""
+    """取【name】區塊；只認明確 section 標題，段別【疏文】等不得當邊界。"""
+    names = tuple(dict.fromkeys((name,) + _BLOCK_SECTIONS))
+    rx = re.compile(r'(?m)^[ \t#*>\-]*【(%s)】'
+                    % '|'.join(re.escape(x) for x in names))
     marks = [(m.start(), m.end(), m.group(1).strip())
-             for m in _SEC_RE.finditer(text or '')]
+             for m in rx.finditer(text or '')]
     for i, (s, e, title) in enumerate(marks):
         if title == name or title.startswith(name):
             end = marks[i + 1][0] if i + 1 < len(marks) else len(text)
@@ -58,8 +64,10 @@ def _block(text, name):
     i = (text or '').find('【%s】' % name)
     if i < 0:
         return None
-    j = text.find('\n【', i + len(name) + 2)
-    return text[i + len(name) + 2:(j if j > 0 else len(text))].strip()
+    nxt = re.search(r'(?m)^[ \t#*>\-]*【(?:%s)】'
+                    % '|'.join(re.escape(x) for x in names), text[i + len(name) + 2:])
+    j = i + len(name) + 2 + nxt.start() if nxt else len(text)
+    return text[i + len(name) + 2:j].strip()
 
 
 def _nums(s):
@@ -109,11 +117,14 @@ def _parse_items(body, n_units):
     return items, bad, loose
 
 
-def _unbalanced(t):
+def _unbalanced(t, src=''):
+    """只判回覆比原文多出的不平衡；原文本身引號不全不當截斷。"""
     for a, b, label in (('「', '」', '「」'), ('『', '』', '『』'),
                         ('（', '）', '（）'), ('《', '》', '《》'),
                         ('〔', '〕', '〔〕')):
-        if t.count(a) != t.count(b):
+        d = (t or '').count(a) - (t or '').count(b)
+        s = (src or '').count(a) - (src or '').count(b)
+        if d and d != s and abs(d) > abs(s):
             return label + ' 未成對'
     return ''
 
@@ -158,8 +169,9 @@ def _classify(reply_path, meta, key):
         return 'abnormal', '缺【必改硬傷】', rt, []
     if _is_none(fixes):
         return 'ok', '', rt, []
-    if _unbalanced(rt):
-        return 'abnormal', '疑似截斷（%s）' % _unbalanced(rt), rt, []
+    src_all = '\n'.join((u.get('source') or '') for u in (meta.get('units') or []))
+    if _unbalanced(rt, src_all):
+        return 'abnormal', '疑似截斷（%s）' % _unbalanced(rt, src_all), rt, []
     items, bad, loose = _parse_items(fixes, n)
     if bad:
         return ('abnormal',
@@ -235,11 +247,22 @@ def _bisect(meta, outdir, dry_run):
         _ks = {u['key'] for u in half}
         gaps = [g for g in gaps_all
                 if g.get('after') in _ks or g.get('before') in _ks]
+        # 子包也要帶對照層（去重、≤2800），不可只有母包有
+        refs, seen_ref, ref_len = [], set(), 0
+        for j, u in enumerate(half):
+            for title, body in RA.reference_blocks(meta.get('book', ''), u, half, j):
+                sig = re.sub(r'\s+', '', body or '')[:80]
+                if not sig or sig in seen_ref or ref_len + len(body) > 2800:
+                    continue
+                seen_ref.add(sig)
+                refs.append((title, body))
+                ref_len += len(body)
         if not dry_run:
             RA.emit_pack(outdir, half, 0, meta.get('book', ''),
                          meta.get('book_id', ''), meta.get('count_mode', 'both'),
                          gaps, None, pre=pre, post=post,
-                         parent=meta['key'], part=part, key=child)
+                         parent=meta['key'], part=part, key=child,
+                         refs=refs)
         keys.append(child)
     return keys
 
@@ -333,16 +356,59 @@ def main():
         plan['packs'][key] = {'units': len(units), 'covered': len(units),
                               'fix': len(per), 'pass': len(units) - len(per),
                               'status': 'ok'}
-    _tot = n_fix + n_pass
+    # 子包（--bisect）回覆若已存在，合併回母計畫：fix 指回母 pack 的 unit no
+    bdir = (_resolve(args.bisect_out) if args.bisect_out
+            else os.path.join(mdir, '_bisect'))
+    if args.bisect and os.path.isdir(bdir):
+        parent_units = {m['key']: [u.get('key') for u in (m.get('units') or [])]
+                        for m in metas}
+        merged = []
+        for f in sorted(os.listdir(bdir)):
+            if not f.endswith('.json') or f.startswith('_'):
+                continue
+            try:
+                cm = json.load(io.open(os.path.join(bdir, f), encoding='utf-8'))
+            except Exception:
+                continue
+            ck = cm.get('key') or f[:-5]
+            pk = cm.get('parent') or ''
+            if pk not in parent_units:
+                continue
+            st, rs, _rt, its = _classify(os.path.join(bdir, '回覆', ck + '_回.txt'),
+                                         cm, ck)
+            if st == 'ok':
+                per_c = {}
+                for it in its:
+                    per_c.setdefault(it['n'], []).append(it)
+                for no, items_c in per_c.items():
+                    ukey = (cm.get('units') or [])[no - 1].get('key')
+                    if ukey not in parent_units[pk]:
+                        continue
+                    pno = parent_units[pk].index(ukey) + 1
+                    plan['fix'][ukey] = {'pack': pk, 'no': pno, 'items': items_c,
+                                         'via_bisect': ck}
+                    if ukey in plan['pass']:
+                        plan['pass'].remove(ukey)
+                for i, u in enumerate(cm.get('units') or [], 1):
+                    if i not in per_c and u.get('key') not in plan['pass']:
+                        plan['pass'].append(u.get('key'))
+                merged.append(ck)
+            elif st == 'abnormal':
+                plan['abnormal'][ck] = rs
+        if merged:
+            plan['bisect_merged'] = merged
+    _fix_n = len(plan['fix'])
+    _pass_n = len(plan['pass'])
+    _tot = _fix_n + _pass_n
     plan['stats'] = {'packs': len(metas), 'ok': n_ok,
                      'abnormal': len(plan['abnormal']),
                      'pending': len(plan['pending']),
-                     'units_fix': n_fix, 'units_pass': n_pass,
-                     'fix_ratio': round((n_fix / _tot), 4) if _tot else 0.0}
+                     'units_fix': _fix_n, 'units_pass': _pass_n,
+                     'fix_ratio': round((_fix_n / _tot), 4) if _tot else 0.0}
     print('再審拆回：pack %d（成功 %d、異常 %d、待跑 %d）'
           % (len(metas), n_ok, len(plan['abnormal']), len(plan['pending'])))
     print('  FIX %d 單位、PASS %d 單位（FIX 比例 %.1f%%）'
-          % (n_fix, n_pass, (100.0 * n_fix / (n_fix + n_pass)) if (n_fix + n_pass) else 0))
+          % (_fix_n, _pass_n, (100.0 * _fix_n / (_fix_n + _pass_n)) if (_fix_n + _pass_n) else 0))
     if plan['abnormal']:
         for k, v in list(plan['abnormal'].items())[:20]:
             print('  ⚠ %s：%s' % (k, v))

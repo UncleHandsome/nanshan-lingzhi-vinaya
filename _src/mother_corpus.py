@@ -156,11 +156,12 @@ def chao_for_units(texts, per=300):
     return '\n'.join(out)
 
 
-def ji_for_chao(text, limit=2, cap=900):
-    """反向對照：給《行事鈔》文句，回傳所對應的《資持記》釋文（≤cap 字）。
+def ji_for_chao(text, limit=6, cap=2200):
+    """反向對照：給《行事鈔》文句，回傳所對應的《資持記》釋文（cap 內）。
 
     與 chao_for() 相反：chao_for 是「記文→所釋鈔文」，本函式是
     「鈔文→資持記相關釋文」，供再審材料掛【資持記相關釋文】。
+    超過 cap 時保留首 2 條＋尾 2 條（確保末句不被切），再均勻補中間。
     """
     u = han(text)
     if len(u) < 10:
@@ -184,18 +185,32 @@ def ji_for_chao(text, limit=2, cap=900):
         if not hits:
             continue
         hits.sort(reverse=True)
-        out, seen, acc = [], set(), 0
-        for _, i in hits[:limit]:
+        segs, seen = [], set()
+        for _, i in hits[:max(limit, 8)]:
             ji = (seq[i].get('ji') or '').strip()
-            if not ji or ji in seen:
-                continue
-            if acc + len(ji) > cap:
-                break
-            seen.add(ji)
-            out.append(ji)
-            acc += len(ji)
-        if out:
-            return '\n'.join(out)
+            if ji and ji not in seen:
+                seen.add(ji)
+                segs.append(ji)
+        if not segs:
+            continue
+        total = sum(len(s) for s in segs) + len(segs) - 1
+        if total <= cap or len(segs) <= 4:
+            out = '\n'.join(segs)
+            return out if len(out) <= cap else out[-cap:]
+        # 首 2＋尾 2 固定；中間均勻補到 cap
+        head, tail = segs[:2], segs[-2:]
+        mid = segs[2:-2]
+        sel = list(head)
+        acc = sum(len(s) for s in head) + len(head)
+        reserve = sum(len(s) for s in tail) + len(tail)
+        step = max(1, len(mid) // 4)
+        for s in mid[::step]:
+            if acc + len(s) + 1 + reserve <= cap:
+                sel.append(s)
+                acc += len(s) + 1
+        sel.extend(tail)
+        out = '\n'.join(sel)
+        return out if len(out) <= cap else out[:cap - 1] + '…'
     return ''
 
 

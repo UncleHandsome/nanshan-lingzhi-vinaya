@@ -86,14 +86,28 @@ def _norm_candidate(rt, parts, book=''):
 
 
 def _changed_parts(before, after):
-    """回傳有實際改動的段別（漢字比較）；空 list＝完全未改。"""
+    """回傳有實際改動的段別（漢字＋標點；只忽略空白）；空 list＝完全未改。"""
     if len(before) != len(after):
         return ['（段數不符）']
     changed = []
     for a, b in zip(before, after):
-        if _han(a.get('tr')) != _han(b.get('tr')):
+        ta = re.sub(r'\s+', '', a.get('tr') or '')
+        tb = re.sub(r'\s+', '', b.get('tr') or '')
+        if ta != tb:
             changed.append(b.get('lab') or '?')
     return changed
+
+
+def _clean_reply(rt, parts):
+    """先用 _parse_reply 的段別結果裁掉【備註】／fence／段號，再交正規化。"""
+    new_parts, why = AR._parse_reply(rt, parts)
+    if new_parts is None:
+        return '', why
+    labs = [p.get('lab') or '' for p in parts]
+    if len(set(labs)) > 1:
+        return '\n'.join('【%s】\n%s' % (lab, txt)
+                         for lab, txt in zip(labs, new_parts)), ''
+    return (new_parts[0] if new_parts else ''), ''
 
 
 def _ratio(before, after):
@@ -177,8 +191,15 @@ def _merge_fixes(old_fixes, reasons):
     return out.strip()
 
 
+_MATERIAL_SECTIONS = (
+    '前文背景', '對照層', '後文背景', '原文', '目前譯文', '前後鄰既有譯文',
+    '跨段統一基準', '本次待審單元', '必改硬傷', '硬傷清單', '分段要求',
+    '初審檢索摘錄', '上一次驗收未過原因', '所釋鈔文', '備註',
+)
+
+
 def _context_from_material(md):
-    """從修訂材料抽出【前文背景】【對照層】【後文背景】，供 VERIFY 參閱。"""
+    """從修訂材料抽出【前文背景】【對照層】【後文背景】；只認白名單 section。"""
     if not md:
         return ''
     out = []
@@ -187,7 +208,8 @@ def _context_from_material(md):
         if not m:
             continue
         tail = md[m.end():]
-        nxt = re.search(r'(?m)^【[^】\n]{1,30}】\s*$', tail)
+        nxt = re.search(r'(?m)^【(%s)[^】]*】\s*$'
+                        % '|'.join(re.escape(x) for x in _MATERIAL_SECTIONS), tail)
         body = tail[:nxt.start()] if nxt else tail
         head = md[m.start():m.end()].strip()
         if body.strip():
@@ -302,7 +324,11 @@ def main():
         if new_parts is None:
             buckets['abnormal'].append('%s：%s' % (key, why))
             continue
-        cand1 = _norm_candidate(rt1, parts, book)
+        clean1, whyc = _clean_reply(rt1, parts)
+        if whyc:
+            buckets['abnormal'].append('%s：%s' % (key, whyc))
+            continue
+        cand1 = _norm_candidate(clean1, parts, book)
         after1 = [{'lab': p['lab'], 'tr': t} for p, t in zip(parts, new_parts)]
         changed = _changed_parts(parts, after1)
         ratio = _ratio(parts, after1)
@@ -341,11 +367,14 @@ def main():
         # RETRY（第一次）
         reasons = MI.verify_reasons(v1) or '（未寫原因，請重審上一次改動句）'
         merged = _merge_fixes(fixes, reasons)
-        rt2 = _read(os.path.join(rep_rev, key + '_再修_回.txt'))
+        # 第二次修訂材料固定在 <out>/_再修/<key>.md；qwen 對該目錄的回覆在
+        # <out>/_再修/回覆/<key>_回.txt（不可再讀 <revise>/回覆/<key>_再修_回.txt）
+        retry_dir = os.path.join(out, '_再修')
+        rt2 = _read(os.path.join(retry_dir, '回覆', key + '_回.txt'))
         if not rt2.strip():
             buckets['retry_material'].append('%s\t%s' % (key, reasons.split('\n')[0][:120]))
             if not args.no_materials and not args.dry_run:
-                _write(os.path.join(out, '_再修', key + '.md'),
+                _write(os.path.join(retry_dir, key + '.md'),
                        _build_retry_material(_read(os.path.join(revise, key + '.md')),
                                              cand1, merged, reasons,
                                              book=_book, key=key, parts=parts))
@@ -355,7 +384,11 @@ def main():
         if new2 is None:
             buckets['abnormal'].append('%s：二次修訂回覆 %s' % (key, why2))
             continue
-        cand2 = _norm_candidate(rt2, parts, book)
+        clean2, whyc2 = _clean_reply(rt2, parts)
+        if whyc2:
+            buckets['abnormal'].append('%s：二次修訂回覆 %s' % (key, whyc2))
+            continue
+        cand2 = _norm_candidate(clean2, parts, book)
         v2 = _read(os.path.join(rep_ver, key + '_再驗_回.txt'))
         if not v2.strip():
             buckets['second_pending'].append(key)

@@ -34,7 +34,7 @@ import book_config as BC  # noqa: E402
 import mk_reaudit_materials as RA  # noqa: E402  只用常數與 clip 工具
 
 PLAN_NAME = '_再審拆回_計畫.json'
-PRE_SRC_CAP = 1500
+PRE_SRC_CAP = 1800
 PRE_TR_CAP = 400
 POST_SRC_CAP = 600
 POST_TR_CAP = 300
@@ -173,9 +173,17 @@ def _neighbors(pack, no):
 def _contexts(pack, no):
     us = pack.get('units') or []
     prev_u, next_u = _neighbors(pack, no)
-    if prev_u:
-        pre_src = RA._clip_tail(_unit_orig(prev_u), PRE_SRC_CAP)
-        pre_tr = RA._clip_tail(_unit_tr(prev_u), PRE_TR_CAP)
+    if no > 1:
+        # 中間單位：往前回溯多個短單位，湊滿 PRE_SRC_CAP（不可只看前一個）
+        acc, total = [], 0
+        for u in reversed(us[:no - 1]):
+            s = _unit_orig(u)
+            acc.insert(0, s)
+            total += len(s)
+            if total >= PRE_SRC_CAP:
+                break
+        pre_src = RA._clip_tail('\n'.join(acc), PRE_SRC_CAP)
+        pre_tr = RA._clip_tail(_unit_tr(prev_u), PRE_TR_CAP) if prev_u else ''
     else:
         pre_src, pre_tr = pack.get('pre_src', ''), pack.get('pre_tr', '')
     if next_u:
@@ -194,8 +202,12 @@ def _out_format(labs):
     return '\n'.join('【%s】……' % lab for lab in labs)
 
 
+_REF_STOPS = ('前文背景', '後文背景', '原文', '目前譯文', '前後鄰既有譯文',
+              '跨段統一基準', '本次待審單元', '必改硬傷', '硬傷清單')
+
+
 def _ref_block(path):
-    """從單段再審材料抽出【對照層】，原樣帶進修訂材料。"""
+    """從單段再審材料抽出【對照層】，止於下一個白名單 section（段別標籤不算）。"""
     if not os.path.exists(path):
         return ''
     t = io.open(path, encoding='utf-8').read()
@@ -203,18 +215,22 @@ def _ref_block(path):
     if not m:
         return ''
     tail = t[m.end():]
-    nxt = re.search(r'(?m)^【[^】\n]{1,30}】\s*$', tail)
+    nxt = re.search(r'(?m)^【(?:%s)[^】]*】\s*$'
+                    % '|'.join(re.escape(x) for x in _REF_STOPS), tail)
     return (tail[:nxt.start()] if nxt else tail).strip()
 
 
 def _render(prompt, book, vol, key, pack_key, no, contexts, unit, fixes,
-            terms, fix_terms, evid, refs=''):
+            terms, fix_terms, evid, refs='', mother=''):
     L = [prompt, '', '---', '',
          '（出處：《%s》%s，%s｜再審包 %s 第 %d 號）'
          % (book, vol or '（未分卷）', key, pack_key, no), '']
     if contexts['pre_src'].strip():
         L += ['【前文背景（原文，僅供銜接，嚴禁譯入正文）】', '',
               contexts['pre_src'], '']
+    if (mother or '').strip():
+        L += ['【所釋鈔文（資持記母本；僅供對讀，嚴禁抄入譯文）】', '',
+              mother.strip(), '']
     if (refs or '').strip():
         L += ['【對照層（僅供校勘，嚴禁譯入正文）】', '', refs.strip(), '']
     L += ['【原文】', '']
@@ -369,7 +385,8 @@ def main():
             out_format=_out_format(unit.get('labs') or []))
         md = _render(prompt, book, vol, key, pack_key, no, ctx, unit, fixes,
                      terms, fix_terms, evid,
-                     refs=_ref_block(os.path.join(mdir, pack_key + '.md')))
+                     refs=_ref_block(os.path.join(mdir, pack_key + '.md')),
+                     mother=pack.get('mother') or '')
         io.open(os.path.join(out, key + '.md'), 'w', encoding='utf-8').write(md)
         meta = {
             'key': key, 'pack': pack_key, 'book': book, 'chunk': unit.get('chunk', ''),

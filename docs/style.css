@@ -441,6 +441,24 @@ h2.sec, span[id^="p"] { scroll-margin-top: 14px; }
 .pager { display: flex; justify-content: space-between; gap: 1rem; margin: 2.5rem 0 0; font-size: 14px; }
 mark { background: var(--mark-bg); color: var(--mark-fg); padding: 0 .08em; border-radius: 2px; }
 .hitflash { background: var(--mark-bg) !important; box-shadow: 0 0 0 3px var(--mark-bg); border-radius: 2px; }
+/* 搜尋結果著陸：整段明顯標示（nav.js 加上 .searchhit） */
+.pair.searchhit, h2.sec.searchhit {
+  animation: hitpulse 1.3s ease-out 2;
+  outline: 3px solid var(--accent2);
+  outline-offset: 5px;
+  border-radius: 6px;
+  scroll-margin-top: 16px;
+}
+@keyframes hitpulse {
+  0% { background-color: var(--mark-bg); }
+  100% { background-color: transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pair.searchhit, h2.sec.searchhit {
+    animation: none;
+    background-color: var(--mark-bg);
+  }
+}
 #colophon, .sitefoot {
   margin-top: 3rem; padding-top: 1.2rem;
   border-top: 1px solid var(--line);

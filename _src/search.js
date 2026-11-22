@@ -37,6 +37,12 @@
     return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
+  /* 索引 anchor 由 build_search_index.py 依實際頁面產生：
+     pair-N（六書，第 N 個 pair）或頁面原有 id（合編 sN、篇名 pN）。 */
+  function hitHref(x) {
+    return x.bid + '/' + x.v + '.html' + (x.i ? '#' + x.i : '');
+  }
+
   function highlight(text, terms) {
     var t = String(text || '');
     if (!terms.length) return esc(t);
@@ -205,8 +211,10 @@
       arr.slice(0, perBook).forEach(function (x) {
         var a = document.createElement('a');
         a.className = 'hit';
-        a.href = x.bid + '/' + x.v + '.html' + (x.i ? '#' + x.i : '');
-        a.innerHTML = '<div class="meta">' + esc(x.v) + '　<span>前往 →</span></div>' +
+        a.href = hitHref(x);
+        a.innerHTML = '<div class="meta">' + esc(x.v) +
+          (x.n ? '　·　第 ' + esc(x.n) + ' 段' : '') +
+          '　<span>跳到該段 →</span></div>' +
           '<div class="o">' + snippet(x.o, terms, 110) + '</div>' +
           '<div class="t">' + snippet(x.t, terms, 110) + '</div>';
         frag.appendChild(a);
@@ -270,7 +278,7 @@
         (data.entries || []).forEach(function (e) {
           if (matches(e, currentTerms)) {
             results.push({
-              bid: book.id, v: e.v, o: e.o, t: e.t, i: e.i || '',
+              bid: book.id, v: e.v, o: e.o, t: e.t, i: e.i || '', n: e.n || 0,
               sc: score(e, currentTerms, norm(q)), order: order++
             });
           }

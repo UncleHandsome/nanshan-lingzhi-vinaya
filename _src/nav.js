@@ -339,13 +339,39 @@
     return bar.getBoundingClientRect().height + 12;
   }
 
+  // 搜尋索引的錨點有兩種：
+  //   pair-N → main 裡第 N 個 .pair（六書頁面 pair 沒有 id，索引以頁面序號定位）
+  //   其他   → 一般 id（合編頁 sN、篇名 pN，以及日後生成器補上的 pair-N id）
+  function resolveAnchor(id) {
+    var el = document.getElementById(id);
+    if (el) return el;
+    var m = /^pair-(\d+)$/.exec(id);
+    if (m) {
+      var list = document.querySelectorAll('main .pair');
+      return list[parseInt(m[1], 10)] || null;
+    }
+    return null;
+  }
+
+  var hitEl = null;
+  function markHit(el) {
+    if (!el) return;
+    if (hitEl && hitEl !== el) hitEl.classList.remove('searchhit');
+    if (!el.classList.contains('pair') && !el.classList.contains('sec')) return;
+    hitEl = el;
+    el.classList.remove('searchhit');
+    void el.offsetWidth;          // 重新觸發動畫
+    el.classList.add('searchhit');
+  }
+
   function jumpToHash() {
     if (!location.hash) return;
     var id;
     try { id = decodeURIComponent(location.hash.slice(1)); }
     catch (e) { id = location.hash.slice(1); }
-    var el = document.getElementById(id);
+    var el = resolveAnchor(id);
     if (!el) return;
+    markHit(el);
 
     var seq = ++jumpSeq;
     userMoved = false;
@@ -365,6 +391,9 @@
       if (++tries < 12) setTimeout(settle, tries < 6 ? 50 : 120);
     })();
   }
+
+  // 先立即定位一次：即使 nav.json 還沒回來（或載入失敗），pair 錨點也能到位
+  jumpToHash();
 
   // ── 抽屜 ─────────────────────────────────────────────────
   function openDrawer() {

@@ -267,16 +267,10 @@ def build():
             for it in items:
                 entries.append(dict(v=v, o=it['o'], t=it['t'], i=it.get('_id', '')))
         search_idx[bk['out']] = dict(title=bk['title'], entries=entries)
-    # 搜尋索引（每本一檔）
-    os.makedirs(os.path.join(SITE, 'search'), exist_ok=True)
-    for out, data in search_idx.items():
-        io.open(os.path.join(SITE, 'search', out + '.js'), 'w', encoding='utf-8').write('window.SIDX=window.SIDX||{};window.SIDX["' + out + '"]=' + json.dumps(data, ensure_ascii=False) + ';')
-    # 搜尋 manifest：書名／索引檔由建置端統一產生，search.js 不再硬編碼
-    search_books = [dict(id=bk['out'], title=bk['title'], file='search/' + bk['out'] + '.js') for bk in all_books]
-    if os.path.exists(os.path.join(SITE, 'search', 'hebian.js')):
-        search_books.append(dict(id='hebian', title='行事鈔資持記・句級合編', file='search/hebian.js'))
-    io.open(os.path.join(SITE, 'search', 'manifest.js'), 'w', encoding='utf-8').write(
-        'window.SEARCH_BOOKS=' + json.dumps(search_books, ensure_ascii=False) + ';')
+    # 搜尋索引：一律由實際輸出頁面重建（build_search_index.py）。
+    # 索引 anchor 只有在頁面上真的找得到時才有意義，不能再從材料端各自推一份。
+    import build_search_index as BSI
+    BSI.build(site=SITE)
     shutil.copyfile(os.path.join(B, '_src', 'search.js'), os.path.join(SITE, 'search.js'))
     # 目錄
     cards = []

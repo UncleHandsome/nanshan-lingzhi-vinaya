@@ -444,15 +444,9 @@ def main():
         nav_vols.append(dict(v=vol, secs=[['p%d' % n, t] for n, t in toc]))
         print(vol, '篇', len(toc), 'pair', sid, flush=True)
 
-    sp = os.path.join(SITE, 'search')
-    os.makedirs(sp, exist_ok=True)
-    for e in entries:
-        e['o'] = re.sub(r'\s*\n\s*', '', e['o'])
-        e['t'] = re.sub(r'\s*\n\s*', '', e['t'])
-    payload = ('window.SIDX=window.SIDX||{};window.SIDX["hebian"]=' +
-               json.dumps(dict(title='行事鈔資持記・句級合編', entries=entries),
-                          ensure_ascii=False) + ';')
-    io.open(os.path.join(sp, 'hebian.js'), 'w', encoding='utf-8').write(payload)
+    # 搜尋索引：由剛寫出的頁面重建，anchor 一定對得上（build_search_index.py）
+    import build_search_index as BSI
+    BSI.build(site=SITE, only=['hebian'], quiet=True)
 
     # 只更新 nav.json 的 hebian 段，其他書不動（避免蓋掉別人的重建）
     np = os.path.join(SITE, 'nav.json')

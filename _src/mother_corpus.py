@@ -157,11 +157,10 @@ def chao_for_units(texts, per=300):
 
 
 def ji_for_chao(text, limit=6, cap=2200):
-    """反向對照：給《行事鈔》文句，回傳所對應的《資持記》釋文（cap 內）。
+    """反向對照：給《行事鈔》文句，回傳所對應的《資持記》釋文。
 
-    與 chao_for() 相反：chao_for 是「記文→所釋鈔文」，本函式是
-    「鈔文→資持記相關釋文」，供再審材料掛【資持記相關釋文】。
-    超過 cap 時保留首 2 條＋尾 2 條（確保末句不被切），再均勻補中間。
+    掃完所有 tier，收齊所有 ≥10 字命中，按原文順序；超 cap 時每條保留 70–100 字摘要，
+    確保每個小點都露臉（不因先命中就 return，也不只取最長 8 條）。
     """
     u = han(text)
     if not u:
@@ -176,43 +175,30 @@ def ji_for_chao(text, limit=6, cap=2200):
         lambda ch: len(ch) >= 12 and any(ch[j:j + 8] in u
                                         for j in range(0, len(ch) - 7, 4)),
     )
+    hit_idx = set()
     for ok in tiers:
-        hits = []
         for i, x in enumerate(seq):
             ch = han(x.get('chao') or '')
             if ch and ok(ch):
-                hits.append((len(ch), i))
-        if not hits:
-            continue
-        hits.sort(reverse=True)
-        segs, seen = [], set()
-        for _, i in hits[:max(limit, 8)]:
-            ji = (seq[i].get('ji') or '').strip()
-            if ji and ji not in seen:
-                seen.add(ji)
-                segs.append(ji)
-        if not segs:
-            continue
-        total = sum(len(s) for s in segs) + len(segs) - 1
-        if total <= cap or len(segs) <= 4:
-            out = '\n'.join(segs)
-            return out if len(out) <= cap else out[-cap:]
-        # 首 2＋尾 2 固定；中間均勻補到 cap
-        head, tail = segs[:2], segs[-2:]
-        mid = segs[2:-2]
-        sel = list(head)
-        acc = sum(len(s) for s in head) + len(head)
-        reserve = sum(len(s) for s in tail) + len(tail)
-        # 中間每條保留前 70 字，不跳步整條丟；首尾仍留全條
-        for s in mid:
-            piece = s[:70]
-            if acc + len(piece) + 1 + reserve <= cap:
-                sel.append(piece)
-                acc += len(piece) + 1
-        sel.extend(tail)
-        out = '\n'.join(sel)
-        return out if len(out) <= cap else out[:cap - 1] + '…'
-    return ''
+                hit_idx.add(i)
+    if not hit_idx:
+        return ''
+    segs, seen = [], set()
+    for i in sorted(hit_idx):       # 原文順序，不按長度
+        ji = (seq[i].get('ji') or '').strip()
+        if ji and ji not in seen:
+            seen.add(ji)
+            segs.append(ji)
+    if not segs:
+        return ''
+    total = sum(len(s) for s in segs) + len(segs) - 1
+    if total <= cap:
+        return '\n'.join(segs)
+    # 每條保留 70–100 字摘要，所有小點都露臉
+    per = max(70, min(100, (cap // max(1, len(segs))) - 1))
+    outs = [s[:per] for s in segs]
+    out = '\n'.join(outs)
+    return out if len(out) <= cap + 200 else out[:cap + 200 - 1] + '…'
 
 
 def main():

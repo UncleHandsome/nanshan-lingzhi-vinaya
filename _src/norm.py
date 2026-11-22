@@ -79,7 +79,7 @@ _ABBR_RESTORE = (
     (re.compile(r'《[毘毗]尼母[經論]》'), ('毘尼母',), '母論'),
     (re.compile(r'《雜阿含經》'), ('雜阿含',), '雜含'),
     (re.compile(r'《大智度論》'), ('大智度',), '智論'),
-    (re.compile(r'《五百問(?:論|經|事)?》'), ('五百問',), '五百問'),
+    (re.compile(r'《五百問(?:論|經|事)?》'), ('五百問事', '五百問經', '五百問論'), '五百問'),
     (re.compile(r'《五百問事(?:經)?》'), ('五百問事經',), '五百問事'),
 )
 # 《善見》系列獨立處理：依原文實際簡稱決定保留哪一種寫法
@@ -239,7 +239,8 @@ def _norm_line(s, src_plain, lab='鈔文'):
             if not any(_m in src_plain for _m in _markers) and _abbr in src_plain:
                 s = re.sub(r'(?:%s)?\s*%s' % (_abbr, _pat.pattern), '《%s》' % _abbr, s)
         s = _fix_shanjian(s, src_plain)
-        if '毘尼毘婆沙' not in src_plain and '薩婆多毘尼' not in src_plain:
+        if '毘尼毘婆沙' not in src_plain and '薩婆多毘尼' not in src_plain \
+                and '毘婆沙' not in src_plain and '毗婆沙' not in src_plain:
             _cands = [x for x in ('婆沙', '婆論', '多論') if x in src_plain]
             if len(_cands) == 1:
                 s = re.sub(r'(?:%s)?\s*《薩婆多[毘毗]尼[毘毗]婆沙》' % _cands[0], '《%s》' % _cands[0], s)

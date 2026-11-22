@@ -473,34 +473,45 @@ def _plain_src(unit):
 
 
 def _parallel_notes(book, src, cap=900, limit=2):
-    """書庫平行釋文：優先同宗註疏（戒疏／行宗記／資持記／行事鈔／婆沙）。"""
+    """書庫平行釋文：同宗註疏／律典；尼鈔明確避開自身書庫。"""
     try:
         import local_corpus as LC
     except Exception:
         return ''
     h = han(src)
-    if book == '尼鈔':
-        # 不只用前 14 字：抽本段 2 個稀有實詞共現查
-        gs = sorted((g for g in _grams(h[:160], ns=(3,)) if len(g) >= 3),
-                    key=lambda x: len(x), reverse=True)[:2]
-        q = ' '.join(gs) if len(gs) == 2 else h[:14]
-    else:
-        q = h[:14]
-    if len(q) < 6:
-        return ''
-    try:
-        hits = LC.find(q, None, limit=limit, pad=150,
-                       ctx_book=('義鈔' if book == '義鈔' else book))
-    except Exception:
-        return ''
-    out = []
-    for h in hits or []:
-        b = h.get('book') or ''
+    works = ('行事鈔', '資持記', '四分律', '摩訶僧祇律', '五分律', '十誦律') \
+        if book == '尼鈔' else None
+    # 前、中、後三段各抽 2 個稀有 3 字實詞
+    segs = [h[:100], h[max(0, len(h) // 2 - 50):len(h) // 2 + 50], h[-100:]]
+    queries = []
+    for seg in segs:
+        gs = sorted((g for g in _grams(seg, ns=(3,)) if len(g) >= 3),
+                    key=lambda x: (-len(x), x))[:2]
+        if len(gs) == 2:
+            queries.append(' '.join(gs))
+    if not queries:
+        queries = [h[:14]]
+    hits = []
+    for q in queries:
+        try:
+            if works:
+                for w in works:
+                    hs = LC.find(q, w, limit=1, pad=150)
+                    hits.extend(hs or [])
+            else:
+                hits.extend(LC.find(q, None, limit=limit, pad=150,
+                                    ctx_book=('義鈔' if book == '義鈔' else book)) or [])
+        except Exception:
+            continue
+    out, seen = [], set()
+    for x in hits:
+        b = x.get('book') or ''
         if b == book or b in ('義鈔輔要記',):
             continue
-        kw = (h.get('kwic') or '').strip()
-        if kw:
-            out.append('《%s》%s：%s' % (b, h.get('juan') or '', kw))
+        kw = (x.get('kwic') or '').strip()
+        if kw and (b, kw[:30]) not in seen:
+            seen.add((b, kw[:30]))
+            out.append('《%s》%s：%s' % (b, x.get('juan') or '', kw))
     return '\n'.join(out)[:cap]
 
 
@@ -908,21 +919,24 @@ _QUOTE_WORKS = (
 
 
 def _quote_note(src):
-    """原文書名＋云／言／說時，抓引文反查該書 1 條原文（只作對照）。"""
+    """原文書名＋云／言／說時，反查該書 1 條原文；最多收 2–3 部不同引書。"""
     try:
         import local_corpus as LC
     except Exception:
         return ''
     raw = re.sub(r'\s+', '', src or '')
+    out, seen = [], set()
     for short, work in _QUOTE_WORKS:
         m = re.search(re.escape(short) + r'[論律經]?[云言說曰：:]\s*([\u4e00-\u9fff]{4,24})', raw)
         if not m:
             continue
         q = m.group(1)
         cands = [q]
-        # 查不到才拆 3-gram 共現（避免只查簡稱）
         if len(q) >= 9:
             cands.append(' '.join(q[i:i + 3] for i in range(0, len(q) - 2, 3)))
+        else:
+            # 短引文：兩兩 2-gram 共現退路
+            cands.append(' '.join(q[i:i + 2] for i in range(0, len(q) - 1, 2)))
         for qq in cands:
             try:
                 hs = LC.find(qq, work, limit=1, pad=240)
@@ -930,11 +944,16 @@ def _quote_note(src):
                 hs = []
             if hs:
                 kw = (hs[0].get('kwic') or '').strip()
-                if kw:
-                    return ('《%s》%s：%s'
-                            % (hs[0].get('book') or work,
-                               (hs[0].get('juan') or '').replace('卷第', '卷'), kw))
-    return ''
+                sig = (hs[0].get('book') or work, kw[:30])
+                if kw and sig not in seen:
+                    seen.add(sig)
+                    out.append('《%s》%s：%s'
+                               % (hs[0].get('book') or work,
+                                  (hs[0].get('juan') or '').replace('卷第', '卷'), kw))
+                break
+        if len(out) >= 3:
+            break
+    return '\n'.join(out)
 
 
 def reference_blocks(book, unit, order, i):

@@ -21,6 +21,8 @@ import json
 import os
 import re
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import materials_io as MI
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -90,7 +92,12 @@ def _nums(s):
 
 def _is_none(txt):
     s = re.sub(r'[\s*_`#>\-•]', '', txt or '')
-    return s in ('', '無', '無。', '无', '无。', '沒有', '没有')
+    if s in ('', '無', '無。', '无', '无。', '沒有', '没有'):
+        return True
+    # 單段常見「無（只有…）」：無 [n] 問題欄位即視為無硬傷
+    if s.startswith(('無', '无')) and not re.search(r'\[\d', s):
+        return True
+    return False
 
 
 def _parse_items(body, n_units):
@@ -157,6 +164,13 @@ def _classify(reply_path, meta, key):
         return 'abnormal', '回覆空白', rt, []
     tbl = _block(rt, '分段核驗表')
     if tbl is None:
+        # 單段容錯：無表但有【結論】PASS／FIX，或硬傷無 [01] 時歸 unit 1
+        if n == 1 and MI.verdict(rt) == 'PASS':
+            return 'ok', '', rt, []
+        if n == 1 and MI.verdict(rt) == 'FIX':
+            fx = _block(rt, '必改硬傷')
+            if fx and not _is_none(fx):
+                return 'ok', '', rt, [{'n': 1, 'text': fx.strip()}]
         return 'abnormal', '缺【分段核驗表】', rt, []
     covered = _nums(tbl)
     if not covered:
@@ -178,6 +192,9 @@ def _classify(reply_path, meta, key):
                         for u in (meta.get('units') or [])
                         for p in (u.get('parts') or []))
     items, bad, loose = _parse_items(fixes, n)
+    if n == 1 and not bad and (not items or loose):
+        # 單段：硬傷未標 [01] 時整段歸 unit 1，不整筆異常
+        items, loose = [{'n': 1, 'text': fixes.strip()}], 0
     if bad:
         return ('abnormal',
                 '硬傷段號越界：%s' % '、'.join('[%d]' % x for x in bad[:20]), rt, [])
@@ -352,11 +369,15 @@ def main():
         ulist = units
         for no, its in sorted(per.items()):
             ukey = ulist[no - 1]['key']
-            plan['fix'][ukey] = {'pack': key, 'no': no, 'items': its}
+            ck = '%s__%s' % (meta.get('book_id') or meta.get('book') or '', ukey)
+            plan['fix'][ck] = {'pack': key, 'no': no, 'unit_key': ukey,
+                               'book_id': meta.get('book_id') or '', 'items': its}
             n_fix += 1
         for i, u in enumerate(ulist, 1):
             if i not in per:
-                plan['pass'].append(u['key'])
+                plan['pass'].append('%s__%s'
+                                    % (meta.get('book_id') or meta.get('book') or '',
+                                       u['key']))
                 n_pass += 1
         plan['packs'][key] = {'units': len(units), 'covered': len(units),
                               'fix': len(per), 'pass': len(units) - len(per),
@@ -367,6 +388,8 @@ def main():
     if args.bisect and os.path.isdir(bdir):
         parent_units = {m['key']: [u.get('key') for u in (m.get('units') or [])]
                         for m in metas}
+        book_of_pack = {m['key']: (m.get('book_id') or m.get('book') or '')
+                        for m in metas}
         merged = []
         for f in sorted(os.listdir(bdir)):
             if not f.endswith('.json') or f.startswith('_'):
@@ -375,12 +398,12 @@ def main():
                 cm = json.load(io.open(os.path.join(bdir, f), encoding='utf-8'))
             except Exception:
                 continue
-            ck = cm.get('key') or f[:-5]
+            child_key = cm.get('key') or f[:-5]
             pk = cm.get('parent') or ''
             if pk not in parent_units:
                 continue
-            st, rs, _rt, its = _classify(os.path.join(bdir, '回覆', ck + '_回.txt'),
-                                         cm, ck)
+            st, rs, _rt, its = _classify(os.path.join(bdir, '回覆', child_key + '_回.txt'),
+                                         cm, child_key)
             if st == 'ok':
                 per_c = {}
                 for it in its:
@@ -390,16 +413,20 @@ def main():
                     if ukey not in parent_units[pk]:
                         continue
                     pno = parent_units[pk].index(ukey) + 1
-                    plan['fix'][ukey] = {'pack': pk, 'no': pno, 'items': items_c,
-                                         'via_bisect': ck}
-                    if ukey in plan['pass']:
-                        plan['pass'].remove(ukey)
+                    bid = book_of_pack.get(pk, '')
+                    ck = '%s__%s' % (bid, ukey)
+                    plan['fix'][ck] = {'pack': pk, 'no': pno, 'unit_key': ukey,
+                                       'book_id': bid, 'items': items_c,
+                                       'via_bisect': child_key}
+                    if ck in plan['pass']:
+                        plan['pass'].remove(ck)
                 for i, u in enumerate(cm.get('units') or [], 1):
-                    if i not in per_c and u.get('key') not in plan['pass']:
-                        plan['pass'].append(u.get('key'))
-                merged.append(ck)
+                    ck = '%s__%s' % (book_of_pack.get(pk, ''), u.get('key'))
+                    if i not in per_c and ck not in plan['pass']:
+                        plan['pass'].append(ck)
+                merged.append(child_key)
             elif st == 'abnormal':
-                plan['abnormal'][ck] = rs
+                plan['abnormal'][child_key] = rs
         if merged:
             plan['bisect_merged'] = merged
     _fix_n = len(plan['fix'])

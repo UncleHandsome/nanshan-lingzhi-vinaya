@@ -247,6 +247,12 @@ def _verify_material(book, key, parts, fixes, before_text, after_text, vol='',
     return '\n'.join(L)
 
 
+def _drop_candidate(out, key):
+    p = os.path.join(out, '回覆', key + '_回.txt')
+    if os.path.exists(p):
+        os.remove(p)
+
+
 def _write(path, text):
     d = os.path.dirname(path)
     if d:
@@ -357,6 +363,8 @@ def main():
 
         v1 = _read(os.path.join(rep_ver, key + '_回.txt'))
         if not v1.strip():
+            if not args.dry_run:
+                _drop_candidate(out, key)
             buckets['verify_pending'].append(
                 '%s\t%s' % (key, '幅度 %.2f 須驗收' % ratio if
                             (ratio > MAX_RATIO or ratio < MIN_RATIO) else '有改動待 VERIFY'))
@@ -386,6 +394,8 @@ def main():
         retry_dir = os.path.join(out, '_再修')
         rt2 = _read(os.path.join(retry_dir, '回覆', key + '_回.txt'))
         if not rt2.strip():
+            if not args.dry_run:
+                _drop_candidate(out, key)
             buckets['retry_material'].append('%s\t%s' % (key, reasons.split('\n')[0][:120]))
             if not args.no_materials and not args.dry_run:
                 _old = os.path.join(retry_dir, '回覆', key + '_回.txt')
@@ -409,6 +419,8 @@ def main():
         cand2 = _norm_candidate(clean2, parts, book)
         v2 = _read(os.path.join(rep_ver, key + '_再驗_回.txt'))
         if not v2.strip():
+            if not args.dry_run:
+                _drop_candidate(out, key)
             buckets['second_pending'].append(key)
             if not args.no_materials and not args.dry_run:
                 _ctx = _context_from_material(_read(os.path.join(revise, key + '.md')))
@@ -423,6 +435,8 @@ def main():
             if not args.dry_run:
                 _write(os.path.join(out, '回覆', key + '_回.txt'), cand2)
         else:
+            if not args.dry_run:
+                _drop_candidate(out, key)
             buckets['manual'].append(
                 '%s\t二次 VERIFY 仍 %s：%s'
                 % (key, vd2 if vd2 != 'ERROR' else '無法判定',

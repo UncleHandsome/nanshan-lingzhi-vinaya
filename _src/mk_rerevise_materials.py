@@ -354,19 +354,22 @@ def main():
                             key=lambda kv: (kv[1].get('pack', ''), kv[1].get('no', 0))):
         pack_key = info.get('pack') or ''
         no = int(info.get('no') or 0)
+        ck = key                       # 複合鍵 <book_id>__<unit_key>
+        ukey = info.get('unit_key') or (ck.split('__', 1)[-1] if '__' in ck else ck)
         if pack_key not in packs:
             p = os.path.join(mdir, pack_key + '.json')
             if not os.path.exists(p):
-                skipped.append((key, '缺材料 %s' % pack_key))
+                skipped.append((ck, '缺材料 %s' % pack_key))
                 continue
             packs[pack_key] = json.load(io.open(p, encoding='utf-8'))
         pack = packs[pack_key]
         us = pack.get('units') or []
-        if not (1 <= no <= len(us)) or us[no - 1].get('key') != key:
-            skipped.append((key, '計畫編號與材料不符（%s 第 %d 號）' % (pack_key, no)))
+        if not (1 <= no <= len(us)) or us[no - 1].get('key') != ukey:
+            skipped.append((ck, '計畫編號與材料不符（%s 第 %d 號）' % (pack_key, no)))
             continue
         unit = us[no - 1]
         book = pack.get('book') or ''
+        bid = book.get('book_id') if isinstance(book, dict) else (pack.get('book_id') or '')
         vol = unit.get('vol') or pack.get('vol') or ''
         fixes = '\n'.join(it.get('text', '') for it in (info.get('items') or []))
         if not fixes.strip():
@@ -390,8 +393,8 @@ def main():
         _tr = '\n'.join((p.get('tr') or '') for p in unit.get('parts') or [])
         prompt = BC.revise_prompt(
             book, note, unit.get('labs') or [], _src, _tr,
-            long=bool(re.search(r'_L\d{3,}', key)),
-            key=key, fixes=fixes,
+            long=bool(re.search(r'_L\d{3,}', ukey)),
+            key=ck, fixes=fixes,
             out_format=_out_format(unit.get('labs') or []))
         _mother = pack.get('mother') or ''
         if book == '資持記':
@@ -400,13 +403,14 @@ def main():
                 _mother = MC.chao_for(_src) or _mother
             except Exception:
                 pass
-        md = _render(prompt, book, vol, key, pack_key, no, ctx, unit, fixes,
+        md = _render(prompt, book, vol, ck, pack_key, no, ctx, unit, fixes,
                      terms, fix_terms, evid,
                      refs=_ref_block(os.path.join(mdir, pack_key + '.md')),
                      mother=_mother)
-        io.open(os.path.join(out, key + '.md'), 'w', encoding='utf-8').write(md)
+        io.open(os.path.join(out, ck + '.md'), 'w', encoding='utf-8').write(md)
         meta = {
-            'key': key, 'pack': pack_key, 'book': book, 'chunk': unit.get('chunk', ''),
+            'key': ck, 'unit_key': ukey, 'pack': pack_key, 'book': book,
+            'book_id': bid, 'chunk': unit.get('chunk', ''),
             'vol': vol, 'labs': unit.get('labs') or [],
             'fixes': fixes,
             'parts': [{'lab': p.get('lab'), 'orig': p.get('orig'), 'tr': p.get('tr'),

@@ -101,7 +101,7 @@ def _stale_reason(meta_u, row, parts):
     """材料與現定稿逐段比對；不一致即退回（定稿可能在材料產出後被更新）。"""
     if not meta_u:
         return '找不到材料單位（材料與定稿不對應）'
-    cur_src = _han(row.get('source', ''))
+    cur_src = _raw_han(row.get('source', ''))
     if meta_u.get('src_hash') and meta_u['src_hash'] != _md5(cur_src):
         return '材料原文與現定稿不符（定稿已更新）'
     mp = meta_u.get('parts') or []
@@ -110,11 +110,15 @@ def _stale_reason(meta_u, row, parts):
     for a, b in zip(mp, parts):
         if a.get('lab') != b['lab']:
             return '材料段別與現定稿不符（定稿已更新）'
-        if (a.get('orig') or '') != (b['orig'] or ''):
+        if _raw_han(a.get('orig') or '') != _raw_han(b['orig'] or ''):
             return '材料原文與現定稿不符（定稿已更新）'
         if _LAB_HEAD.sub('', a.get('tr') or '') != _LAB_HEAD.sub('', b['tr'] or ''):
             return '材料現譯與現定稿不符（定稿已更新，請重產材料）'
     return ''
+
+
+def _raw_han(s):
+    return ''.join(re.findall(r'[\u4e00-\u9fff]', s or ''))
 
 
 def _md5(s):
@@ -383,23 +387,24 @@ def main():
     new_rows = []
     for row in rows:
         key = row.get('key')
-        if key not in fix:
+        ck = '%s__%s' % (bid, key)
+        if ck not in fix:
             new_rows.append(row)
             continue
-        info = fix[key]
+        info = fix[ck]
         if status is None and not args.allow_missing_status:
-            blocked.append((key, '缺 _驗收狀態.json；未驗收不得套用'))
+            blocked.append((ck, '缺 _驗收狀態.json；未驗收不得套用'))
             new_rows.append(row)
             continue
-        if status is not None and key not in allowed:
-            blocked.append((key, '未在 _驗收狀態.json 候選／未改動清單'))
+        if status is not None and ck not in allowed:
+            blocked.append((ck, '未在 _驗收狀態.json 候選／未改動清單'))
             new_rows.append(row)
             continue
-        if key in manual:
-            blocked.append((key, '在 _人工複核清單.txt，需人工'))
+        if ck in manual:
+            blocked.append((ck, '在 _人工複核清單.txt，需人工'))
             new_rows.append(row)
             continue
-        rp = os.path.join(rep, key + '_回.txt')
+        rp = os.path.join(rep, ck + '_回.txt')
         if not os.path.exists(rp):
             pending.append((key, '缺修訂回覆'))
             new_rows.append(row)
@@ -477,7 +482,7 @@ def main():
         nr['revised'] = True
         new_rows.append(nr)
         applied.append({
-            'key': key, 'vol': row.get('vol', ''), 'chunk': row.get('chunk', ''),
+            'key': ck, 'vol': row.get('vol', ''), 'chunk': row.get('chunk', ''),
             'labs': [p['lab'] for p in parts],
             'old': old_han, 'new': new_han, 'ratio': ratio,
             'flags': flags,

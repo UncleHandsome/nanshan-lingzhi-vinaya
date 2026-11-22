@@ -1255,7 +1255,16 @@ def generate_single(book, outdir, keys, pre_cap=PRE_SRC_CAP, post_cap=POST_SRC_C
     raws = load_raw(book)
     raw_h = raws[0]
     order = make_units(book, raw_h)
+    for _i, _u in enumerate(order):
+        _u['prev_key'] = (order[_i - 1]['key']
+                          if _i > 0 and order[_i - 1]['vol'] == _u['vol'] else '')
+        _u['next_key'] = (order[_i + 1]['key']
+                          if _i + 1 < len(order) and order[_i + 1]['vol'] == _u['vol'] else '')
     pos = {u['key']: i for i, u in enumerate(order)}
+    # 與 generate() 相同：戒疏等 raw 亂序過多時關閉 gap 偵測，避免大量假 gap
+    _disorder = [u for u in order if not u.get('mono')]
+    _gap_detect = len(_disorder) <= max(20, int(len(order) * 0.05))
+    _gap_mode = 'note' if _gap_detect else 'off'
     missing = [k for k in keys if k not in pos]
     if missing:
         raise SystemExit('以下 key 不在定稿 %s：%s' % (book, missing[:10]))
@@ -1279,8 +1288,8 @@ def generate_single(book, outdir, keys, pre_cap=PRE_SRC_CAP, post_cap=POST_SRC_C
         pre = context_before(order, i, pre_cap, PRE_TR_CAP)
         post = context_after(order, i, post_cap, POST_TR_CAP)
         refs = reference_blocks(book, u, order, i)
-        key = '%s_%s' % (bid, _safe_key(k))
-        gaps = _pack_gaps([u], order, 'note', GAP_MIN, raw_h)
+        key = '%s__%s' % (bid, _safe_key(k))
+        gaps = _pack_gaps([u], order, _gap_mode, GAP_MIN, raw_h) if _gap_detect else []
         _, meta = emit_pack(outdir, [u], n, book, bid, 'body', gaps, raw_h,
                             pre=pre, post=post, key=key, target=0, refs=refs)
         meta['sample_key'] = k

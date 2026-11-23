@@ -46,6 +46,46 @@ def parse_parts(o):
     return out, ''
 
 
+def split_row_full(row, parts):
+    """用 heads 直接對目前 canonical 全段重切，不依賴舊 segment 編號。"""
+    segs = row.get('segments') or []
+    if not segs:
+        return None, 'no canonical segments'
+    full = ''; spans = []; pos = 0
+    for s in segs:
+        ss = (s.get('display_source') or s.get('source') or '').strip()
+        if not ss:
+            return None, 'empty segment'
+        spans.append((pos, pos + len(ss), s.get('label') or '疏文'))
+        full += ss; pos += len(ss)
+    poslist = []
+    for j, (seg, head, tr) in enumerate(parts):
+        idx = full.find(head)
+        if idx < 0:
+            return None, 'full head not found: ' + head[:16]
+        if full.find(head, idx + 1) >= 0:
+            return None, 'full head not unique: ' + head[:16]
+        if j == 0 and idx != 0:
+            return None, 'full first head not at start'
+        if poslist and idx <= poslist[-1]:
+            return None, 'full head order'
+        poslist.append(idx)
+    new = []
+    for j, (seg, head, tr) in enumerate(parts):
+        a = poslist[j]; b = poslist[j + 1] if j + 1 < len(parts) else len(full)
+        labs = {lab for x, y, lab in spans if x < b and y > a}
+        if len(labs) != 1:
+            return None, 'part crosses label boundary'
+        lab = labs.pop()
+        base = next(dict(s) for s, (x, y, z) in zip(segs, spans) if x < b and y > a)
+        base['label'] = lab
+        base['source'] = full[a:b]
+        base['display_source'] = full[a:b]
+        base['translation'] = tr
+        new.append(base)
+    return new, ''
+
+
 def split_row(row, parts):
     segs = row.get('segments') or []
     if not segs:
@@ -54,7 +94,8 @@ def split_row(row, parts):
     for seg, head, tr in parts:
         by.setdefault(seg, []).append((head, tr))
     if sorted(by) != list(range(1, len(segs) + 1)):
-        return None, 'segment numbers mismatch'
+        # 舊材料可能是在 >300 切分前產生；用 heads 直接對目前全段重切。
+        return split_row_full(row, parts)
     new_segs = []
     full_tr = []
     for i, seg in enumerate(segs, 1):

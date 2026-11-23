@@ -13,7 +13,7 @@
 """
 import html
 
-ASSET_VERSION = '35'
+ASSET_VERSION = '36'
 
 FOOTER = (
     '<footer class="sitefoot">'
@@ -174,6 +174,7 @@ def nav_parts(prefix='', prev_url=None, next_url=None,
         '<div class="navhead"><p class="brand"><a href="' + prefix + 'index.html">南山律典・白話對照</a></p>'
         '<button id="navclose" class="iconbtn" type="button" aria-label="關閉目錄">×</button>'
         '<button id="navcollapse" class="navcollapse" type="button" aria-label="收合目錄">⟨</button></div>',
+        '<a class="navhomelink" href="' + prefix + 'index.html">← 首頁</a>',
         '<div id="navtree" data-root="' + prefix + '" '
         'data-nav-version="' + ASSET_VERSION + '">'
         '<noscript><a href="' + prefix + 'index.html">目錄</a></noscript></div>',

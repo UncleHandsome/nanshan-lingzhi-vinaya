@@ -98,7 +98,7 @@ img { max-width: 100%; }
   font-weight: 700; font-size: 13.5px; letter-spacing: .03em;
 }
 .tb-menu:hover { border-color: var(--accent2); color: var(--accent); }
-.tb-gohome { gap: .25rem; color: var(--fg2); }
+.tb-gohome { gap: .25rem; color: var(--fg); border: 1px solid var(--line); background: var(--surface); border-radius: 7px; }
 .tb-homeicon { font-size: 16px; line-height: 1; color: var(--accent); }
 .tb-homelabel { font-size: 12px; }
 .tb-gohome:hover { color: var(--accent); }
@@ -324,6 +324,14 @@ nav .brand a { color: var(--fg); text-decoration: none; }
 /* 側欄只留書目與卷／篇 TOC；分卷與全書連結都不在側欄。 */
 
 /* 首頁／非書頁：只列書目，不顯示空 TOC */
+.navhomelink {
+  display: block; margin: .15rem .55rem .45rem; padding: .3rem .5rem;
+  border: 1px solid var(--line); border-radius: 6px;
+  background: var(--surface-2); color: var(--fg2);
+  font-size: 12px; text-decoration: none;
+}
+.navhomelink:hover { color: var(--accent); border-color: var(--accent2); text-decoration: none; }
+body.page-home .navhomelink { display: none; }
 .navbooklist { display: flex; flex-direction: column; gap: 0; padding: 0 .35rem .8rem; }
 .navbookitem {
   display: flex; align-items: center; gap: .4rem;

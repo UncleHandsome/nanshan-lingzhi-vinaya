@@ -1,0 +1,215 @@
+{
+ "scroll_sequence": [
+  [
+   "卷首",
+   "卷首"
+  ],
+  [
+   "第1篇　標宗顯德",
+   "第1篇　標宗顯德"
+  ],
+  [
+   "第2篇　集僧通局",
+   "第2篇　集僧通局"
+  ],
+  [
+   "第3篇　足數眾相",
+   "第3篇　足數眾相"
+  ],
+  [
+   "第4篇　受欲是非",
+   "第4篇　受欲是非"
+  ],
+  [
+   "第5篇　通辨羯磨",
+   "第5篇　通辨羯磨"
+  ],
+  [
+   "第6篇　結界方法",
+   "第6篇　結界方法"
+  ],
+  [
+   "第7篇　僧網大綱",
+   "第7篇　僧網大綱"
+  ],
+  [
+   "第8篇　受戒緣集",
+   "第8篇　受戒緣集"
+  ],
+  [
+   "第9篇　師資相攝",
+   "第9篇　師資相攝"
+  ],
+  [
+   "第10篇　說戒正儀",
+   "第10篇　說戒正儀"
+  ],
+  [
+   "第11篇　安居策修",
+   "第11篇　安居策修"
+  ],
+  [
+   "第12篇　自恣宗要",
+   "第12篇　自恣宗要"
+  ]
+ ],
+ "scroll_sequence_ok": true,
+ "at_bottom_cursec": "第12篇　自恣宗要",
+ "at_top_cursec": "卷首",
+ "search_first_hit": {
+  "href": "xingshichao/卷上.html?q=%E6%B3%A2%E7%BE%85%E5%A4%B7#u167",
+  "meta": "卷上　·　第3篇　足數眾相　·　本卷第 187 段　·　原文命中　跳到該段 →"
+ },
+ "search_landing": {
+  "hash": "#u167",
+  "targetTop": 14,
+  "targetIsPair": true,
+  "cursec": "第3篇　足數眾相",
+  "kw": 3,
+  "searchhit": 1
+ },
+ "ctrlk_url": "http://127.0.0.1:8765/search.html?q=%E7%BE%AF%E7%A3%A8",
+ "light_jieshu": {
+  ".pair .t": {
+   "fg": [
+    31,
+    27,
+    22
+   ],
+   "bg": [
+    253,
+    252,
+    248
+   ],
+   "ratio": 16.68
+  },
+  ".pair .o.shu": {
+   "fg": [
+    90,
+    58,
+    24
+   ],
+   "bg": [
+    244,
+    239,
+    226
+   ],
+   "ratio": 8.91
+  },
+  ".pair .o.ji": {
+   "fg": [
+    31,
+    78,
+    107
+   ],
+   "bg": [
+    238,
+    242,
+    246
+   ],
+   "ratio": 7.91
+  },
+  ".pair .o.zhu": {
+   "fg": [
+    63,
+    84,
+    19
+   ],
+   "bg": [
+    243,
+    248,
+    232
+   ],
+   "ratio": 7.8
+  },
+  ".pair .o.lv": {
+   "fg": [
+    61,
+    61,
+    61
+   ],
+   "bg": [
+    244,
+    244,
+    244
+   ],
+   "ratio": 9.88
+  },
+  ".pair .o.xu": {
+   "fg": [
+    94,
+    42,
+    89
+   ],
+   "bg": [
+    251,
+    240,
+    250
+   ],
+   "ratio": 9.71
+  }
+ },
+ "search_dup": {
+  "hebianShown": 12,
+  "dupShown": 9,
+  "totalShown": 264
+ },
+ "print": {
+  "pager": "none",
+  "tools": "none",
+  "o": "block",
+  "t": "block"
+ },
+ "mobile_bottom": {
+  "pager": true,
+  "footer": true,
+  "pagerInMain": false,
+  "py": 619
+ },
+ "index_sizes": {
+  "xingshichao": {
+   "raw": 2600575,
+   "gz": 1002080
+  },
+  "jieshu": {
+   "raw": 5325505,
+   "gz": 1841035
+  },
+  "yeshu": {
+   "raw": 3702217,
+   "gz": 1335770
+  },
+  "zhichi": {
+   "raw": 4887506,
+   "gz": 1922645
+  },
+  "nicao": {
+   "raw": 999846,
+   "gz": 361205
+  },
+  "yichao": {
+   "raw": 680071,
+   "gz": 250023
+  },
+  "hebian": {
+   "raw": 7624560,
+   "gz": 2894131
+  },
+  "manifest": {
+   "raw": 644,
+   "gz": 299
+  }
+ },
+ "default_first_load": 6713057,
+ "old_index_gz": {
+  "xingshichao": 1001652,
+  "jieshu": 1842884,
+  "yeshu": 1335851,
+  "zhichi": 1922765,
+  "nicao": 359582,
+  "yichao": 249958,
+  "hebian": 2883047,
+  "manifest": 292
+ },
+ "old_all_load": 9596031
+}

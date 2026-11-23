@@ -22,6 +22,7 @@ import os
 import re
 
 import site_assets as SA
+import canon_titles as CT
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 SITE = os.path.join(B, 'docs')
@@ -350,10 +351,11 @@ def build_chao(xs, hraw, bounds):
         ch = tpos[k][1] if k >= 0 else 0
         vol = volume_of(pos, bounds)
         end = r.get('raw_end') or pos + len(han(r.get('source')))
-        for u in seg_units(r):
+        for si, u in enumerate(seg_units(r)):
             chao.append(dict(chapter=ch, vol=vol, pos=pos, end=end,
                              label=u['label'], source=u['source'],
-                             translation=u['translation']))
+                             translation=u['translation'],
+                             key=r.get('key'), seq=si))
     return chao, titles
 
 
@@ -371,7 +373,8 @@ def build_ji(zc):
     def add(ch, sub, part, row, src, tr):
         if han(src):
             ji.append(dict(ch=ch, sub=sub, part=part, row=row,
-                           source=src, translation=tr))
+                           source=src, translation=tr,
+                           key=(zrows[row].get('key') if 0 <= row < len(zrows) else '')))
 
     for ri, r in enumerate(zrows):
         ds = r.get('display_source') or r.get('source') or ''
@@ -591,12 +594,28 @@ def align_ji(ji, chao, unit_last, AM):
     return anchors
 
 
-def emit_pair(u, kind, sid):
+def emit_pair(u, kind, sid, used=None):
     label = u.get('label') or ('鈔文' if kind == '鈔' else '記文')
     cls = 'o' if kind == '鈔' else 'o2'
-    return ('<div class="pair" id="s%d"><div class="%s">【%s】%s</div>'
+    # 穩定 id：由定稿 key 衍生（鈔 c…、記 j…；記的切段加 -h/-t）
+    pre = 'c' if kind == '鈔' else 'j'
+    suf = ''
+    if kind == '記':
+        suf = {'tail': 't', 'head': 'h'}.get(u.get('part'), '')
+    elif u.get('seq'):
+        suf = str(u.get('seq') + 1)
+    pid = SA.uid('u', '%s_%s' % (pre, u.get('key') or ''), suf)
+    if pid:
+        base, n = pid, 1
+        while used is not None and pid in used:
+            n += 1
+            pid = base + '-%d' % n
+        if used is not None:
+            used.add(pid)
+    idattr = (' id="%s"' % pid) if pid else ''
+    return ('<div class="pair"%s><div class="%s">【%s】%s</div>'
             '<div class="t">%s</div></div>'
-            % (sid, cls, esc(label), fmt(u['source']), fmt(u['translation'])))
+            % (idattr, cls, esc(label), fmt(u['source']), fmt(u['translation'])))
 
 
 def main():
@@ -634,6 +653,7 @@ def main():
         cur_ch = None
         sid = 0
         emitted = set()
+        used = set()
 
         def emit_ji(i):
             nonlocal sid
@@ -641,8 +661,9 @@ def main():
             if not han(z['source']):
                 return
             sid += 1
-            u = dict(label='記文', source=z['source'], translation=z['translation'])
-            body.append(emit_pair(u, '記', sid))
+            u = dict(label='記文', source=z['source'], translation=z['translation'],
+                     key=z.get('key'), part=z.get('part'))
+            body.append(emit_pair(u, '記', sid, used))
             stats['ji'] += 1
             stats['pairs'] += 1
             emitted.add(i)
@@ -651,7 +672,7 @@ def main():
             nonlocal sid
             u = chao[ui]
             sid += 1
-            body.append(emit_pair(u, '鈔', sid))
+            body.append(emit_pair(u, '鈔', sid, used))
             stats['chao'] += 1
             stats['pairs'] += 1
 
@@ -670,8 +691,9 @@ def main():
                     title = '卷首'
                 else:
                     title = '第%d篇　%s' % (ch, titles[ch][1])
-                    if chap_vols[ch][0] != vol:
-                        title += '（續）'
+                    if len(chap_vols[ch]) > 1:
+                        title += CT.suffix(chap_vols[ch].index(vol) + 1,
+                                           len(chap_vols[ch]))
                 toc.append([secno, title])
                 body.append('<h2 class="sec" id="p%d">%s</h2>' % (secno, esc(title)))
                 # 卷首專用：純記 + 鈔序對插
@@ -716,21 +738,17 @@ def main():
             stats['ji_no_anchor'] += 1
         prev = HB[vi - 1] if vi > 0 else None
         nxt = HB[vi + 1] if vi + 1 < len(HB) else None
-        pager = ''
-        if prev:
-            pager += '<a href="%s.html">← %s</a>' % (prev, esc(prev))
-        if nxt:
-            pager += '<a href="%s.html">%s →</a>' % (nxt, esc(nxt))
-        ttl = '四分律行事鈔資持記　句級合編　' + vol
+        ttl = '四分律行事鈔資持記・句級合編　' + vol
         body_html = ('<h1>' + esc(ttl) + '</h1>'
-                     '<p class="byline">鈔文（淺褐）與記文（淺藍）逐段並列，每段附白話；'
-                     '原文、白話皆取自定稿 JSONL。</p>'
-                     + '\n'.join(body)
-                     + '<div class="pager">' + pager + '</div>')
+                     '<p class="byline">鈔文（淺褐）、記文（淺藍）與白話逐段並列；'
+                     '原文 CBETA，白話本站。</p>'
+                     + '\n'.join(body))
         out = SA.page(ttl, body_html, prefix='../',
                       prev_url=(prev + '.html' if prev else None),
                       next_url=(nxt + '.html' if nxt else None),
-                      prev_label=prev, next_label=nxt, current_label=vol)
+                      prev_label=prev, next_label=nxt, current_label=vol,
+                      pager=True, tools=True,
+                      description='四分律行事鈔資持記・句級合編　%s：鈔文、記文與白話逐段對照。' % vol)
         if '<br><br>' in out:
             raise SystemExit('出現 <br><br>')
         io.open(os.path.join(OUT, vol + '.html'), 'w', encoding='utf-8').write(out)
@@ -747,6 +765,7 @@ def main():
     for b in nav.get('books', []):
         if b.get('out') == 'hebian':
             b['vols'] = nav_vols
+            b['title'] = '四分律行事鈔資持記・句級合編'
             break
     tmp = np + '.tmp'
     io.open(tmp, 'w', encoding='utf-8').write(

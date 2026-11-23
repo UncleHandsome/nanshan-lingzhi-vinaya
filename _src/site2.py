@@ -112,7 +112,7 @@ def page(title, body, cur_book=None, prefix='', toc=None, prev=None, nxt=None,
     return SA.page(title, body, prefix=prefix, prev_url=prev_url, next_url=next_url,
                    prev_label=prev_label, next_label=next_label,
                    current_label=current_label, extra_scripts=extra_scripts,
-                   extra_head=extra_head)
+                   extra_head=extra_head, pager=bool(cur_book), tools=bool(cur_book))
 
 
 def build():
@@ -257,11 +257,6 @@ def build():
             prev = vols[i-1] if i > 0 else None
             nxt = vols[i+1] if i+1 < len(vols) else None
             bk['_curvol'] = v
-            pager = ['<div class="pager">']
-            pager.append('<a href="' + (prev + '.html') + '">← ' + html.escape(prev) + '</a>' if prev else '<span></span>')
-            pager.append('<a href="' + (nxt + '.html') + '">' + html.escape(nxt) + ' →</a>' if nxt else '<span></span>')
-            pager.append('</div>')
-            body += pager
             io.open(os.path.join(outdir, v + '.html'), 'w', encoding='utf-8').write(
                 page(bk['title'] + '　' + v, ''.join(body), bk, '../', toc, prev, nxt))
             for it in items:
@@ -295,9 +290,11 @@ def build():
           '可用 ↑↓ 選擇結果、Enter 開啟。</p>'
           '<div class="searchbar"><input id="q" type="search" placeholder="輸入關鍵字，例如：羯磨、波羅夷、安居" autocomplete="off" autofocus aria-label="全文搜尋">'
           '<select id="bookfilter" aria-label="限定書籍"><option value="">全部書籍</option>' + opts + '</select></div>'
+          '<label class="searchopt"><input type="checkbox" id="withhebian"> '
+          '包含合編（對讀本；預設不載入，避免與單書重複）</label>'
           '<p class="byline" id="count"></p>'
           '<p id="searchstatus" class="sr-only" role="status" aria-live="polite"></p>'
-          '<div id="searcherror" hidden></div>'
+          '<div id="searcherror" role="alert" hidden></div>'
           '<div id="quickhits" hidden></div>'
           '<div id="hits"></div>')
     io.open(os.path.join(SITE, 'search.html'), 'w', encoding='utf-8').write(

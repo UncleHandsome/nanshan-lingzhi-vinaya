@@ -1,0 +1,201 @@
+{
+ "index_title": "目錄｜南山律典・白話對照",
+ "xingshichao_linewidth": {
+  "charsPerLine": 47.6,
+  "lineWidth": 883,
+  "fontSize": "17px"
+ },
+ "xingshichao_h2": [
+  "卷首",
+  "第1篇　標宗顯德",
+  "第2篇　集僧通局",
+  "第3篇　足數眾相",
+  "第4篇　受欲是非",
+  "第5篇　通辨羯磨",
+  "第6篇　結界方法",
+  "第7篇　僧網大綱",
+  "第8篇　受戒緣集",
+  "第9篇　師資相攝",
+  "第10篇　說戒正儀",
+  "第11篇　安居策修",
+  "第12篇　自恣宗要"
+ ],
+ "xingshichao_labels": {
+  "pairs": 632,
+  "labels": 0,
+  "byline": "唐·道宣律師　撰｜略稱：行事鈔｜本卷：鈔文｜共 632 段"
+ },
+ "xingshichao_pager": {
+  "prev": null,
+  "next": "卷中.html",
+  "idx": "../index.html",
+  "inMain": false
+ },
+ "landing_p5": {
+  "cursec": "第4篇　受欲是非",
+  "top": 14
+ },
+ "jieshu_h2": [
+  [
+   "p1",
+   "卷一上之一"
+  ],
+  [
+   "p2",
+   "卷一上之二"
+  ],
+  [
+   "p3",
+   "卷一下之一"
+  ],
+  [
+   "p4",
+   "卷一下之二"
+  ]
+ ],
+ "jieshu_pair800": {
+  "cursec": "卷一上之二",
+  "id": "u02d-0093",
+  "top": 14,
+  "expected": "卷一上之二"
+ },
+ "jieshu_scroll_cursec": {
+  "cursec": "卷一上之二",
+  "y": 120000
+ },
+ "jieshu_bottom": {
+  "pager": true,
+  "footer": true,
+  "pagerInMain": false,
+  "footerInMain": false,
+  "prev": null,
+  "next": "卷二 →"
+ },
+ "zhichi_zhonger_h2": [
+  "第14篇　隨戒釋相（續二）"
+ ],
+ "hebian_h2": [
+  "第14篇　隨戒釋相（續一）"
+ ],
+ "hebian_labels": {
+  "pairs": 427,
+  "labels": 427
+ },
+ "dark_jieshu": {
+  ".pair .t": {
+   "bg": "rgb(22,21,20)",
+   "fg": "rgb(230,226,218)",
+   "ratio": 14.12,
+   "font": "17px"
+  },
+  ".pair .o.shu": {
+   "bg": "rgb(36,31,23)",
+   "fg": "rgb(223,201,158)",
+   "ratio": 10.12,
+   "font": "15.5px"
+  },
+  ".pair .o.ji": {
+   "bg": "rgb(24,35,43)",
+   "fg": "rgb(184,212,232)",
+   "ratio": 10.36,
+   "font": "15.5px"
+  },
+  ".pair .o.zhu": {
+   "bg": "rgb(30,38,24)",
+   "fg": "rgb(207,224,176)",
+   "ratio": 11.1,
+   "font": "15.5px"
+  },
+  ".pair .o.lv": {
+   "bg": "rgb(35,35,34)",
+   "fg": "rgb(210,210,210)",
+   "ratio": 10.4,
+   "font": "15.5px"
+  },
+  ".pair .o.xu": {
+   "bg": "rgb(42,31,42)",
+   "fg": "rgb(224,184,220)",
+   "ratio": 9.08,
+   "font": "15.5px"
+  }
+ },
+ "dark_xingshichao_t": {
+  "ratio": 14.12,
+  "fg": [
+   230,
+   226,
+   218
+  ],
+  "bg": [
+   22,
+   21,
+   20
+  ]
+ },
+ "search_default": {
+  "count": "找到 2766 筆（顯示 252 筆）　·　286 ms",
+  "books": [
+   "四分律刪繁補闕行事鈔（307）",
+   "四分律含注戒本疏行宗記（403）",
+   "四分律刪補隨機羯磨疏（1270）",
+   "四分律行事鈔資持記（559）",
+   "四分比丘尼鈔（126）",
+   "四分律拾毗尼義鈔（101）"
+  ],
+  "firstMeta": "卷中　·　第16篇　懺六聚法　·　本卷第 652 段　·　原文命中　跳到該段 →",
+  "hits": 252,
+  "hasSection": true,
+  "checkbox": false,
+  "errorRole": "alert"
+ },
+ "search_with_hebian": {
+  "count": "找到 3627 筆（顯示 264 筆）　·　118 ms",
+  "books": [
+   "四分律刪繁補闕行事鈔（307）",
+   "四分律含注戒本疏行宗記（403）",
+   "四分律刪補隨機羯磨疏（1270）",
+   "四分律行事鈔資持記（559）",
+   "四分比丘尼鈔（126）",
+   "四分律拾毗尼義鈔（101）",
+   "四分律行事鈔資持記・句級合編（861；對讀本，內容與單書重複）"
+  ],
+  "hits": 264
+ },
+ "navfilter_empty": {
+  "text": "沒有符合「涅槃」的篇名。在全文搜尋「涅槃」→",
+  "href": "../search.html?q=%E6%B6%85%E6%A7%83",
+  "placeholder": "僅搜書名、卷名、篇名"
+ },
+ "navfilter_nav": {
+  "url": "http://127.0.0.1:8765/search.html?q=%E6%B6%85%E6%A7%83",
+  "count": "找到 479 筆（顯示 195 筆）　·　139 ms"
+ },
+ "hide_o": {
+  "oDisplay": "none",
+  "tDisplay": "block",
+  "pressed": "true"
+ },
+ "hide_persist": "none",
+ "twocol": {
+  "display": "grid",
+  "cols": "517.312px 558.719px",
+  "html": "twocol"
+ },
+ "copybtn": "已複製",
+ "skip_focus1": "skip-link",
+ "skip_focus2": "main",
+ "appendix": {
+  "tables": 7,
+  "captions": 7,
+  "scope": 20
+ },
+ "mobile": {
+  "overflow": false,
+  "width": 390,
+  "footer": true,
+  "pager": true,
+  "tools": true,
+  "chars": 20.4
+ },
+ "mobile_search": "找到 2766 筆（顯示 252 筆）　·　166 ms"
+}

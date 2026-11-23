@@ -1,4 +1,5 @@
-/* 側欄與全站導覽 v8：書 → 卷 → 篇 三層鑽取、跨書篩選、所在篇、抽屜、快捷鍵 */
+/* 側欄與全站導覽 v9：書 → 卷 → 篇 三層鑽取、跨書篩選、所在篇（scroll 推導）、
+   閱讀模式（原文／白話／雙欄）、複製本段連結、抽屜、快捷鍵 */
 (function () {
   'use strict';
 
@@ -59,8 +60,9 @@
     tools.className = 'navtools';
     tools.innerHTML =
       '<div class="navfilterwrap">' +
-      '<input id="navfilter" type="search" placeholder="搜尋書名、卷名、篇名" autocomplete="off" ' +
-      'aria-label="搜尋目錄" aria-controls="navtree">' +
+      '<input id="navfilter" type="search" placeholder="僅搜書名、卷名、篇名" autocomplete="off" ' +
+      'title="只篩選目錄標題；要找經文內容請用全文搜尋" ' +
+      'aria-label="篩選目錄（只搜書名、卷名、篇名）" aria-controls="navtree">' +
       '<span id="navfiltercount" class="navfiltercount" aria-live="polite"></span>' +
       '</div>';
     box.parentNode.insertBefore(tools, box);
@@ -259,7 +261,12 @@
       });
       html += '</ul></div>';
     });
-    if (!groups.length) html = '<p class="navempty">沒有符合「' + esc(filter.value.trim()) + '」的條目</p>';
+    if (!groups.length) {
+      var qraw = filter.value.trim();
+      html = '<p class="navempty">沒有符合「' + esc(qraw) + '」的篇名。' +
+        '<br><a class="navempty-search" href="' + root + 'search.html?q=' +
+        encodeURIComponent(qraw) + '">在全文搜尋「' + esc(qraw) + '」→</a></p>';
+    }
 
     resultsEl.innerHTML = html;
     resultsEl.hidden = false;
@@ -269,55 +276,87 @@
     }
   }
 
-  // ── 所在篇高亮 ────────────────────────────────────────────
-  function spy() {
-    var heads = [].slice.call(document.querySelectorAll('main h2.sec'));
-    if (!heads.length) return;
-    var links = {};
+  // ── 所在篇高亮（scroll 位置推導，不用 IntersectionObserver）──────
+  // 搜尋落地／快速跳轉會跳過中間所有節，IO 不會回報；直接用捲動位置
+  // 找「最後一個在視窗頂端上方的 h2」，hash 落地與手動捲動都會正確。
+  var heads = [];
+  var headTops = [];
+  var secLinks = {};
+  var activeLink = null;
+  var scrollTick = false;
+
+  function collectHeads() {
+    heads = [].slice.call(document.querySelectorAll('main h2.sec'));
+    headTops = heads.map(function (h) {
+      return h.getBoundingClientRect().top + window.pageYOffset;
+    });
+    secLinks = {};
     [].slice.call(box.querySelectorAll('a[href*="#p"]')).forEach(function (a) {
       var u;
       try { u = new URL(a.href, location.href); } catch (e) { return; }
       if (u.pathname !== location.pathname) return;
       var id = u.hash.slice(1);
-      if (id) links[id] = a;
+      if (id) secLinks[id] = a;
     });
-    if (!Object.keys(links).length) return;
-    activeLink = box.querySelector('a.cursec');
+  }
 
-    function setCurrent(a) {
-      if (activeLink === a) return;
-      if (activeLink) {
-        activeLink.classList.remove('cursec');
-        activeLink.removeAttribute('aria-current');
-      }
-      activeLink = a || null;
-      if (activeLink) {
-        activeLink.classList.add('cursec');
-        activeLink.setAttribute('aria-current', 'location');
-      }
+  function setCurrent(a) {
+    if (activeLink === a) return false;
+    if (activeLink) {
+      activeLink.classList.remove('cursec');
+      activeLink.removeAttribute('aria-current');
     }
+    activeLink = a || null;
+    if (activeLink) {
+      activeLink.classList.add('cursec');
+      activeLink.setAttribute('aria-current', 'location');
+    }
+    return true;
+  }
 
-    if ('IntersectionObserver' in window) {
-      var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) {
-          if (!e.isIntersecting) return;
-          var a = links[e.target.id];
-          if (a) setCurrent(a);
-        });
-      }, { rootMargin: '-8% 0px -82% 0px' });
-      heads.forEach(function (h) { io.observe(h); });
-    } else {
-      var onScroll = function () {
-        var current = null;
-        heads.forEach(function (h) {
-          if (h.getBoundingClientRect().top <= 100) current = links[h.id] || current;
-        });
-        setCurrent(current);
-      };
-      window.addEventListener('scroll', onScroll, { passive: true });
-      onScroll();
+  function revealLink(a) {
+    if (!nav || !a) return;
+    var r = a.getBoundingClientRect();
+    var nr = nav.getBoundingClientRect();
+    if (r.top < nr.top + 110 || r.bottom > nr.bottom - 24) {
+      nav.scrollTop += r.top - nr.top - 150;
     }
   }
+
+  function syncCurrentByScroll() {
+    if (!heads.length) return;
+    var y = window.pageYOffset + topGap() + 8;
+    var cur = null;
+    for (var i = 0; i < heads.length; i++) {
+      if (headTops[i] <= y) cur = secLinks[heads[i].id] || cur;
+      else break;
+    }
+    // 在第一節之前（頁首 h1／byline 區）也先指向第一節，避免「目前位置」空白
+    if (!cur && heads.length) cur = secLinks[heads[0].id] || null;
+    if (setCurrent(cur) && cur) revealLink(cur);
+  }
+
+  function onScrollSpy() {
+    if (scrollTick) return;
+    scrollTick = true;
+    (window.requestAnimationFrame || setTimeout)(function () {
+      scrollTick = false;
+      syncCurrentByScroll();
+    }, 16);
+  }
+
+  function spy() {
+    collectHeads();
+    activeLink = box.querySelector('a.cursec') || null;
+    if (activeLink) activeLink.classList.add('cursec');
+    syncCurrentByScroll();
+  }
+
+  window.addEventListener('scroll', onScrollSpy, { passive: true });
+  window.addEventListener('resize', function () {
+    collectHeads();
+    syncCurrentByScroll();
+  }, { passive: true });
 
   // ── 錨點定位 ──────────────────────────────────────────────
   // 長卷（近百萬像素高）載入時版面未必已定稿，只對位一次會落在錯的位置；
@@ -339,9 +378,10 @@
     return bar.getBoundingClientRect().height + 12;
   }
 
-  // 搜尋索引的錨點有兩種：
-  //   pair-N → main 裡第 N 個 .pair（六書頁面 pair 沒有 id，索引以頁面序號定位）
-  //   其他   → 一般 id（合編頁 sN、篇名 pN，以及日後生成器補上的 pair-N id）
+  // 搜尋索引的錨點有三種：
+  //   u…     → 定稿 key 衍生的穩定 id（新索引；關 JS 也能原生跳轉）
+  //   pair-N → main 裡第 N 個 .pair（舊索引；N 從 0 起算）
+  //   sN     → 舊合編頁的位置錨點（N 從 1 起算；保留舊分享連結）
   function resolveAnchor(id) {
     var el = document.getElementById(id);
     if (el) return el;
@@ -349,6 +389,11 @@
     if (m) {
       var list = document.querySelectorAll('main .pair');
       return list[parseInt(m[1], 10)] || null;
+    }
+    m = /^s(\d+)$/.exec(id);
+    if (m) {
+      var list2 = document.querySelectorAll('main .pair');
+      return list2[parseInt(m[1], 10) - 1] || null;
     }
     return null;
   }
@@ -454,7 +499,19 @@
       var top = Math.max(0, Math.round(
         el.getBoundingClientRect().top + window.pageYOffset - topGap()));
       if (last !== null && Math.abs(top - last) <= 1) {
-        if (++stable >= 2) return;
+        if (++stable >= 2) {
+          // 落地後重算「目前位置」；讓側欄高亮與畫面一致
+          if (heads.length) { headTops = heads.map(function (h) {
+            return h.getBoundingClientRect().top + window.pageYOffset;
+          }); }
+          syncCurrentByScroll();
+          // 讓螢幕閱讀器知道到了哪一段（不捲動畫面）
+          if (el.id && el.focus) {
+            if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+            try { el.focus({ preventScroll: true }); } catch (err) { el.focus(); }
+          }
+          return;
+        }
       } else {
         stable = 0;
         last = top;
@@ -532,8 +589,10 @@
     // 修飾鍵快捷鍵：焦點在輸入框裡也要生效
     if ((e.ctrlKey || e.metaKey) && !e.altKey && String(e.key || '').toLowerCase() === 'k') {
       e.preventDefault();
-      if (siteSearch) { siteSearch.focus(); siteSearch.select(); }
-      else location.href = root + 'search.html';
+      if (siteSearch) { siteSearch.focus(); siteSearch.select(); return; }
+      // 書頁上把側欄篩選字帶進全文搜尋（P1-12）
+      var qv = filter && filter.value ? filter.value.trim() : '';
+      location.href = root + 'search.html' + (qv ? '?q=' + encodeURIComponent(qv) : '');
       return;
     }
     if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
@@ -548,7 +607,7 @@
 
   // ── 載入 ─────────────────────────────────────────────────
   function loadTree() {
-    box.innerHTML = '<div class="navloading">目錄載入中…</div>';
+    box.innerHTML = '<div class="navloading" role="status">目錄載入中…</div>';
     fetch(root + 'nav.json?v=' + version, { cache: 'no-cache' })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function (data) {
@@ -567,8 +626,114 @@
       });
   }
 
+  // ── 閱讀工具列（P2-3 顯示切換、P2-4 雙欄、P1-6 複製連結）───────
+  var READ_KEY = 'dsh-read-mode';
+  var TWO_KEY = 'dsh-twocol';
+
+  function syncReadButtons(bar) {
+    var mode = 'both';
+    if (document.documentElement.classList.contains('hide-t')) mode = 'o';
+    else if (document.documentElement.classList.contains('hide-o')) mode = 't';
+    [].slice.call(bar.querySelectorAll('button[data-read]')).forEach(function (b) {
+      b.setAttribute('aria-pressed', b.getAttribute('data-read') === mode ? 'true' : 'false');
+    });
+    var two = bar.querySelector('button[data-twocol-toggle]');
+    if (two) two.setAttribute('aria-pressed',
+      document.documentElement.classList.contains('twocol') ? 'true' : 'false');
+  }
+
+  function setReadMode(mode) {
+    var h = document.documentElement;
+    h.classList.remove('hide-o', 'hide-t');
+    if (mode === 'o') h.classList.add('hide-t');        // 只原文 → 隱藏白話
+    else if (mode === 't') h.classList.add('hide-o');   // 只白話 → 隱藏原文
+    writeStr(READ_KEY, mode || 'both');
+    // 版面高度變了，重算節位置與所在篇
+    collectHeads();
+    syncCurrentByScroll();
+  }
+
+  function setTwocol(on) {
+    document.documentElement.classList.toggle('twocol', !!on);
+    writeStr(TWO_KEY, on ? '1' : '0');
+    collectHeads();
+    syncCurrentByScroll();
+  }
+
+  function topVisibleAnchor() {
+    var list = document.querySelectorAll('main .pair[id], main h2.sec[id]');
+    var y = window.pageYOffset + topGap() + 8;
+    var best = null;
+    for (var i = 0; i < list.length; i++) {
+      var top = list[i].getBoundingClientRect().top + window.pageYOffset;
+      if (top <= y) best = list[i];
+      else break;
+    }
+    return best || (list.length ? list[0] : null);
+  }
+
+  function copyText(s) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(s);
+    }
+    return new Promise(function (resolve, reject) {
+      var ta = document.createElement('textarea');
+      ta.value = s;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy') ? resolve() : reject(new Error('copy failed')); }
+      catch (e) { reject(e); }
+      document.body.removeChild(ta);
+    });
+  }
+
+  function initReadTools() {
+    var bar = document.querySelector('.readtools');
+    if (!bar) return;
+    syncReadButtons(bar);
+    bar.addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('button') : null;
+      if (!btn) return;
+      if (btn.hasAttribute('data-read')) {
+        setReadMode(btn.getAttribute('data-read'));
+        syncReadButtons(bar);
+        return;
+      }
+      if (btn.hasAttribute('data-twocol-toggle')) {
+        setTwocol(!document.documentElement.classList.contains('twocol'));
+        syncReadButtons(bar);
+        return;
+      }
+      if (btn.hasAttribute('data-copy-anchor')) {
+        var el = topVisibleAnchor();
+        var url = location.origin + location.pathname + (el && el.id ? '#' + el.id : '');
+        var old = btn.textContent;
+        copyText(url).then(function () {
+          btn.textContent = '已複製';
+          setTimeout(function () { btn.textContent = old; }, 1400);
+        }).catch(function () {
+          btn.textContent = '複製失敗';
+          setTimeout(function () { btn.textContent = old; }, 1400);
+        });
+      }
+    });
+  }
+
+  // skip link：把焦點真的移進 main（P1-7）
+  var skip = document.querySelector('.skip-link');
+  if (skip) {
+    skip.addEventListener('click', function () {
+      var m = document.getElementById('main');
+      if (m) setTimeout(function () { m.focus({ preventScroll: true }); }, 0);
+    });
+  }
+
   // 初始化
   makeTools();
+  initReadTools();
   loadTree();
   syncDrawerMode();
 

@@ -11,6 +11,7 @@
   var statusEl = document.getElementById('searchstatus');
   var errorEl = document.getElementById('searcherror');
   var bookFilter = document.getElementById('bookfilter');
+  var withHebian = document.getElementById('withhebian');
   var navTree = document.getElementById('navtree');
   var BOOKS = window.SEARCH_BOOKS || [];
   var loaded = {};
@@ -97,6 +98,33 @@
     return true;
   }
 
+  /* 合編是對讀本，原文與單書重複；預設不載入，勾選或明確選書時才納入。
+     manifest 條目用 id，nav.json 條目用 out，兩邊都要認。 */
+  function bookId(b) {
+    return b.id || b.out || '';
+  }
+
+  function includeBook(b) {
+    var id = bookId(b);
+    if (bookFilter && bookFilter.value) return bookFilter.value === id;
+    if (id === 'hebian') return !!(withHebian && withHebian.checked);
+    return true;
+  }
+
+  function dedupeHebian(results) {
+    var singles = {};
+    results.forEach(function (r) {
+      if (r.bid === 'hebian') return;
+      var k = norm(r.o).slice(0, 60);
+      if (k) singles[k] = 1;
+    });
+    return results.filter(function (r) {
+      if (r.bid !== 'hebian') return true;
+      var k = norm(r.o).slice(0, 60);
+      return !k || !singles[k];
+    });
+  }
+
   function loadBook(book) {
     if (loaded[book.id]) return Promise.resolve(loaded[book.id]);
     if (loading[book.id]) return loading[book.id];
@@ -147,10 +175,9 @@
   function quickResults(q) {
     if (!navData || !q) return [];
     var out = [], needle = norm(q);
-    var only = bookFilter ? bookFilter.value : '';
     (navData.books || []).forEach(function (book) {
       if (out.length >= 8) return;
-      if (only && book.out !== only) return;   // 跟「限定書籍」保持一致
+      if (!includeBook(book)) return;   // 跟「限定書籍」與合編預設一致
       if (norm(book.title).indexOf(needle) >= 0) {
         var first = (book.vols || [])[0];
         if (first) out.push({ bid: book.out, v: first.v, i: '', title: book.title, kind: '書' });
@@ -207,16 +234,27 @@
     BOOKS.forEach(function (book) {
       var arr = byBook[book.id];
       if (!arr || !arr.length) return;
+      var isHeb = book.id === 'hebian';
+      // 合編是對讀本，內容與單書重複：勾選時只留少量，避免佔滿單書名額
+      var cap = isHeb ? ((bookFilter && bookFilter.value) ? 300 : 12) : perBook;
       var h = document.createElement('h3');
       h.className = 'hitbook';
-      h.textContent = book.title + '（' + arr.length + '）';
+      h.textContent = book.title + '（' + arr.length +
+        (isHeb ? '；對讀本，內容與單書重複' : '') + '）';
       frag.appendChild(h);
-      arr.slice(0, perBook).forEach(function (x) {
+      arr.slice(0, cap).forEach(function (x) {
         var a = document.createElement('a');
         a.className = 'hit';
         a.href = hitHref(x, q);
+        var field = '';
+        for (var ti = 0; ti < terms.length; ti++) {
+          if (norm(x.o).indexOf(terms[ti]) >= 0) { field = '原文命中'; break; }
+          if (norm(x.t).indexOf(terms[ti]) >= 0) { field = '白話命中'; break; }
+        }
         a.innerHTML = '<div class="meta">' + esc(x.v) +
-          (x.n ? '　·　第 ' + esc(x.n) + ' 段' : '') +
+          (x.s ? '　·　' + esc(x.s) : '') +
+          (x.n ? '　·　本卷第 ' + esc(x.n) + ' 段' : '') +
+          (field ? '　·　' + field : '') +
           '　<span>跳到該段 →</span></div>' +
           '<div class="o">' + snippet(x.o, terms, 110) + '</div>' +
           '<div class="t">' + snippet(x.t, terms, 110) + '</div>';
@@ -263,9 +301,7 @@
       if (seq !== querySeq) return;
       renderQuick(q, currentTerms);
     });
-    var targets = BOOKS.filter(function (b) {
-      return !bookFilter || !bookFilter.value || bookFilter.value === b.id;
-    });
+    var targets = BOOKS.filter(includeBook);
     if (!targets.length) {
       if (countEl) countEl.textContent = '沒有可搜尋的書籍';
       return;
@@ -282,13 +318,13 @@
           if (matches(e, currentTerms)) {
             results.push({
               bid: book.id, v: e.v, o: e.o, t: e.t, i: e.i || '', n: e.n || 0,
-              sc: score(e, currentTerms, norm(q)), order: order++
+              s: e.s || '', sc: score(e, currentTerms, norm(q)), order: order++
             });
           }
         });
         pending--;
         if (pending === 0) {
-          renderResults(results, q, currentTerms, Date.now() - started, failed);
+          renderResults(dedupeHebian(results), q, currentTerms, Date.now() - started, failed);
         } else if (statusEl) {
           statusEl.textContent = '已載入 ' + (targets.length - pending) + ' / ' + targets.length + ' 本書';
         }
@@ -306,7 +342,7 @@
               errorEl.innerHTML = '<span>無法載入搜尋索引。</span><button type="button" id="searchretry">重試</button>';
             }
           } else {
-            renderResults(results, q, currentTerms, Date.now() - started, failed);
+            renderResults(dedupeHebian(results), q, currentTerms, Date.now() - started, failed);
           }
         }
       });
@@ -343,6 +379,7 @@
       }
     });
     if (bookFilter) bookFilter.addEventListener('change', function () { run(input.value); });
+    if (withHebian) withHebian.addEventListener('change', function () { run(input.value); });
     if (errorEl) errorEl.addEventListener('click', function (e) {
       if (!e.target.closest || !e.target.closest('#searchretry')) return;
       loaded = {};

@@ -63,12 +63,15 @@ def inline_html(t):
 
 def to_html(blocks):
     out = []
+    last_head = ''
     for kind, val in blocks:
         if kind == 'h1':
             out.append('<h1>' + inline_html(val) + '</h1>')
         elif kind == 'h2':
+            last_head = val
             out.append('<h2>' + inline_html(val) + '</h2>')
         elif kind == 'h3':
+            last_head = val
             out.append('<h3 style="font-size:1.05rem;margin:1.4rem 0 .4rem">' + inline_html(val) + '</h3>')
         elif kind == 'quote':
             out.append('<p class="intro">' + inline_html(val) + '</p>')
@@ -77,9 +80,13 @@ def to_html(blocks):
         elif kind == 'table':
             rows = val
             parts = ['<table>']
+            if last_head:
+                parts.append('<caption>' + inline_html(last_head) + '</caption>')
             for ri, r in enumerate(rows):
                 tag = 'th' if ri == 0 else 'td'
-                parts.append('<tr>' + ''.join('<%s>%s</%s>' % (tag, inline_html(c), tag) for c in r) + '</tr>')
+                attr = ' scope="col"' if tag == 'th' else ''
+                parts.append('<tr>' + ''.join('<%s%s>%s</%s>' % (tag, attr, inline_html(c), tag)
+                                              for c in r) + '</tr>')
             parts.append('</table>')
             out.append(''.join(parts))
     return ''.join(out)

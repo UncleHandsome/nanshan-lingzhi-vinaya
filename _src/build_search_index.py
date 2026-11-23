@@ -36,16 +36,17 @@ SITE = os.path.join(B, 'docs')
 # 書名沿用站上目錄頁（docs/index.html）既有的顯示名稱；nav.json 只當後備。
 BOOK_TITLES = {
     'xingshichao': '四分律刪繁補闕行事鈔',
-    'jieshu': '四分律含注戒本疏',
+    'jieshu': '四分律含注戒本疏行宗記',
     'yeshu': '四分律刪補隨機羯磨疏',
     'zhichi': '四分律行事鈔資持記',
     'nicao': '四分比丘尼鈔',
     'yichao': '四分律拾毗尼義鈔',
-    'hebian': '行事鈔資持記・句級合編',
+    'hebian': '四分律行事鈔資持記・句級合編',
 }
 BOOK_ORDER = ['xingshichao', 'jieshu', 'yeshu', 'zhichi', 'nicao', 'yichao', 'hebian']
 
 PAIR_START = re.compile(r'<div class="pair(?:[^"]*)"([^>]*)>')
+HEAD_RE = re.compile(r'<h2 class="sec"[^>]*>(.*?)</h2>', re.S)
 
 
 def div_end(t, start):
@@ -75,9 +76,17 @@ def first_div(block, cls):
 
 
 def pairs_of_page(t):
-    """依頁面順序回傳所有 pair：[{ordinal, id, o, t}]（含沒有原文的圖示）。"""
+    """依頁面順序回傳所有 pair：[{ordinal, id, o, t, s}]（含沒有原文的圖示）。
+
+    `s` 是該 pair 所屬的節標題（前面最近的 h2.sec）；搜尋結果用它顯示篇名。
+    """
+    heads = [(m.start(), strip_text(m.group(1)))
+             for m in re.finditer(HEAD_RE, t)]
     out = []
+    hi = -1
     for i, m in enumerate(PAIR_START.finditer(t)):
+        while hi + 1 < len(heads) and heads[hi + 1][0] < m.start():
+            hi += 1
         attrs = m.group(1) or ''
         start = m.start()
         end = div_end(t, start)
@@ -88,7 +97,8 @@ def pairs_of_page(t):
         out.append(dict(ordinal=i,
                         id=(pid.group(1) if pid else ''),
                         o=strip_text(o) if o is not None else '',
-                        t=strip_text(tr) if tr is not None else ''))
+                        t=strip_text(tr) if tr is not None else '',
+                        s=(heads[hi][1] if hi >= 0 else '卷首')))
     return out
 
 
@@ -157,7 +167,8 @@ def build_book(site, book, vols):
             else:
                 anchor = 'pair-%d' % pr['ordinal']
                 n_ord += 1
-            entries.append(dict(v=v, o=pr['o'], t=pr['t'], i=anchor, n=pr['ordinal'] + 1))
+            entries.append(dict(v=v, o=pr['o'], t=pr['t'], i=anchor, n=pr['ordinal'] + 1,
+                                s=pr.get('s') or ''))
     return dict(title=None, entries=entries), dict(
         book=book, pairs=n_pairs, entries=len(entries), id_anchor=n_id,
         ord_anchor=n_ord, skipped=n_skip)

@@ -2,7 +2,7 @@
    單一變數、單一深色覆蓋、桌面／抽屜共用；列印另行收斂。
    2026-11-23 導覽重整：全站 sticky 頂部列、可 hover 的左緣側欄、閱讀工具下拉。 */
 :root {
-  --topbar-h: 58px;
+  --topbar-h: 48px;
   --side-w: 280px;
   --fg: #1f1b16;
   --fg2: #5d554a;
@@ -170,6 +170,9 @@ nav#sidebar {
     border-right: 1px solid var(--line);
     box-shadow: var(--shadow);
   }
+}
+@media (min-width: 1101px) {
+  .navhead { display: none !important; }
 }
 @media (max-width: 1100px) {
   .navcollapse { display: none !important; }
@@ -353,7 +356,7 @@ details.vol li.wholevol a {
 main {
   flex: 1; min-width: 0;
   max-width: 960px; margin: 0 auto;
-  padding: 2.2rem 2.4rem 4rem;
+  padding: 1.4rem 2.4rem 4rem;
 }
 .content { flex: 1; min-width: 0; }
 .content > .pager,
@@ -830,7 +833,7 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
 
 /* ── 窄屏／抽屜：同一條頂部列＋左側抽屜，不再有底部工具列 ── */
 @media (max-width: 1100px) {
-  :root { --topbar-h: 56px; }
+  :root { --topbar-h: 48px; }
   body { font-size: 16px; }
   .wrap { display: block; }
   nav#sidebar {

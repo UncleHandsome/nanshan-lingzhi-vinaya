@@ -15,7 +15,7 @@
 """
 import html
 
-ASSET_VERSION = '22'
+ASSET_VERSION = '24'
 
 FOOTER = (
     '<footer class="sitefoot">'

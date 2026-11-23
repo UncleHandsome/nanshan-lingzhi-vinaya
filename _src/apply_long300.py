@@ -5,6 +5,7 @@ import glob
 import io
 import json
 import os
+import re
 import shutil
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
@@ -24,7 +25,7 @@ def parse(o):
         return None, 'bad segment/parts'
     out = []
     for p in parts:
-        h = str(p.get('head') or '').strip()
+        h = re.sub(r'^【[^】]+】\s*', '', str(p.get('head') or '').strip())
         tr = str(p.get('translation') or '').strip()
         if not h or not tr:
             return None, 'bad head/translation'
@@ -32,22 +33,34 @@ def parse(o):
     return (seg, out), ''
 
 
+def norm_map(s):
+    out=[]; idx=[]
+    for i,ch in enumerate(s):
+        if not ch.isspace() and ch != '\u3000':
+            out.append(ch); idx.append(i)
+    return ''.join(out), idx
+
+
 def split_segment(seg, parts):
     ss = (seg.get('display_source') or seg.get('source') or '').strip()
     if not ss:
         return None, 'empty source'
+    ns, nmap = norm_map(ss)
     pos = []
     for j, (h, tr) in enumerate(parts):
-        idx = ss.find(h)
+        nh, _ = norm_map(h)
+        idx = ns.find(nh)
         if idx < 0:
             return None, 'head not found: ' + h[:16]
-        if ss.find(h, idx + 1) >= 0:
+        if ns.find(nh, idx + 1) >= 0:
             return None, 'head not unique: ' + h[:16]
-        if j == 0 and idx != 0:
-            return None, 'first head not at start'
-        if pos and idx <= pos[-1]:
+        raw = nmap[idx]
+        if j == 0 and raw != 0:
+            # 第一段白話仍涵蓋開頭；把起點拉回 0
+            raw = 0
+        if pos and raw <= pos[-1]:
             return None, 'head order'
-        pos.append(idx)
+        pos.append(raw)
     new = []
     for j, (h, tr) in enumerate(parts):
         a = pos[j]; b = pos[j + 1] if j + 1 < len(parts) else len(ss)

@@ -13,7 +13,7 @@
 """
 import html
 
-ASSET_VERSION = '32'
+ASSET_VERSION = '34'
 
 FOOTER = (
     '<footer class="sitefoot">'
@@ -147,6 +147,8 @@ def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
         '<button id="navtoggle" class="tb-btn tb-menu" type="button" aria-controls="sidebar" '
         'aria-expanded="true" aria-label="開合目錄" title="開合目錄（[ 或 Alt+M）">'
         '<span class="tb-ico" aria-hidden="true">☰</span><span class="tb-menulabel">目錄</span></button>'
+        '<a class="tb-btn tb-gohome" href="' + prefix + 'index.html" aria-label="回到首頁" title="回到首頁">'
+        '<span class="tb-homeicon" aria-hidden="true">⌂</span><span class="tb-homelabel">首頁</span></a>'
         + volnav_html(prev_url, next_url, prev_label, next_label, current_label)
         + '<div class="tb-crumb">' + ''.join(crumb) + '</div>'
         '<div class="tb-right">' + search + (tools_html() if tools else '') + '</div>'

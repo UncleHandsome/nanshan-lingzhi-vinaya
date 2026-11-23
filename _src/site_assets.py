@@ -11,7 +11,7 @@
 """
 import html
 
-ASSET_VERSION = '19'
+ASSET_VERSION = '20'
 
 FOOTER = (
     '<footer class="sitefoot">'
@@ -65,6 +65,7 @@ def tools_html():
     """內容頁閱讀工具列：顯示模式、雙欄對照、複製本段連結；可收合。"""
     return (
         '<div class="readtools" role="group" aria-label="閱讀設定">'
+        '<button type="button" class="rtmenu" data-menu-toggle aria-label="開合目錄">☰ 目錄</button>'
         '<button type="button" class="rttoggle" data-tools-toggle aria-expanded="true">閱讀工具</button>'
         '<div class="rtbody">'
         '<span class="rtlabel">顯示</span>'

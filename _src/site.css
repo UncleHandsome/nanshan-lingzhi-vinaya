@@ -110,7 +110,7 @@ nav#sidebar {
   background: var(--surface); color: var(--fg2); font: inherit; cursor: pointer;
 }
 .sideopen {
-  display: none; position: fixed; top: 50%; left: 0; z-index: 60;
+  display: none !important; position: fixed; top: 50%; left: 0; z-index: 60;
   transform: translateY(-50%);
   width: 52px; height: 52px; padding: 0;
   border: 1px solid var(--line); border-left: 0; border-radius: 0 9px 9px 0;
@@ -522,12 +522,14 @@ h2.sec, span[id^="p"] { scroll-margin-top: 14px; }
   font-family: "Microsoft YaHei", "PingFang SC", sans-serif; font-size: 12px;
 }
 .rtbody { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem; }
-.rttoggle {
+.rtmenu, .rttoggle {
   padding: .2rem .45rem; border: 1px solid var(--line); border-radius: 6px;
   background: var(--surface); color: var(--accent); font: inherit; cursor: pointer;
-  font-weight: 700;
+  font-weight: 700; white-space: nowrap;
 }
-.readtools.is-collapsed { display: none; }
+.rtmenu { color: var(--fg2); }
+.readtools.is-collapsed { display: flex; }
+.readtools.is-collapsed .rtbody { display: none; }
 .toolsopen {
   display: none; position: fixed; right: 18px; bottom: 64px; z-index: 60;
   height: 44px; padding: 0 .85rem;
@@ -538,7 +540,15 @@ h2.sec, span[id^="p"] { scroll-margin-top: 14px; }
 .toolsopen:hover { background: var(--surface-3); }
 body.tools-collapsed .toolsopen { display: inline-flex; align-items: center; }
 @media (max-width: 700px) {
-  .toolsopen { right: 12px; bottom: 64px; top: auto; }
+  .toolsopen { display: none !important; }
+  .readtools {
+    position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 60;
+    max-width: none; margin: 0; padding: .4rem .5rem;
+    border-left: 0; border-right: 0; border-bottom: 0; border-radius: 0;
+    background: var(--panel);
+  }
+  body { padding-bottom: 66px; }
+  #toTop { bottom: 78px; }
 }
 .readtools .rtlabel { color: var(--fg2); padding: 0 .35rem 0 .15rem; }
 .readtools .rtsep { width: 1px; height: 1.1rem; background: var(--line); margin: 0 .3rem; }
@@ -829,7 +839,6 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
   .searchbar select { width: 100%; }
 }
 @media (max-width: 700px) {
-  .readtools { top: calc(54px + .35rem); }
   h1 { font-size: 1.55rem; }
   h2 { font-size: 1.3rem; }
   details.art-toc ul { columns: 1; }

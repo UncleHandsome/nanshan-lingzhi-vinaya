@@ -15,7 +15,7 @@
 """
 import html
 
-ASSET_VERSION = '24'
+ASSET_VERSION = '25'
 
 FOOTER = (
     '<footer class="sitefoot">'
@@ -68,26 +68,29 @@ def pager_html(prev_url, next_url, prev_label, next_label, index_url):
 def tools_html():
     """頂部列「閱讀工具」下拉面板：顯示模式、雙欄對照、複製本段連結。
 
-    面板由頂部列的按鈕開合；不再固定佔用正文或手機底部。
+    面板由頂部列的按鈕開合；單排緊湊排列（約 420×36），不再固定佔用正文或手機底部。
     """
     return (
         '<div class="toolpanel readtools" id="toolpanel" role="group" aria-label="閱讀設定" hidden>'
-        '<div class="tp-row"><span class="tp-label">顯示</span>'
+        '<div class="tp-row" role="group" aria-label="顯示模式">'
         '<button type="button" data-read="both" aria-pressed="true" title="原文與白話上下並列">原文＋白話</button>'
         '<button type="button" data-read="o" aria-pressed="false" title="只顯示原文">只原文</button>'
         '<button type="button" data-read="t" aria-pressed="false" title="只顯示白話">只白話</button>'
         '</div>'
-        '<div class="tp-row"><span class="tp-label">版面</span>'
+        '<span class="tp-div" aria-hidden="true"></span>'
         '<button type="button" data-twocol-toggle aria-pressed="false" title="原文與白話左右並排，需寬螢幕">並排</button>'
         '<button type="button" data-copy-anchor title="複製目前段落的網址">複製本段連結</button>'
-        '</div>'
         '</div>'
     )
 
 
 def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
                 tools=False):
-    """全站共用頂部列：☰ 目錄／書卷／閱讀工具＋搜尋。"""
+    """全站共用頂部列：☰ 目錄／書卷／全域搜尋／更多／閱讀工具。
+
+    全域搜尋：≥1200px 顯示 compact 輸入框（Enter 送 search.html），窄螢幕退回「搜尋」按鈕。
+    「更多」收納原本佔用側欄頂端的全書連結（目錄／全文搜尋／附錄／未譯清單）。
+    """
     e = html.escape
     crumb = ['<a class="tb-home" href="' + prefix + 'index.html">南山律典</a>']
     if book_short:
@@ -108,6 +111,27 @@ def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
             '<span class="tb-tools-long">閱讀工具</span><span class="tb-tools-short">工具</span></button>'
         )
 
+    search = (
+        '<form class="tb-searchform" action="' + prefix + 'search.html" method="get" role="search">'
+        '<input id="tbq" name="q" type="search" placeholder="全站搜尋…" autocomplete="off" '
+        'aria-label="全站全文搜尋" title="輸入關鍵字後按 Enter（Ctrl/⌘ K）">'
+        '</form>'
+        '<a class="tb-btn tb-searchbtn" href="' + prefix + 'search.html" '
+        'aria-label="全文搜尋" title="全文搜尋（Ctrl/⌘ K）">搜尋</a>'
+    )
+
+    more = (
+        '<details class="tb-more">'
+        '<summary class="tb-btn tb-morebtn" aria-label="更多本站連結" '
+        'title="更多：目錄、全文搜尋、附錄、未譯清單">更多</summary>'
+        '<div class="tb-morepanel">'
+        '<a href="' + prefix + 'index.html">目錄</a>'
+        '<a href="' + prefix + 'search.html">全文搜尋</a>'
+        '<a href="' + prefix + 'appendix.html">附錄</a>'
+        '<a href="' + prefix + 'untranslated.html">未譯清單</a>'
+        '</div></details>'
+    )
+
     return (
         '<a class="skip-link" href="#main">跳至正文</a>'
         '<header class="topbar">'
@@ -115,10 +139,7 @@ def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
         'aria-expanded="true" aria-label="開合目錄" title="開合目錄（[ 或 Alt+M）">'
         '<span class="tb-ico" aria-hidden="true">☰</span><span class="tb-menulabel">目錄</span></button>'
         '<div class="tb-crumb">' + ''.join(crumb) + '</div>'
-        '<div class="tb-right">' + tools_btn
-        + '<a class="tb-btn tb-search" href="' + prefix + 'search.html" '
-          'aria-label="全文搜尋" title="全文搜尋（Ctrl/⌘ K）">搜尋</a>'
-        '</div>'
+        '<div class="tb-right">' + search + more + tools_btn + '</div>'
         + (tools_html() if tools else '')
         + '</header>'
         '<button id="edgepeek" class="edgepeek" type="button" aria-controls="sidebar" '
@@ -139,11 +160,6 @@ def nav_parts(prefix='', prev_url=None, next_url=None,
         '<div class="navhead"><p class="brand"><a href="' + prefix + 'index.html">南山律典・白話對照</a></p>'
         '<button id="navclose" class="iconbtn" type="button" aria-label="關閉目錄">×</button>'
         '<button id="navcollapse" class="navcollapse" type="button" aria-label="收合目錄">⟨</button></div>',
-        '<div class="grp"><b>全書</b>'
-        '<a href="' + prefix + 'index.html">目錄</a>'
-        '<a href="' + prefix + 'search.html">全文搜尋</a>'
-        '<a href="' + prefix + 'appendix.html">附錄</a>'
-        '<a href="' + prefix + 'untranslated.html">未譯清單</a></div>',
     ]
     if prev_url or next_url:
         parts.append('<div class="grp"><b>分卷</b>')

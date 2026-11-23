@@ -1,6 +1,6 @@
-/* 全站導覽 v10：全站頂部列、書 → 卷 → 篇三層鑽取、跨書篩選、
-   所在篇（scroll 推導）、閱讀模式（原文／白話／雙欄）、複製本段連結、
-   桌面預設展開側欄、收合後左緣 hover／focus 露出、窄螢幕自動抽屜。 */
+/* 全站導覽 v11：全站頂部列、書 → 卷 → 篇三層鑽取、所在篇（scroll 推導）、
+   閱讀模式（原文／白話／雙欄）、複製本段連結、桌面預設展開側欄、
+   收合後左緣 hover／focus 露出、窄螢幕自動抽屜。 */
 (function () {
   'use strict';
 
@@ -18,9 +18,6 @@
   var DATA = null;
   var curBook = null;
   var openVol = null;
-  var filter = null;
-  var filterCount = null;
-  var resultsEl = null;
   var bodyEl = null;
   var activeLink = null;
   var drawerOpen = false;
@@ -33,7 +30,7 @@
   var edge = document.getElementById('edgepeek');
   var toolsBtn = document.querySelector('[data-tools-toggle]');
   var toolPanel = document.getElementById('toolpanel');
-  var siteSearch = document.getElementById('q');
+  var moreMenu = document.querySelector('.tb-more');
 
   function safePath() {
     try { return decodeURIComponent(location.pathname); }
@@ -54,54 +51,23 @@
     });
   }
 
-  function norm(s) {
-    return String(s || '').toLocaleLowerCase();
-  }
-
   function isMobile() {
     return !!(isMobileQuery && isMobileQuery.matches);
   }
 
-  // ── 篩選工具列 ─────────────────────────────────────────────
-  function makeTools() {
-    var tools = document.createElement('div');
-    tools.className = 'navtools';
-    tools.innerHTML =
-      '<div class="navfilterwrap">' +
-      '<input id="navfilter" type="search" placeholder="僅搜書名、卷名、篇名" autocomplete="off" ' +
-      'title="只篩選目錄標題；要找經文內容請用全文搜尋" ' +
-      'aria-label="篩選目錄（只搜書名、卷名、篇名）" aria-controls="navtree">' +
-      '<span id="navfiltercount" class="navfiltercount" aria-live="polite"></span>' +
-      '</div>';
-    box.parentNode.insertBefore(tools, box);
-    filter = document.getElementById('navfilter');
-    filterCount = document.getElementById('navfiltercount');
-
-    filter.addEventListener('input', applyFilter);
-    filter.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        clearFilter();
-        filter.blur();
-      } else if (e.key === 'Enter') {
-        var a = firstResult();
-        if (a) { a.click(); filter.blur(); }
-      } else if (e.key === 'ArrowDown') {
-        var a2 = firstResult();
-        if (a2) { e.preventDefault(); a2.focus(); }
-      }
-    });
+  // 全域搜尋：搜尋頁優先用主輸入框，其餘頁面用頂部列（≥1200px 才可見）。
+  function visibleSearchBox() {
+    var q = document.getElementById('q');
+    if (q && q.offsetParent !== null) return q;
+    var tb = document.getElementById('tbq');
+    if (tb && tb.offsetParent !== null) return tb;
+    return null;
   }
 
-  function clearFilter() {
-    if (!filter) return;
-    filter.value = '';
-    applyFilter();
-  }
-
-  function firstResult() {
-    if (!resultsEl || resultsEl.hidden) return null;
-    return resultsEl.querySelector('a[href]');
+  function focusOrGoSearch() {
+    var box = visibleSearchBox();
+    if (box) { box.focus(); box.select(); return; }
+    location.href = root + 'search.html';
   }
 
   // ── 資料與渲染 ─────────────────────────────────────────────
@@ -138,13 +104,8 @@
     bodyEl = document.createElement('div');
     bodyEl.className = 'navbody';
     bodyEl.innerHTML = html;
-    resultsEl = document.createElement('div');
-    resultsEl.className = 'navresults';
-    resultsEl.hidden = true;
     box.innerHTML = '';
     box.appendChild(bodyEl);
-    box.appendChild(resultsEl);
-    if (resultsEl) { resultsEl.hidden = true; resultsEl.innerHTML = ''; }
   }
 
   function render() {
@@ -191,13 +152,8 @@
     bodyEl.className = 'navbody';
     bodyEl.innerHTML = html;
 
-    resultsEl = document.createElement('div');
-    resultsEl.className = 'navresults';
-    resultsEl.hidden = true;
-
     box.innerHTML = '';
     box.appendChild(bodyEl);
-    box.appendChild(resultsEl);
 
     bindBooks();
     bindVols();
@@ -210,7 +166,6 @@
         curBook = btn.getAttribute('data-out');
         openVol = null;
         render();
-        if (filter) filter.value = '';
         var f = bodyEl.querySelector('.navbookpick');
         if (f) f.open = false;
         var s = bodyEl.querySelector('.navbookpick > summary');
@@ -253,63 +208,6 @@
     }, { passive: true });
     if (top > 0) { nav.scrollTop = top; return true; }
     return false;
-  }
-
-  // ── 篩選：跨書扁平結果 ─────────────────────────────────────
-  function applyFilter() {
-    if (!filter || !DATA) return;
-    var q = norm(filter.value.trim());
-    if (!q) {
-      if (resultsEl) { resultsEl.hidden = true; resultsEl.innerHTML = ''; }
-      if (bodyEl) bodyEl.hidden = false;
-      if (filterCount) filterCount.textContent = '';
-      return;
-    }
-
-    var groups = [], total = 0;
-    (DATA.books || []).forEach(function (b) {
-      var bookHit = norm(b.title).indexOf(q) >= 0;
-      (b.vols || []).forEach(function (v) {
-        var volHit = bookHit || norm(v.v).indexOf(q) >= 0;
-        var items = (v.secs || []).filter(function (s) {
-          return volHit || norm(s[1]).indexOf(q) >= 0;
-        });
-        if (items.length || (volHit && !(v.secs || []).length)) {
-          groups.push({ b: b, v: v, items: items });
-          total += items.length;
-        }
-      });
-    });
-
-    var html = '';
-    var shown = 0;
-    groups.forEach(function (g) {
-      html += '<div class="navresgrp"><p class="navreshead"><span class="rb">' + esc(g.b.title) +
-        '</span><span class="rv">' + esc(g.v.v) + '</span></p><ul>';
-      if (!g.items.length) {
-        html += '<li><a href="' + root + g.b.out + '/' + g.v.v + '.html">（全卷）</a></li>';
-      }
-      g.items.forEach(function (s) {
-        if (shown >= 300) return;
-        shown++;
-        html += '<li><a href="' + root + g.b.out + '/' + g.v.v + '.html#' + s[0] +
-          '" title="' + esc(s[1]) + '">' + esc(s[1]) + '</a></li>';
-      });
-      html += '</ul></div>';
-    });
-    if (!groups.length) {
-      var qraw = filter.value.trim();
-      html = '<p class="navempty">沒有符合「' + esc(qraw) + '」的篇名。' +
-        '<br><a class="navempty-search" href="' + root + 'search.html?q=' +
-        encodeURIComponent(qraw) + '">在全文搜尋「' + esc(qraw) + '」→</a></p>';
-    }
-
-    resultsEl.innerHTML = html;
-    resultsEl.hidden = false;
-    bodyEl.hidden = true;
-    if (filterCount) {
-      filterCount.textContent = total > 300 ? '300+' : (total ? total + ' 篇' : '無結果');
-    }
   }
 
   // ── 所在篇高亮（scroll 位置推導，不用 IntersectionObserver）──────
@@ -641,6 +539,7 @@
 
   function setToolsOpen(open) {
     if (!toolPanel) return;
+    if (open && moreMenu) moreMenu.open = false;
     toolPanel.hidden = !open;
     if (toolsBtn) {
       toolsBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -670,20 +569,15 @@
 
   function globalKey(e) {
     if (e.key === 'Escape') {
+      if (moreMenu && moreMenu.open) { e.preventDefault(); moreMenu.open = false; return; }
       if (toolPanel && !toolPanel.hidden) { e.preventDefault(); closeTools(true); return; }
       if (peeking) { e.preventDefault(); peeking = false; syncNav(); return; }
       if (drawerOpen) { e.preventDefault(); closeDrawer(true); return; }
-      if (filter && document.activeElement === filter) {
-        e.preventDefault(); clearFilter(); filter.blur(); return;
-      }
     }
     // 修飾鍵快捷鍵：焦點在輸入框裡也要生效
     if ((e.ctrlKey || e.metaKey) && !e.altKey && String(e.key || '').toLowerCase() === 'k') {
       e.preventDefault();
-      if (siteSearch) { siteSearch.focus(); siteSearch.select(); return; }
-      // 書頁上把側欄篩選字帶進全文搜尋（P1-12）
-      var qv = filter && filter.value ? filter.value.trim() : '';
-      location.href = root + 'search.html' + (qv ? '?q=' + encodeURIComponent(qv) : '');
+      focusOrGoSearch();
       return;
     }
     if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
@@ -696,10 +590,7 @@
     }
     if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
       e.preventDefault();
-      if (siteSearch) { siteSearch.focus(); siteSearch.select(); return; }
-      if (!filter) return;
-      if (isMobile() && !drawerOpen) openDrawer();
-      filter.focus();
+      focusOrGoSearch();
     }
   }
 
@@ -852,10 +743,19 @@
   // 初始化：桌面預設展開；首頁一律展開，不讓舊的收合狀態綁住入口
   pinned = readStr(SIDE_KEY) !== 'collapsed';
   if (document.body.classList.contains('page-home')) pinned = true;
-  makeTools();
   initReadTools();
   syncNav();
   loadTree();
+
+  // 「更多」選單：點外面或開閱讀工具時收起
+  if (moreMenu) {
+    moreMenu.addEventListener('toggle', function () {
+      if (moreMenu.open) closeTools(false);
+    });
+    document.addEventListener('pointerdown', function (e) {
+      if (moreMenu.open && !moreMenu.contains(e.target)) moreMenu.open = false;
+    });
+  }
 
   if (toggle) toggle.addEventListener('click', toggleNav);
   if (closeBtn) closeBtn.addEventListener('click', function () { closeDrawer(true); });

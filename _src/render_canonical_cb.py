@@ -313,6 +313,7 @@ def main():
                           prev_url=(prev + '.html' if prev else None),
                           next_url=(nxt + '.html' if nxt else None),
                           prev_label=prev, next_label=nxt, current_label=v,
+                          book_label=name, book_short=short,
                           pager=True, tools=True,
                           description='%s　%s：原文與白話逐段對照。' % (name, v))
             page_path = os.path.join(B, 'docs', book, v + '.html')

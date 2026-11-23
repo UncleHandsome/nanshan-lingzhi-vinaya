@@ -83,7 +83,8 @@ def build_index(nav):
         parts.append('<section class="card"><h2>%s</h2><p class="byline">%s</p>'
                      '<div class="grp">%s</div></section>'
                      % (html.escape(title), by, links))
-    return SA.page('目錄', ''.join(parts),
+    return SA.page('目錄', ''.join(parts), body_class='page-home',
+                   book_short='目錄', book_label='南山律典・白話對照',
                    description='南山律典白話對照：行事鈔、戒疏、業疏、資持記、尼鈔、義鈔與句級合編。')
 
 
@@ -108,6 +109,8 @@ def build_search(nav):
             '<div id="quickhits" hidden></div>'
             '<div id="hits"></div>')
     return SA.page('搜尋', body, extra_scripts=['search/manifest.js', 'search.js'],
+                   book_short='全文搜尋', book_label='全站全文搜尋',
+                   body_class='page-search',
                    description='全站全文搜尋：經文原文與白話逐段比對。')
 
 
@@ -159,6 +162,7 @@ def build_untranslated(nav):
     parts.append('<p>空譯段落不會再被靜默丟棄：生成器會輸出「（本段尚未白話）」並計入上表。</p>')
     parts.append('</div>')
     return SA.page('未譯段落清單', ''.join(parts),
+                   book_short='未譯清單', book_label='未譯段落清單',
                    description='未譯段落統計：由頁面實際資料計算。')
 
 
@@ -203,6 +207,7 @@ def build_appendix():
     m = re.search(r'<style\b[^>]*>.*?</style>', t, re.S)
     extra_head = m.group(0) if m else ''
     return SA.page('附錄：名相、音注與度量衡', body, extra_head=extra_head,
+                   book_short='附錄', book_label='附錄：名相、音注與度量衡',
                    description='南山三大部白話對照本附錄：名相、音注與度量衡換算。')
 
 

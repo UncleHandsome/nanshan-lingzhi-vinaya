@@ -3,15 +3,19 @@
 
 這個模組只負責產生字串，不讀寫檔案，讓 site2.py / site_hebian.py 都能安全 import。
 
-2026-11-23 版：
-* `</main>` 之後才放卷末導覽與頁尾（頁面生成器只換 `<main>` 也不會再吃掉它們）。
-* 卷末導覽是 `<nav class="pager">` landmark，含 rel="prev"/"next"。
-* `<main tabindex="-1">` 讓 skip link 真的能把焦點移進正文。
-* 內容頁加閱讀工具列（原文／白話切換、雙欄對照、複製本段連結）。
+2026-11-23 導覽重整（v22）
+--------------------------
+* 全站（首頁／搜尋／附錄／未譯／六書／合編）共用一個 sticky 頂部列
+  `.topbar`：左「☰ 目錄」、中書卷麵包屑、右「閱讀工具／搜尋」。
+* 閱讀工具由主文內移到頂部列的下拉面板，不再佔用正文，也不再壓在手機底部。
+* 桌面側欄預設展開；只有區塊夠寬時才用固定側欄，窄螢幕自動變抽屜。
+* 側欄收合後一定留著固定的重新開啟控制：頂部「☰ 目錄」＋左緣 `.edgepeek`
+  （hover／focus 立即以浮層露出側欄）。
+* 首頁與所有頁面用同一套 shell；首頁的 ☰ 不再依賴 `.readtools`。
 """
 import html
 
-ASSET_VERSION = '21'
+ASSET_VERSION = '22'
 
 FOOTER = (
     '<footer class="sitefoot">'
@@ -62,44 +66,79 @@ def pager_html(prev_url, next_url, prev_label, next_label, index_url):
 
 
 def tools_html():
-    """內容頁閱讀工具列：顯示模式、雙欄對照、複製本段連結；可收合。"""
+    """頂部列「閱讀工具」下拉面板：顯示模式、雙欄對照、複製本段連結。
+
+    面板由頂部列的按鈕開合；不再固定佔用正文或手機底部。
+    """
     return (
-        '<div class="readtools" role="group" aria-label="閱讀設定">'
-        '<button type="button" class="rtmenu" data-menu-toggle aria-label="開合目錄">☰ 目錄</button>'
-        '<button type="button" class="rttoggle" data-tools-toggle aria-expanded="true">閱讀工具</button>'
-        '<div class="rtbody">'
-        '<span class="rtlabel">顯示</span>'
+        '<div class="toolpanel readtools" id="toolpanel" role="group" aria-label="閱讀設定" hidden>'
+        '<div class="tp-row"><span class="tp-label">顯示</span>'
         '<button type="button" data-read="both" aria-pressed="true" title="原文與白話上下並列">原文＋白話</button>'
-        '<button type="button" data-read="o" aria-pressed="false" title="只顯示原文">原文</button>'
-        '<button type="button" data-read="t" aria-pressed="false" title="只顯示白話">白話</button>'
-        '<span class="rtsep" aria-hidden="true"></span>'
+        '<button type="button" data-read="o" aria-pressed="false" title="只顯示原文">只原文</button>'
+        '<button type="button" data-read="t" aria-pressed="false" title="只顯示白話">只白話</button>'
+        '</div>'
+        '<div class="tp-row"><span class="tp-label">版面</span>'
         '<button type="button" data-twocol-toggle aria-pressed="false" title="原文與白話左右並排，需寬螢幕">並排</button>'
-        '<button type="button" data-copy-anchor>複製本段連結</button>'
+        '<button type="button" data-copy-anchor title="複製目前段落的網址">複製本段連結</button>'
         '</div>'
         '</div>'
     )
 
 
-def nav_parts(prefix='', prev_url=None, next_url=None,
-              prev_label=None, next_label=None, current_label=None):
-    """回傳 (preamble, sidebar)：preamble 在 .wrap 之前，sidebar 在 .wrap 內。"""
+def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
+                tools=False):
+    """全站共用頂部列：☰ 目錄／書卷／閱讀工具＋搜尋。"""
     e = html.escape
-    head = [
-        '<a class="skip-link" href="#main">跳至正文</a>',
-        '<button id="sideopen" class="sideopen" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="展開目錄">目錄</button>',
-        '<header class="mobilebar">',
-        '<button id="navtoggle" class="iconbtn" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="開啟目錄">☰</button>',
-        '<a class="mobiletitle" href="' + prefix + 'index.html">南山律典</a>',
-        '<span class="mobilewhere">' + e(current_label or '') + '</span>',
-        '<a class="iconbtn" href="' + prefix + 'search.html" aria-label="全文搜尋">搜尋</a>',
-        '</header>',
-        '<div class="navscrim" id="navscrim" hidden></div>',
-    ]
+    crumb = ['<a class="tb-home" href="' + prefix + 'index.html">南山律典</a>']
+    if book_short:
+        title_attr = (' title="%s"' % e(book_label)) if book_label else ''
+        crumb.append('<span class="tb-sep tb-sep-home" aria-hidden="true">›</span>')
+        crumb.append('<span class="tb-book"' + title_attr + '>' + e(book_short) + '</span>')
+    if current_label:
+        if book_short:
+            crumb.append('<span class="tb-sep" aria-hidden="true">·</span>')
+        crumb.append('<span class="tb-where">' + e(current_label) + '</span>')
+
+    tools_btn = ''
+    if tools:
+        tools_btn = (
+            '<button id="toolstoggle" class="tb-btn tb-tools" type="button" '
+            'data-tools-toggle aria-controls="toolpanel" aria-expanded="false" '
+            'aria-label="開合閱讀工具" title="閱讀工具：顯示模式、並排、複製本段連結">'
+            '<span class="tb-tools-long">閱讀工具</span><span class="tb-tools-short">工具</span></button>'
+        )
+
+    return (
+        '<a class="skip-link" href="#main">跳至正文</a>'
+        '<header class="topbar">'
+        '<button id="navtoggle" class="tb-btn tb-menu" type="button" aria-controls="sidebar" '
+        'aria-expanded="true" aria-label="開合目錄" title="開合目錄（[ 或 Alt+M）">'
+        '<span class="tb-ico" aria-hidden="true">☰</span><span class="tb-menulabel">目錄</span></button>'
+        '<div class="tb-crumb">' + ''.join(crumb) + '</div>'
+        '<div class="tb-right">' + tools_btn
+        + '<a class="tb-btn tb-search" href="' + prefix + 'search.html" '
+          'aria-label="全文搜尋" title="全文搜尋（Ctrl/⌘ K）">搜尋</a>'
+        '</div>'
+        + (tools_html() if tools else '')
+        + '</header>'
+        '<button id="edgepeek" class="edgepeek" type="button" aria-controls="sidebar" '
+        'aria-label="顯示目錄" title="顯示目錄：滑鼠移到左緣，或按 [／Alt+M">'
+        '<span class="sr-only">顯示目錄</span></button>'
+        '<div class="navscrim" id="navscrim" hidden></div>'
+    )
+
+
+def nav_parts(prefix='', prev_url=None, next_url=None,
+              prev_label=None, next_label=None, current_label=None,
+              book_label=None, book_short=None, tools=False):
+    """回傳 (preamble, sidebar)：preamble 是頂部列等，sidebar 在 .wrap 內。"""
+    e = html.escape
+    head = [topbar_html(prefix, current_label, book_label, book_short, tools)]
     parts = [
         '<nav id="sidebar" aria-label="全書目錄">',
         '<div class="navhead"><p class="brand"><a href="' + prefix + 'index.html">南山律典・白話對照</a></p>'
         '<button id="navclose" class="iconbtn" type="button" aria-label="關閉目錄">×</button>'
-        '<button id="navcollapse" class="navcollapse" type="button" aria-label="收合目錄" aria-expanded="true">⟨</button></div>',
+        '<button id="navcollapse" class="navcollapse" type="button" aria-label="收合目錄">⟨</button></div>',
         '<div class="grp"><b>全書</b>'
         '<a href="' + prefix + 'index.html">目錄</a>'
         '<a href="' + prefix + 'search.html">全文搜尋</a>'
@@ -121,32 +160,35 @@ def nav_parts(prefix='', prev_url=None, next_url=None,
 
 
 def nav_html(prefix='', prev_url=None, next_url=None,
-             prev_label=None, next_label=None, current_label=None):
+             prev_label=None, next_label=None, current_label=None,
+             book_label=None, book_short=None, tools=False):
     """相容用法：preamble ＋ sidebar。"""
-    return ''.join(nav_parts(prefix, prev_url, next_url, prev_label, next_label, current_label))
+    return ''.join(nav_parts(prefix, prev_url, next_url, prev_label, next_label,
+                             current_label, book_label, book_short, tools))
 
 
 def page(title, body, prefix='', prev_url=None, next_url=None,
          prev_label=None, next_label=None, current_label=None,
          extra_scripts=None, extra_head='', pager=False, tools=False,
-         index_url=None, description=None):
+         index_url=None, description=None, book_label=None, book_short=None,
+         body_class=''):
     """完整 HTML 頁面。
 
     `body` 是 `<main>` 內容；卷末導覽與頁尾一律排在 `</main>` 之後，
     所以只替換 `<main>` 的生成器不會把它們吃掉。
     """
     e = html.escape
-    nav_head, sidebar = nav_parts(prefix, prev_url, next_url, prev_label, next_label, current_label)
+    nav_head, sidebar = nav_parts(prefix, prev_url, next_url, prev_label, next_label,
+                                  current_label, book_label, book_short, tools)
     if pager:
         pager_s = pager_html(prev_url, next_url, prev_label, next_label,
                              index_url or (prefix + 'index.html'))
     else:
         pager_s = ''
-    if tools:
-        body = tools_html() + body
     scripts = ['nav.js'] + list(extra_scripts or [])
     tags = ''.join('<script defer src="' + asset(prefix, s) + '"></script>' for s in scripts)
     desc = ('<meta name="description" content="' + e(description) + '">') if description else ''
+    bc = (' class="%s"' % e(body_class)) if body_class else ''
     return (
         '<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -156,7 +198,7 @@ def page(title, body, prefix='', prev_url=None, next_url=None,
         '<meta name="citation_author" content="UncleHandsome">'
         '<link rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">'
         '<link rel="stylesheet" href="' + asset(prefix, 'style.css') + '">'
-        + _HEAD_SCRIPT + tags + extra_head + '</head><body>'
+        + _HEAD_SCRIPT + tags + extra_head + '</head><body' + bc + '>'
         + nav_head + '<div class="wrap">' + sidebar + '<div class="content">'
         + '<main id="main" tabindex="-1">' + body + '</main>'
         + pager_s + FOOTER.replace('ROOT', prefix)

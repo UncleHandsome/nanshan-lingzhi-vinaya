@@ -280,6 +280,7 @@ def main():
                             prev_url=(prev + '.html' if prev else None),
                             next_url=(nxt + '.html' if nxt else None),
                             prev_label=prev, next_label=nxt, current_label=p,
+                            book_label=BOOK_TITLE, book_short='資持記',
                             pager=True, tools=True,
                             description='%s　%s：原文與白話逐段對照。' % (BOOK_TITLE, p))
         assert '<br><br>' not in page_html, p

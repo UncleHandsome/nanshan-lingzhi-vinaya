@@ -1,6 +1,9 @@
-/* 南山律典・白話對照 全站樣式 v11
-   單一變數、單一深色覆蓋、桌面／抽屜共用；列印另行收斂。 */
+/* 南山律典・白話對照 全站樣式 v12
+   單一變數、單一深色覆蓋、桌面／抽屜共用；列印另行收斂。
+   2026-11-23 導覽重整：全站 sticky 頂部列、可 hover 的左緣側欄、閱讀工具下拉。 */
 :root {
+  --topbar-h: 58px;
+  --side-w: 280px;
   --fg: #1f1b16;
   --fg2: #5d554a;
   --bg: #fdfcf8;
@@ -40,7 +43,7 @@
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html { scroll-behavior: auto; scroll-padding-top: 1.2rem; }
+html { scroll-behavior: auto; scroll-padding-top: calc(var(--topbar-h) + 10px); }
 body {
   margin: 0;
   background: var(--bg);
@@ -68,34 +71,73 @@ img { max-width: 100%; }
 }
 .skip-link:focus { left: 0; }
 
-/* ── 行動頂欄與抽屜 ── */
-.mobilebar {
-  display: none;
-  position: fixed; inset: 0 0 auto 0; z-index: 70;
-  height: 54px; align-items: center; gap: .35rem;
-  padding: .3rem .45rem;
+/* ── 全域頂部列（首頁／搜尋／附錄／未譯／六書／合編共用） ── */
+.topbar {
+  position: sticky; top: 0; z-index: 90;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center; gap: .5rem;
+  height: var(--topbar-h); min-height: var(--topbar-h);
+  padding: 0 .7rem;
   background: var(--panel);
   border-bottom: 1px solid var(--line);
-  box-shadow: var(--shadow);
+  box-shadow: 0 1px 0 rgba(40, 30, 15, .05);
   font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
 }
+.tb-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .35rem;
+  min-height: 40px; padding: 0 .7rem;
+  border: 1px solid transparent; border-radius: 8px;
+  background: transparent; color: var(--fg);
+  font: inherit; font-size: 13.5px; line-height: 1.2;
+  text-decoration: none; white-space: nowrap; cursor: pointer;
+}
+.tb-btn:hover { background: var(--surface-3); text-decoration: none; }
+.tb-menu {
+  border-color: var(--line); background: var(--surface);
+  font-weight: 700; font-size: 14px; letter-spacing: .03em;
+}
+.tb-menu:hover { border-color: var(--accent2); color: var(--accent); }
+.tb-menu[aria-expanded="false"] { color: var(--accent); border-color: var(--accent2); }
+.tb-ico { font-size: 17px; line-height: 1; }
+.tb-crumb {
+  display: flex; align-items: center; gap: .38rem;
+  min-width: 0; overflow: hidden; white-space: nowrap;
+  color: var(--fg2); font-size: 13px;
+}
+.tb-home { color: var(--fg2); font-weight: 600; }
+.tb-home:hover { color: var(--accent); text-decoration: none; }
+.tb-book { color: var(--fg); font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
+.tb-where { color: var(--fg2); overflow: hidden; text-overflow: ellipsis; }
+.tb-sep { color: var(--line); }
+.tb-right { display: flex; align-items: center; gap: .15rem; }
+@media (min-width: 1101px) { .tb-crumb { justify-content: center; } }
+.tb-tools { color: var(--fg2); }
+.tb-tools.is-active { background: var(--surface-4); color: var(--accent); border-color: var(--accent2); }
+.tb-tools-short { display: none; }
+.tb-search { color: var(--fg2); }
 .iconbtn {
   display: inline-flex; align-items: center; justify-content: center;
-  min-width: 40px; min-height: 40px; padding: 0 .55rem;
+  min-width: 36px; min-height: 36px; padding: 0 .5rem;
   border: 1px solid transparent; border-radius: 6px;
   background: transparent; color: var(--fg);
-  font: inherit; font-size: 13px; cursor: pointer;
+  font: inherit; font-size: 16px; line-height: 1; cursor: pointer;
 }
 .iconbtn:hover { background: var(--surface-3); }
-.mobiletitle {
-  color: var(--fg); font-weight: 700; font-size: 13.5px;
-  white-space: nowrap; text-decoration: none;
+/* 左緣：側欄收合後 hover／focus 立即露出，不必先找按鈕 */
+.edgepeek {
+  display: none; position: fixed; left: 0; top: var(--topbar-h); bottom: 0; z-index: 80;
+  width: 15px; padding: 0; border: 0;
+  background: linear-gradient(90deg, var(--panel), transparent);
+  cursor: pointer;
 }
-.mobilewhere {
-  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
-  white-space: nowrap; text-align: center;
-  color: var(--fg2); font-size: 12px;
+.edgepeek::after {
+  content: ""; position: absolute; left: 0; top: 50%;
+  width: 5px; height: 72px; margin-top: -36px;
+  border-radius: 0 6px 6px 0;
+  background: var(--accent2); opacity: .5;
+  transition: opacity .15s ease, width .15s ease;
 }
+.edgepeek:hover::after, .edgepeek:focus-visible::after { opacity: 1; width: 7px; }
 .navscrim { display: none; }
 
 /* ── 版面 ── */
@@ -105,38 +147,42 @@ nav#sidebar {
 }
 .navcollapse {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px; padding: 0;
+  width: 30px; height: 30px; padding: 0;
   border: 1px solid var(--line); border-radius: 6px;
   background: var(--surface); color: var(--fg2); font: inherit; cursor: pointer;
 }
-.sideopen {
-  display: none !important; position: fixed; top: 50%; left: 0; z-index: 60;
-  transform: translateY(-50%);
-  width: 52px; height: 52px; padding: 0;
-  border: 1px solid var(--line); border-left: 0; border-radius: 0 9px 9px 0;
-  background: var(--panel); color: var(--fg2); font: inherit; font-size: 12px; cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,.12);
-}
-.sideopen:hover { color: var(--accent); background: var(--surface-3); }
+.navcollapse:hover { color: var(--accent); border-color: var(--accent2); }
+/* 桌面：預設展開；收合後只留頂部 ☰ 與左緣 hover／focus */
 @media (min-width: 1101px) {
   body.nav-collapsed nav#sidebar {
     width: 0; flex-basis: 0; padding-left: 0; padding-right: 0;
     border-right: 0; overflow: hidden;
   }
   body.nav-collapsed nav#sidebar > * { display: none; }
-  body.nav-collapsed .sideopen { display: inline-flex; align-items: center; justify-content: center; }
+  body.nav-collapsed .edgepeek,
+  body.nav-peek .edgepeek { display: block; }
+}
+/* 桌面：hover 左緣時以浮層露出側欄（蓋在內容上，不再推擠版面） */
+@media (min-width: 1101px) {
+  body.nav-peek nav#sidebar {
+    position: fixed; left: 0; top: var(--topbar-h); bottom: 0; z-index: 85;
+    height: auto; width: var(--side-w); flex-basis: auto;
+    border-right: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
 }
 @media (max-width: 1100px) {
   .navcollapse { display: none !important; }
-  .sideopen { display: none !important; }
+  .edgepeek { display: none !important; }
 }
 
 nav#sidebar {
-  width: 260px; flex: 0 0 260px;
+  width: var(--side-w); flex: 0 0 var(--side-w);
   background: var(--panel);
   border-right: 1px solid var(--line);
-  position: sticky; top: 0;
-  height: 100vh; height: 100dvh;
+  position: sticky; top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h));
+  height: calc(100dvh - var(--topbar-h));
   overflow-y: auto; overscroll-behavior: contain;
   padding: .8rem 0 2.4rem;
   font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
@@ -512,53 +558,27 @@ h2.sec, span[id^="p"] { scroll-margin-top: 14px; }
 .pager .pgidx { grid-column: 2; justify-self: center; color: var(--fg2); font-size: 13px; }
 .pager .pgnext { grid-column: 3; justify-self: end; }
 
-/* 閱讀工具列（原文／白話切換、雙欄、複製連結） */
-.readtools {
-  display: flex; flex-wrap: wrap; align-items: center; gap: .25rem;
-  position: sticky; top: .6rem; z-index: 25;
-  max-width: 100%; margin: 0 0 .9rem; padding: .26rem .4rem;
-  border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2);
-  backdrop-filter: blur(6px);
-  font-family: "Microsoft YaHei", "PingFang SC", sans-serif; font-size: 12px;
+/* ── 閱讀工具下拉面板（由頂部列右側按鈕開合） ── */
+.toolpanel {
+  position: absolute; right: .6rem; top: calc(100% + 6px); z-index: 95;
+  width: min(560px, calc(100vw - 24px));
+  display: flex; flex-wrap: wrap; align-items: center; gap: .55rem;
+  padding: .6rem .7rem;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: var(--surface); box-shadow: var(--shadow);
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif; font-size: 12.5px;
 }
-.rtbody { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem; }
-.rtmenu, .rttoggle {
-  padding: .2rem .45rem; border: 1px solid var(--line); border-radius: 6px;
-  background: var(--surface); color: var(--accent); font: inherit; cursor: pointer;
-  font-weight: 700; white-space: nowrap;
+.toolpanel[hidden] { display: none !important; }
+.tp-row { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; }
+.tp-label { color: var(--fg2); padding-right: .15rem; }
+.toolpanel button {
+  padding: .28rem .55rem; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--surface-2); color: var(--fg2); font: inherit; font-size: 12.5px; cursor: pointer;
+  white-space: nowrap;
 }
-.rtmenu { color: var(--fg2); }
-.readtools.is-collapsed { display: flex; }
-.readtools.is-collapsed .rtbody { display: none; }
-.toolsopen {
-  display: none; position: fixed; right: 18px; bottom: 64px; z-index: 60;
-  height: 44px; padding: 0 .85rem;
-  border: 1px solid var(--line); border-radius: 999px;
-  background: var(--panel); color: var(--accent); font: inherit; font-size: 12.5px; cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0,0,0,.15);
-}
-.toolsopen:hover { background: var(--surface-3); }
-body.tools-collapsed .toolsopen { display: inline-flex; align-items: center; }
-@media (max-width: 700px) {
-  .toolsopen { display: none !important; }
-  .readtools {
-    position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 60;
-    max-width: none; margin: 0; padding: .4rem .5rem;
-    border-left: 0; border-right: 0; border-bottom: 0; border-radius: 0;
-    background: var(--panel);
-  }
-  body { padding-bottom: 66px; }
-  #toTop { bottom: 78px; }
-}
-.readtools .rtlabel { color: var(--fg2); padding: 0 .35rem 0 .15rem; }
-.readtools .rtsep { width: 1px; height: 1.1rem; background: var(--line); margin: 0 .3rem; }
-.readtools button {
-  padding: .2rem .45rem; border: 1px solid var(--line); border-radius: 6px;
-  background: var(--surface); color: var(--fg2); font: inherit; cursor: pointer;
-}
-.readtools button:hover { border-color: var(--accent2); color: var(--accent); }
-.readtools button:disabled { opacity: .45; cursor: not-allowed; }
-.readtools button[aria-pressed="true"] {
+.toolpanel button:hover { border-color: var(--accent2); color: var(--accent); }
+.toolpanel button:disabled { opacity: .45; cursor: not-allowed; }
+.toolpanel button[aria-pressed="true"] {
   background: var(--surface-4); border-color: var(--accent2); color: var(--accent); font-weight: 700;
 }
 /* 顯示切換：html.hide-o 隱藏原文、html.hide-t 隱藏白話 */
@@ -799,7 +819,7 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
     --shadow: 0 4px 18px rgba(0, 0, 0, .35);
   }
   nav#sidebar { background: var(--panel); }
-  .mobilebar { background: var(--panel); }
+  .topbar { background: var(--panel); }
   nav .grp > a { background: var(--surface-2); }
   details.art-plain { border-left-color: #5c7059; }
   details.art-plain > summary { color: #8fae8a; }
@@ -808,24 +828,25 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
   td.bad { color: #e08a7a; }
 }
 
-/* ── 窄屏／抽屜 ── */
+/* ── 窄屏／抽屜：同一條頂部列＋左側抽屜，不再有底部工具列 ── */
 @media (max-width: 1100px) {
-  body { padding-top: 54px; font-size: 16px; }
-  .mobilebar { display: flex; }
+  :root { --topbar-h: 56px; }
+  body { font-size: 16px; }
   .wrap { display: block; }
   nav#sidebar {
-    position: fixed; top: 0; left: 0; z-index: 80;
-    width: min(88vw, 340px); height: 100dvh;
+    position: fixed; top: var(--topbar-h); left: 0; bottom: 0; z-index: 85;
+    width: min(88vw, 340px); height: auto;
     transform: translateX(-105%);
     transition: transform .2s ease;
     box-shadow: var(--shadow);
+    border-right: 1px solid var(--line);
     padding-top: .65rem;
   }
-  body.nav-open nav#sidebar { transform: translateX(0); }
-  body.nav-open { overflow: hidden; }
+  body.nav-drawer-open nav#sidebar { transform: translateX(0); }
+  body.nav-drawer-open { overflow: hidden; }
   #navclose { display: inline-flex; }
   .navscrim {
-    display: block; position: fixed; inset: 0; z-index: 75;
+    display: block; position: fixed; inset: var(--topbar-h) 0 0; z-index: 75;
     background: rgba(20, 15, 10, .45);
   }
   .navscrim[hidden] { display: none; }
@@ -834,27 +855,31 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
   .content > .sitefoot { padding-left: 1.1rem; padding-right: 1.1rem; }
   body.par details.art-src,
   body.par details.art-plain { float: none; width: auto; margin-right: 0; }
-  h2.sec, span[id^="p"] { scroll-margin-top: 70px; }
-  html { scroll-padding-top: 64px; }
+  h2.sec, span[id^="p"] { scroll-margin-top: calc(var(--topbar-h) + 14px); }
+  html { scroll-padding-top: calc(var(--topbar-h) + 8px); }
   .pager { grid-template-columns: 1fr auto 1fr; gap: .5rem; font-size: 13px; }
   .searchbar input { flex-basis: 100%; }
   .searchbar select { width: 100%; }
 }
 @media (max-width: 700px) {
-  .rtbody { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
-  .readtools button[data-twocol-toggle],
-  .readtools button[data-copy-anchor],
-  .readtools .rtsep { display: none !important; }
-  .readtools .rtlabel { display: none; }
+  .topbar { gap: .25rem; padding: 0 .4rem; }
+  .tb-home, .tb-sep-home { display: none; }
+  .tb-tools-long { display: none; }
+  .tb-tools-short { display: inline; }
+  .tb-btn { padding: 0 .5rem; font-size: 13px; }
+  .tb-menu { font-size: 13.5px; }
+  .tb-crumb { font-size: 12.5px; gap: .25rem; }
+  .toolpanel {
+    position: fixed; left: 8px; right: 8px; top: calc(var(--topbar-h) + 6px);
+    width: auto; max-height: calc(100dvh - var(--topbar-h) - 20px); overflow: auto;
+  }
+  .toolpanel .tp-row { width: 100%; }
   h1 { font-size: 1.55rem; }
   h2 { font-size: 1.3rem; }
   details.art-toc ul { columns: 1; }
-  .mobilewhere { display: none; }
-  .mobiletitle { flex: 1; }
   main { padding: 1.2rem .85rem 2.6rem; }
   .content > .pager,
   .content > .sitefoot { padding-left: .85rem; padding-right: .85rem; }
-  .readtools { font-size: 12px; gap: .3rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
@@ -862,7 +887,7 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
 
 /* ── 列印 ── */
 @media print {
-  .mobilebar, .navscrim, nav#sidebar, #toTop, .skip-link, .pager, .readtools { display: none !important; }
+  .topbar, .edgepeek, .toolpanel, .navscrim, nav#sidebar, #toTop, .skip-link, .pager { display: none !important; }
   body { padding-top: 0; font-size: 12pt; }
   .wrap { display: block; }
   main { max-width: none; padding: 0; }

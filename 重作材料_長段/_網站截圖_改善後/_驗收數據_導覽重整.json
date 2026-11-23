@@ -1,0 +1,800 @@
+{
+ "checks": [
+  {
+   "name": "desktop-index-topbar>=52",
+   "ok": true,
+   "detail": 58
+  },
+  {
+   "name": "desktop-index-sticky",
+   "ok": true,
+   "detail": "sticky"
+  },
+  {
+   "name": "desktop-index-menu-visible",
+   "ok": true,
+   "detail": [
+    "☰目錄",
+    "true"
+   ]
+  },
+  {
+   "name": "desktop-index-sidebar-open",
+   "ok": true,
+   "detail": 280
+  },
+  {
+   "name": "desktop-index-no-overflow",
+   "ok": true,
+   "detail": [
+    1440,
+    1440
+   ]
+  },
+  {
+   "name": "desktop-index-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "desktop-search-topbar>=52",
+   "ok": true,
+   "detail": 58
+  },
+  {
+   "name": "desktop-search-sticky",
+   "ok": true,
+   "detail": "sticky"
+  },
+  {
+   "name": "desktop-search-menu-visible",
+   "ok": true,
+   "detail": [
+    "☰目錄",
+    "true"
+   ]
+  },
+  {
+   "name": "desktop-search-sidebar-open",
+   "ok": true,
+   "detail": 280
+  },
+  {
+   "name": "desktop-search-no-overflow",
+   "ok": true,
+   "detail": [
+    1440,
+    1440
+   ]
+  },
+  {
+   "name": "desktop-search-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "desktop-appendix-topbar>=52",
+   "ok": true,
+   "detail": 58
+  },
+  {
+   "name": "desktop-appendix-sticky",
+   "ok": true,
+   "detail": "sticky"
+  },
+  {
+   "name": "desktop-appendix-menu-visible",
+   "ok": true,
+   "detail": [
+    "☰目錄",
+    "true"
+   ]
+  },
+  {
+   "name": "desktop-appendix-sidebar-open",
+   "ok": true,
+   "detail": 280
+  },
+  {
+   "name": "desktop-appendix-no-overflow",
+   "ok": true,
+   "detail": [
+    1440,
+    1440
+   ]
+  },
+  {
+   "name": "desktop-appendix-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "desktop-untranslated-topbar>=52",
+   "ok": true,
+   "detail": 58
+  },
+  {
+   "name": "desktop-untranslated-sticky",
+   "ok": true,
+   "detail": "sticky"
+  },
+  {
+   "name": "desktop-untranslated-menu-visible",
+   "ok": true,
+   "detail": [
+    "☰目錄",
+    "true"
+   ]
+  },
+  {
+   "name": "desktop-untranslated-sidebar-open",
+   "ok": true,
+   "detail": 280
+  },
+  {
+   "name": "desktop-untranslated-no-overflow",
+   "ok": true,
+   "detail": [
+    1440,
+    1440
+   ]
+  },
+  {
+   "name": "desktop-untranslated-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "desktop-xingshichao-topbar>=52",
+   "ok": true,
+   "detail": 58
+  },
+  {
+   "name": "desktop-xingshichao-sticky",
+   "ok": true,
+   "detail": "sticky"
+  },
+  {
+   "name": "desktop-xingshichao-menu-visible",
+   "ok": true,
+   "detail": [
+    "☰目錄",
+    "true"
+   ]
+  },
+  {
+   "name": "desktop-xingshichao-sidebar-open",
+   "ok": true,
+   "detail": 280
+  },
+  {
+   "name": "desktop-xingshichao-no-overflow",
+   "ok": true,
+   "detail": [
+    1440,
+    1440
+   ]
+  },
+  {
+   "name": "desktop-xingshichao-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "desktop-jieshu-topbar>=52",
+   "ok": true,
+   "detail": 58
+  },
+  {
+   "name": "desktop-jieshu-sticky",
+   "ok": true,
+   "detail": "sticky"
+  },
+  {
+   "name": "desktop-jieshu-menu-visible",
+   "ok": true,
+   "detail": [
+    "☰目錄",
+    "true"
+   ]
+  },
+  {
+   "name": "desktop-jieshu-sidebar-open",
+   "ok": true,
+   "detail": 280
+  },
+  {
+   "name": "desktop-jieshu-no-overflow",
+   "ok": true,
+   "detail": [
+    1440,
+    1440
+   ]
+  },
+  {
+   "name": "desktop-jieshu-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "desktop-zhichi-topbar>=52",
+   "ok": true,
+   "detail": 58
+  },
+  {
+   "name": "desktop-zhichi-sticky",
+   "ok": true,
+   "detail": "sticky"
+  },
+  {
+   "name": "desktop-zhichi-menu-visible",
+   "ok": true,
+   "detail": [
+    "☰目錄",
+    "true"
+   ]
+  },
+  {
+   "name": "desktop-zhichi-sidebar-open",
+   "ok": true,
+   "detail": 280
+  },
+  {
+   "name": "desktop-zhichi-no-overflow",
+   "ok": true,
+   "detail": [
+    1440,
+    1440
+   ]
+  },
+  {
+   "name": "desktop-zhichi-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "desktop-hebian-topbar>=52",
+   "ok": true,
+   "detail": 58
+  },
+  {
+   "name": "desktop-hebian-sticky",
+   "ok": true,
+   "detail": "sticky"
+  },
+  {
+   "name": "desktop-hebian-menu-visible",
+   "ok": true,
+   "detail": [
+    "☰目錄",
+    "true"
+   ]
+  },
+  {
+   "name": "desktop-hebian-sidebar-open",
+   "ok": true,
+   "detail": 280
+  },
+  {
+   "name": "desktop-hebian-no-overflow",
+   "ok": true,
+   "detail": [
+    1440,
+    1440
+   ]
+  },
+  {
+   "name": "desktop-hebian-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "desktop-index-collapsed",
+   "ok": true,
+   "detail": [
+    0,
+    "page-home nav-collapsed"
+   ]
+  },
+  {
+   "name": "desktop-index-reopen-menu-visible",
+   "ok": true,
+   "detail": [
+    "☰目錄",
+    "false"
+   ]
+  },
+  {
+   "name": "desktop-index-edge-visible",
+   "ok": true,
+   "detail": {
+    "w": 15,
+    "display": "block"
+   }
+  },
+  {
+   "name": "desktop-index-edge-hover-opens",
+   "ok": true,
+   "detail": [
+    280,
+    "page-home nav-peek"
+   ]
+  },
+  {
+   "name": "desktop-index-edge-leave-closes",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "name": "desktop-index-menu-reopens",
+   "ok": true,
+   "detail": 280
+  },
+  {
+   "name": "desktop-index-sticky-after-scroll",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "name": "desktop-tools-open",
+   "ok": true,
+   "detail": {
+    "hidden": false,
+    "w": 560,
+    "h": 55,
+    "top": 63,
+    "exp": "true",
+    "overflowX": 0
+   }
+  },
+  {
+   "name": "desktop-tools-no-overflow",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "name": "desktop-tools-read-mode",
+   "ok": true,
+   "detail": true
+  },
+  {
+   "name": "desktop-tools-read-reset",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "desktop-tools-escape-closes",
+   "ok": true,
+   "detail": true
+  },
+  {
+   "name": "desktop-key-bracket-collapse",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "name": "desktop-key-bracket-open",
+   "ok": true,
+   "detail": 280
+  },
+  {
+   "name": "desktop-reload-collapsed-kept",
+   "ok": true,
+   "detail": [
+    0,
+    "nav-collapsed"
+   ]
+  },
+  {
+   "name": "desktop-reload-menu-visible",
+   "ok": true,
+   "detail": "false"
+  },
+  {
+   "name": "desktop-reload-edge-visible",
+   "ok": true,
+   "detail": "block"
+  },
+  {
+   "name": "desktop-reload-edge-opens",
+   "ok": true,
+   "detail": 280
+  },
+  {
+   "name": "desktop-key-altm-collapse",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "name": "desktop-key-altm-open",
+   "ok": true,
+   "detail": 280
+  },
+  {
+   "name": "desktop-1101-sidebar",
+   "ok": true,
+   "detail": [
+    280,
+    0
+   ]
+  },
+  {
+   "name": "mobile-index-topbar>=52",
+   "ok": true,
+   "detail": 56
+  },
+  {
+   "name": "mobile-index-menu-visible",
+   "ok": true,
+   "detail": "☰目錄"
+  },
+  {
+   "name": "mobile-index-no-overflow",
+   "ok": true,
+   "detail": [
+    390,
+    390
+   ]
+  },
+  {
+   "name": "mobile-index-drawer-closed",
+   "ok": true,
+   "detail": [
+    -17,
+    true
+   ]
+  },
+  {
+   "name": "mobile-index-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "mobile-index-no-bottom-bar",
+   "ok": true,
+   "detail": {
+    "padBottom": "0px",
+    "fixedBottom": []
+   }
+  },
+  {
+   "name": "mobile-xingshichao-topbar>=52",
+   "ok": true,
+   "detail": 56
+  },
+  {
+   "name": "mobile-xingshichao-menu-visible",
+   "ok": true,
+   "detail": "☰目錄"
+  },
+  {
+   "name": "mobile-xingshichao-no-overflow",
+   "ok": true,
+   "detail": [
+    390,
+    390
+   ]
+  },
+  {
+   "name": "mobile-xingshichao-drawer-closed",
+   "ok": true,
+   "detail": [
+    -17,
+    true
+   ]
+  },
+  {
+   "name": "mobile-xingshichao-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "mobile-xingshichao-no-bottom-bar",
+   "ok": true,
+   "detail": {
+    "padBottom": "0px",
+    "fixedBottom": []
+   }
+  },
+  {
+   "name": "mobile-jieshu-topbar>=52",
+   "ok": true,
+   "detail": 56
+  },
+  {
+   "name": "mobile-jieshu-menu-visible",
+   "ok": true,
+   "detail": "☰目錄"
+  },
+  {
+   "name": "mobile-jieshu-no-overflow",
+   "ok": true,
+   "detail": [
+    390,
+    390
+   ]
+  },
+  {
+   "name": "mobile-jieshu-drawer-closed",
+   "ok": true,
+   "detail": [
+    -17,
+    true
+   ]
+  },
+  {
+   "name": "mobile-jieshu-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "mobile-jieshu-no-bottom-bar",
+   "ok": true,
+   "detail": {
+    "padBottom": "0px",
+    "fixedBottom": []
+   }
+  },
+  {
+   "name": "mobile-hebian-topbar>=52",
+   "ok": true,
+   "detail": 56
+  },
+  {
+   "name": "mobile-hebian-menu-visible",
+   "ok": true,
+   "detail": "☰目錄"
+  },
+  {
+   "name": "mobile-hebian-no-overflow",
+   "ok": true,
+   "detail": [
+    390,
+    390
+   ]
+  },
+  {
+   "name": "mobile-hebian-drawer-closed",
+   "ok": true,
+   "detail": [
+    -17,
+    true
+   ]
+  },
+  {
+   "name": "mobile-hebian-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "mobile-hebian-no-bottom-bar",
+   "ok": true,
+   "detail": {
+    "padBottom": "0px",
+    "fixedBottom": []
+   }
+  },
+  {
+   "name": "mobile-search-topbar>=52",
+   "ok": true,
+   "detail": 56
+  },
+  {
+   "name": "mobile-search-menu-visible",
+   "ok": true,
+   "detail": "☰目錄"
+  },
+  {
+   "name": "mobile-search-no-overflow",
+   "ok": true,
+   "detail": [
+    390,
+    390
+   ]
+  },
+  {
+   "name": "mobile-search-drawer-closed",
+   "ok": true,
+   "detail": [
+    -17,
+    true
+   ]
+  },
+  {
+   "name": "mobile-search-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "mobile-search-no-bottom-bar",
+   "ok": true,
+   "detail": {
+    "padBottom": "0px",
+    "fixedBottom": []
+   }
+  },
+  {
+   "name": "mobile-appendix-topbar>=52",
+   "ok": true,
+   "detail": 56
+  },
+  {
+   "name": "mobile-appendix-menu-visible",
+   "ok": true,
+   "detail": "☰目錄"
+  },
+  {
+   "name": "mobile-appendix-no-overflow",
+   "ok": true,
+   "detail": [
+    390,
+    390
+   ]
+  },
+  {
+   "name": "mobile-appendix-drawer-closed",
+   "ok": true,
+   "detail": [
+    -17,
+    true
+   ]
+  },
+  {
+   "name": "mobile-appendix-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "mobile-appendix-no-bottom-bar",
+   "ok": true,
+   "detail": {
+    "padBottom": "0px",
+    "fixedBottom": []
+   }
+  },
+  {
+   "name": "mobile-untranslated-topbar>=52",
+   "ok": true,
+   "detail": 56
+  },
+  {
+   "name": "mobile-untranslated-menu-visible",
+   "ok": true,
+   "detail": "☰目錄"
+  },
+  {
+   "name": "mobile-untranslated-no-overflow",
+   "ok": true,
+   "detail": [
+    390,
+    390
+   ]
+  },
+  {
+   "name": "mobile-untranslated-drawer-closed",
+   "ok": true,
+   "detail": [
+    -17,
+    true
+   ]
+  },
+  {
+   "name": "mobile-untranslated-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "mobile-untranslated-no-bottom-bar",
+   "ok": true,
+   "detail": {
+    "padBottom": "0px",
+    "fixedBottom": []
+   }
+  },
+  {
+   "name": "mobile-zhichi-topbar>=52",
+   "ok": true,
+   "detail": 56
+  },
+  {
+   "name": "mobile-zhichi-menu-visible",
+   "ok": true,
+   "detail": "☰目錄"
+  },
+  {
+   "name": "mobile-zhichi-no-overflow",
+   "ok": true,
+   "detail": [
+    390,
+    390
+   ]
+  },
+  {
+   "name": "mobile-zhichi-drawer-closed",
+   "ok": true,
+   "detail": [
+    -17,
+    true
+   ]
+  },
+  {
+   "name": "mobile-zhichi-footer",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "name": "mobile-zhichi-no-bottom-bar",
+   "ok": true,
+   "detail": {
+    "padBottom": "0px",
+    "fixedBottom": []
+   }
+  },
+  {
+   "name": "mobile-drawer-open",
+   "ok": true,
+   "detail": [
+    340,
+    "nav-drawer-open",
+    false
+   ]
+  },
+  {
+   "name": "mobile-scrim-visible",
+   "ok": true,
+   "detail": {
+    "hidden": false,
+    "display": "block"
+   }
+  },
+  {
+   "name": "mobile-drawer-close-scrim",
+   "ok": true,
+   "detail": [
+    -17,
+    true
+   ]
+  },
+  {
+   "name": "mobile-tools-panel",
+   "ok": true,
+   "detail": {
+    "hidden": false,
+    "top": 62,
+    "bottom": 160,
+    "w": 374,
+    "vh": 844,
+    "overflowX": 0
+   }
+  },
+  {
+   "name": "mobile-tools-no-overflow",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "name": "mobile-sticky-after-scroll",
+   "ok": true,
+   "detail": 0
+  },
+  {
+   "name": "mobile-hash-landing-below-topbar",
+   "ok": true,
+   "detail": {
+    "top": 68,
+    "bar": 56
+   }
+  },
+  {
+   "name": "desktop-dark-topbar",
+   "ok": true,
+   "detail": {
+    "bg": "rgb(30, 29, 27)",
+    "fg": "rgb(230, 226, 218)",
+    "h": 58
+   }
+  }
+ ],
+ "pass_count": 125,
+ "fail_count": 0
+}

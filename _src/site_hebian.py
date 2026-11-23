@@ -747,6 +747,7 @@ def main():
                       prev_url=(prev + '.html' if prev else None),
                       next_url=(nxt + '.html' if nxt else None),
                       prev_label=prev, next_label=nxt, current_label=vol,
+                      book_label='四分律行事鈔資持記・句級合編', book_short='合編',
                       pager=True, tools=True,
                       description='四分律行事鈔資持記・句級合編　%s：鈔文、記文與白話逐段對照。' % vol)
         if '<br><br>' in out:

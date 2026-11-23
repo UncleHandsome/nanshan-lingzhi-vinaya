@@ -1,5 +1,6 @@
-/* 側欄與全站導覽 v9：書 → 卷 → 篇 三層鑽取、跨書篩選、所在篇（scroll 推導）、
-   閱讀模式（原文／白話／雙欄）、複製本段連結、抽屜、快捷鍵 */
+/* 全站導覽 v10：全站頂部列、書 → 卷 → 篇三層鑽取、跨書篩選、
+   所在篇（scroll 推導）、閱讀模式（原文／白話／雙欄）、複製本段連結、
+   桌面預設展開側欄、收合後左緣 hover／focus 露出、窄螢幕自動抽屜。 */
 (function () {
   'use strict';
 
@@ -13,6 +14,7 @@
   var isMobileQuery = window.matchMedia ? window.matchMedia('(max-width: 1100px)') : null;
   var BOOK_KEY = 'dsh-nav-book-v3';
   var SCROLL_KEY = 'dsh-nav-scroll-v3:' + path;
+  var SIDE_KEY = 'dsh-nav-side-v2';
   var DATA = null;
   var curBook = null;
   var openVol = null;
@@ -22,9 +24,15 @@
   var bodyEl = null;
   var activeLink = null;
   var drawerOpen = false;
+  var pinned = true;
+  var peeking = false;
+  var peekTimer = null;
   var toggle = document.getElementById('navtoggle');
   var closeBtn = document.getElementById('navclose');
   var scrim = document.getElementById('navscrim');
+  var edge = document.getElementById('edgepeek');
+  var toolsBtn = document.querySelector('[data-tools-toggle]');
+  var toolPanel = document.getElementById('toolpanel');
   var siteSearch = document.getElementById('q');
 
   function safePath() {
@@ -113,7 +121,35 @@
     return null;
   }
 
+  // 首頁沒有「目前書卷」：側欄改列全部書目 → 卷，直接從這裡進站。
+  function renderHome() {
+    var html = '<p class="navgrouplabel">書目</p><div class="navvols navhome">';
+    (DATA.books || []).forEach(function (b) {
+      html += '<details class="vol homelist" data-out="' + esc(b.out) + '">' +
+        '<summary><span class="vname">' + esc(b.title) + '</span>' +
+        '<span class="vcount">' + ((b.vols || []).length) + ' 卷</span></summary><ul>';
+      (b.vols || []).forEach(function (v) {
+        html += '<li><a href="' + root + b.out + '/' + v.v + '.html">' + esc(v.v) + '</a></li>';
+      });
+      html += '</ul></details>';
+    });
+    html += '</div>';
+
+    bodyEl = document.createElement('div');
+    bodyEl.className = 'navbody';
+    bodyEl.innerHTML = html;
+    resultsEl = document.createElement('div');
+    resultsEl.className = 'navresults';
+    resultsEl.hidden = true;
+    box.innerHTML = '';
+    box.appendChild(bodyEl);
+    box.appendChild(resultsEl);
+    if (resultsEl) { resultsEl.hidden = true; resultsEl.innerHTML = ''; }
+  }
+
   function render() {
+    // 首頁與搜尋／附錄／未譯等「不屬於任何書」的頁面：側欄列全部書目 → 卷。
+    if (!bookOfPath()) { renderHome(); return; }
     var b = bookByOut(curBook) || (DATA.books || [])[0];
     if (!b) return;
     curBook = b.out;
@@ -371,10 +407,10 @@
   });
 
   function topGap() {
-    var bar = document.querySelector('.mobilebar');
+    var bar = document.querySelector('.topbar');
     if (!bar) return 14;
     var cs = window.getComputedStyle(bar);
-    if (cs.display === 'none' || cs.position !== 'fixed') return 14;
+    if (cs.display === 'none') return 14;
     return bar.getBoundingClientRect().height + 12;
   }
 
@@ -524,45 +560,98 @@
   // 先立即定位一次：即使 nav.json 還沒回來（或載入失敗），pair 錨點也能到位
   jumpToHash();
 
-  // ── 抽屜 ─────────────────────────────────────────────────
+  // ── 側欄狀態：桌面 pinned／peek、窄螢幕 drawer ──────────────
+  function navVisible() {
+    return isMobile() ? drawerOpen : (pinned || peeking);
+  }
+
+  function syncNav() {
+    var body = document.body;
+    var mob = isMobile();
+    body.classList.toggle('nav-drawer-open', mob && drawerOpen);
+    body.classList.toggle('nav-collapsed', !mob && !pinned && !peeking);
+    body.classList.toggle('nav-peek', !mob && peeking);
+    var hidden = mob ? !drawerOpen : (!pinned && !peeking);
+    if (nav) {
+      if (hidden) {
+        nav.setAttribute('inert', '');
+        nav.setAttribute('aria-hidden', 'true');
+      } else {
+        nav.removeAttribute('inert');
+        nav.removeAttribute('aria-hidden');
+      }
+    }
+    if (scrim) scrim.hidden = !(mob && drawerOpen);
+    if (toggle) {
+      var vis = navVisible();
+      toggle.setAttribute('aria-expanded', vis ? 'true' : 'false');
+      toggle.setAttribute('aria-label', vis ? '收合目錄' : '展開目錄');
+      toggle.title = (vis ? '收合目錄' : '展開目錄') + '（[ 或 Alt+M）';
+    }
+  }
+
+  function setPinned(on, save) {
+    pinned = !!on;
+    if (pinned) peeking = false;
+    clearTimeout(peekTimer);
+    syncNav();
+    if (save) writeStr(SIDE_KEY, pinned ? 'open' : 'collapsed');
+  }
+
+  function openPeek() {
+    if (isMobile() || pinned) return;
+    clearTimeout(peekTimer);
+    if (!peeking) {
+      peeking = true;
+      syncNav();
+    }
+  }
+
+  function closePeek(delay) {
+    if (!peeking) return;
+    clearTimeout(peekTimer);
+    peekTimer = setTimeout(function () {
+      if (nav && nav.contains(document.activeElement)) return;
+      peeking = false;
+      syncNav();
+    }, typeof delay === 'number' ? delay : 160);
+  }
+
   function openDrawer() {
     if (!isMobile() || drawerOpen) return;
     drawerOpen = true;
-    document.body.classList.add('nav-open');
-    if (scrim) scrim.hidden = false;
-    if (toggle) toggle.setAttribute('aria-expanded', 'true');
-    if (nav) {
-      nav.removeAttribute('inert');
-      nav.removeAttribute('aria-hidden');
-    }
+    syncNav();
     if (closeBtn) closeBtn.focus();
   }
 
   function closeDrawer(returnFocus) {
-    if (!drawerOpen) return;
+    if (!isMobile() || !drawerOpen) return;
     drawerOpen = false;
-    document.body.classList.remove('nav-open');
-    if (scrim) scrim.hidden = true;
-    if (toggle) toggle.setAttribute('aria-expanded', 'false');
-    if (nav && isMobile()) {
-      nav.setAttribute('inert', '');
-      nav.setAttribute('aria-hidden', 'true');
-    }
+    syncNav();
     if (returnFocus && toggle) toggle.focus();
   }
 
-  function syncDrawerMode() {
-    if (!isMobile()) {
-      closeDrawer(false);
-      if (nav) {
-        nav.removeAttribute('inert');
-        nav.removeAttribute('aria-hidden');
-      }
-      if (scrim) scrim.hidden = true;
-    } else if (!drawerOpen && nav) {
-      nav.setAttribute('inert', '');
-      nav.setAttribute('aria-hidden', 'true');
+  function toggleNav() {
+    if (isMobile()) {
+      if (drawerOpen) closeDrawer(true); else openDrawer();
+    } else {
+      setPinned(!pinned, true);
     }
+  }
+
+  function setToolsOpen(open) {
+    if (!toolPanel) return;
+    toolPanel.hidden = !open;
+    if (toolsBtn) {
+      toolsBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      toolsBtn.classList.toggle('is-active', !!open);
+    }
+  }
+
+  function closeTools(returnFocus) {
+    if (!toolPanel || toolPanel.hidden) return;
+    setToolsOpen(false);
+    if (returnFocus && toolsBtn) toolsBtn.focus();
   }
 
   function trapFocus(e) {
@@ -581,6 +670,8 @@
 
   function globalKey(e) {
     if (e.key === 'Escape') {
+      if (toolPanel && !toolPanel.hidden) { e.preventDefault(); closeTools(true); return; }
+      if (peeking) { e.preventDefault(); peeking = false; syncNav(); return; }
       if (drawerOpen) { e.preventDefault(); closeDrawer(true); return; }
       if (filter && document.activeElement === filter) {
         e.preventDefault(); clearFilter(); filter.blur(); return;
@@ -596,6 +687,13 @@
       return;
     }
     if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
+    // 目錄開合：Alt+M 或 [（不搶輸入框；不用先找按鈕）
+    if ((e.altKey && !e.ctrlKey && !e.metaKey && String(e.key || '').toLowerCase() === 'm') ||
+        (e.key === '[' && !e.ctrlKey && !e.metaKey && !e.altKey)) {
+      e.preventDefault();
+      toggleNav();
+      return;
+    }
     if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
       e.preventDefault();
       if (siteSearch) { siteSearch.focus(); siteSearch.select(); return; }
@@ -696,7 +794,7 @@
   }
 
   function initReadTools() {
-    var bar = document.querySelector('.readtools');
+    var bar = document.querySelector('.toolpanel') || document.querySelector('.readtools');
     if (!bar) return;
     syncReadButtons(bar);
     bar.addEventListener('click', function (e) {
@@ -725,6 +823,21 @@
         });
       }
     });
+    if (toolsBtn) {
+      toolsBtn.addEventListener('click', function () {
+        setToolsOpen(bar.hidden);
+        if (!bar.hidden) {
+          var first = bar.querySelector('button');
+          if (first) first.focus();
+        }
+      });
+    }
+    document.addEventListener('pointerdown', function (e) {
+      if (bar.hidden) return;
+      if (bar.contains(e.target)) return;
+      if (toolsBtn && toolsBtn.contains(e.target)) return;
+      closeTools(false);
+    });
   }
 
   // skip link：把焦點真的移進 main（P1-7）
@@ -736,24 +849,74 @@
     });
   }
 
-  // 初始化
+  // 初始化：桌面預設展開；首頁一律展開，不讓舊的收合狀態綁住入口
+  pinned = readStr(SIDE_KEY) !== 'collapsed';
+  if (document.body.classList.contains('page-home')) pinned = true;
   makeTools();
   initReadTools();
+  syncNav();
   loadTree();
-  syncDrawerMode();
 
-  if (toggle) toggle.addEventListener('click', function () {
-    if (drawerOpen) closeDrawer(true); else openDrawer();
-  });
+  if (toggle) toggle.addEventListener('click', toggleNav);
   if (closeBtn) closeBtn.addEventListener('click', function () { closeDrawer(true); });
   if (scrim) scrim.addEventListener('click', function () { closeDrawer(true); });
+  var collapseBtn = document.getElementById('navcollapse');
+  if (collapseBtn) collapseBtn.addEventListener('click', function () {
+    if (isMobile()) {
+      closeDrawer(false);
+    } else {
+      setPinned(false, true);
+      if (toggle) toggle.focus();
+    }
+  });
+
+  // 左緣 peek：hover／focus 就露出側欄，不必先找按鈕
+  if (edge) {
+    edge.addEventListener('mouseenter', openPeek);
+    edge.addEventListener('mouseleave', function () { if (peeking) closePeek(180); });
+    edge.addEventListener('focus', openPeek);
+    edge.addEventListener('click', function () {
+      setPinned(true, true);
+      if (toggle) toggle.focus();
+    });
+  }
+  if (nav) {
+    nav.addEventListener('mouseenter', function () { clearTimeout(peekTimer); });
+    nav.addEventListener('mouseleave', function () { if (peeking) closePeek(180); });
+    nav.addEventListener('focusin', function () { if (peeking) clearTimeout(peekTimer); });
+    nav.addEventListener('focusout', function () { if (peeking) closePeek(200); });
+  }
+
+  document.addEventListener('pointerdown', function (e) {
+    if (!peeking) return;
+    if (nav && nav.contains(e.target)) return;
+    if (edge && edge.contains(e.target)) return;
+    closePeek(0);
+  });
+
   document.addEventListener('keydown', function (e) { trapFocus(e); globalKey(e); });
 
-  if (isMobileQuery) {
-    var onMode = function () { syncDrawerMode(); };
-    if (isMobileQuery.addEventListener) isMobileQuery.addEventListener('change', onMode);
-    else if (isMobileQuery.addListener) isMobileQuery.addListener(onMode);
+  function onModeChange() {
+    if (isMobile()) {
+      peeking = false;
+      drawerOpen = false;
+    } else {
+      drawerOpen = false;
+      peeking = false;
+      pinned = readStr(SIDE_KEY) !== 'collapsed';
+      if (document.body.classList.contains('page-home')) pinned = true;
+    }
+    syncNav();
   }
+  if (isMobileQuery) {
+    if (isMobileQuery.addEventListener) isMobileQuery.addEventListener('change', onModeChange);
+    else if (isMobileQuery.addListener) isMobileQuery.addListener(onModeChange);
+  }
+
+  window.addEventListener('resize', function () {
+    var bar = document.querySelector('.toolpanel');
+    if (bar) syncReadButtons(bar);
+  });
 
   // 同一頁內的錨點：交給瀏覽器預設行為前先攔下來，避免整頁重載
   box.addEventListener('click', function (e) {
@@ -770,6 +933,7 @@
     else location.hash = u.hash;
     jumpToHash();
     if (isMobile()) closeDrawer(false);
+    else if (peeking) { peeking = false; syncNav(); }
   });
 
   window.addEventListener('hashchange', function () { setTimeout(jumpToHash, 0); });
@@ -789,61 +953,5 @@
   window.addEventListener('scroll', function () {
     top.classList.toggle('show', window.scrollY > 600);
   }, { passive: true });
-
-  // ── 側欄／閱讀工具列收合 ────────────────────────────────────
-  function initCollapse() {
-    var body = document.body;
-    var side = document.getElementById('sidebar');
-    var sideClose = document.getElementById('navcollapse');
-    var sideOpen = document.getElementById('sideopen');
-    var SIDE_KEY = 'dsh-side-collapsed-v1';
-    var TOOLS_KEY = 'dsh-tools-collapsed-v1';
-
-    function setSide(collapsed, save) {
-      if (!side) return;
-      body.classList.toggle('nav-collapsed', collapsed);
-      if (sideClose) sideClose.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-      if (sideOpen) sideOpen.setAttribute('aria-expanded', collapsed ? 'true' : 'false');
-      if (save) writeStr(SIDE_KEY, collapsed ? '1' : '0');
-    }
-    if (sideClose) sideClose.addEventListener('click', function () {
-      setSide(true, true);
-      if (isMobile()) closeDrawer(false);
-    });
-    if (sideOpen) sideOpen.addEventListener('click', function () {
-      setSide(false, true);
-    });
-    var menuBtn = document.querySelector('[data-menu-toggle]');
-    if (menuBtn) menuBtn.addEventListener('click', function () {
-      if (isMobile()) {
-        var nt = document.getElementById('navtoggle');
-        if (nt) nt.click();
-      } else {
-        setSide(!body.classList.contains('nav-collapsed'), true);
-      }
-    });
-    if (readStr(SIDE_KEY) === '1') setSide(true, false);
-
-    var tools = document.querySelector('.readtools');
-    if (!tools) return;
-    var tbtn = tools.querySelector('[data-tools-toggle]');
-    function setTools(collapsed, save) {
-      tools.classList.toggle('is-collapsed', collapsed);
-      if (tbtn) {
-        tbtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-        tbtn.textContent = collapsed ? '閱讀工具' : '收合工具';
-      }
-      if (save) writeStr(TOOLS_KEY, collapsed ? '1' : '0');
-    }
-    if (tbtn) tbtn.addEventListener('click', function () {
-      setTools(!tools.classList.contains('is-collapsed'), true);
-    });
-    if (readStr(TOOLS_KEY) === '1') setTools(true, false);
-  }
-  initCollapse();
-  window.addEventListener('resize', function () {
-    var bar = document.querySelector('.readtools');
-    if (bar) syncReadButtons(bar);
-  });
 
 })();

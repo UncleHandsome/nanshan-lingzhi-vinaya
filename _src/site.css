@@ -111,7 +111,6 @@ img { max-width: 100%; }
 .tb-where { color: var(--fg2); overflow: hidden; text-overflow: ellipsis; }
 .tb-sep { color: var(--line); }
 .tb-right { display: flex; align-items: center; gap: .15rem; }
-@media (min-width: 1101px) { .tb-crumb { justify-content: center; } }
 .tb-tools { color: var(--fg2); }
 .tb-tools.is-active { background: var(--surface-4); color: var(--accent); border-color: var(--accent2); }
 .tb-tools-short { display: none; }

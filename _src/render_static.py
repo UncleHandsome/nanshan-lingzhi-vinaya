@@ -70,7 +70,8 @@ def build_index(nav):
         '<p class="hint">站內全文：<code>Ctrl/⌘ K</code>；瀏覽器尋找仍用 <code>Ctrl/⌘ F</code>。</p>',
         '<p class="intro">道宣律師三大部與相關鈔疏的白話對照本，逐段原文與白話並列；'
         '原文採 CBETA 電子佛典（大正藏／卍續藏）。</p>',
-        '<p class="intro"><a href="appendix.html">附錄：名相與度量衡</a></p>',
+        '<p class="intro"><a href="appendix.html">附錄：名相與度量衡</a>　·　'
+        '<a href="untranslated.html">未譯段落清單</a></p>',
     ]
     for b in nav.get('books', []):
         out, title = b.get('out'), b.get('title') or TITLES.get(b.get('out'), '')

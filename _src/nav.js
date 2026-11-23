@@ -28,9 +28,6 @@
   var closeBtn = document.getElementById('navclose');
   var scrim = document.getElementById('navscrim');
   var edge = document.getElementById('edgepeek');
-  var toolsBtn = document.querySelector('[data-tools-toggle]');
-  var toolPanel = document.getElementById('toolpanel');
-  var moreMenu = document.querySelector('.tb-more');
 
   function safePath() {
     try { return decodeURIComponent(location.pathname); }
@@ -87,17 +84,15 @@
     return null;
   }
 
-  // 首頁沒有「目前書卷」：側欄改列全部書目 → 卷，直接從這裡進站。
+  // 首頁與非書頁沒有「目前卷」：側欄只列書目，不顯示空的卷／篇 TOC。
   function renderHome() {
-    var html = '<p class="navgrouplabel">書目</p><div class="navvols navhome">';
+    var html = '<p class="navgrouplabel">書目</p><div class="navbooklist">';
     (DATA.books || []).forEach(function (b) {
-      html += '<details class="vol homelist" data-out="' + esc(b.out) + '">' +
-        '<summary><span class="vname">' + esc(b.title) + '</span>' +
-        '<span class="vcount">' + ((b.vols || []).length) + ' 卷</span></summary><ul>';
-      (b.vols || []).forEach(function (v) {
-        html += '<li><a href="' + root + b.out + '/' + v.v + '.html">' + esc(v.v) + '</a></li>';
-      });
-      html += '</ul></details>';
+      var first = (b.vols || [])[0];
+      var href = first ? root + b.out + '/' + first.v + '.html' : root + b.out + '/';
+      html += '<a class="navbookitem" href="' + href + '">' +
+        '<span class="bk">' + esc(b.title) + '</span>' +
+        '<span class="bcount">' + ((b.vols || []).length) + ' 卷</span></a>';
     });
     html += '</div>';
 
@@ -537,22 +532,6 @@
     }
   }
 
-  function setToolsOpen(open) {
-    if (!toolPanel) return;
-    if (open && moreMenu) moreMenu.open = false;
-    toolPanel.hidden = !open;
-    if (toolsBtn) {
-      toolsBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      toolsBtn.classList.toggle('is-active', !!open);
-    }
-  }
-
-  function closeTools(returnFocus) {
-    if (!toolPanel || toolPanel.hidden) return;
-    setToolsOpen(false);
-    if (returnFocus && toolsBtn) toolsBtn.focus();
-  }
-
   function trapFocus(e) {
     if (!drawerOpen || e.key !== 'Tab' || !nav) return;
     var items = [].slice.call(nav.querySelectorAll('a[href],button,input,summary,[tabindex]')).filter(function (el) {
@@ -569,8 +548,6 @@
 
   function globalKey(e) {
     if (e.key === 'Escape') {
-      if (moreMenu && moreMenu.open) { e.preventDefault(); moreMenu.open = false; return; }
-      if (toolPanel && !toolPanel.hidden) { e.preventDefault(); closeTools(true); return; }
       if (peeking) { e.preventDefault(); peeking = false; syncNav(); return; }
       if (drawerOpen) { e.preventDefault(); closeDrawer(true); return; }
     }
@@ -685,7 +662,7 @@
   }
 
   function initReadTools() {
-    var bar = document.querySelector('.toolpanel') || document.querySelector('.readtools');
+    var bar = document.querySelector('.tb-readtools') || document.querySelector('.readtools');
     if (!bar) return;
     syncReadButtons(bar);
     bar.addEventListener('click', function (e) {
@@ -714,21 +691,6 @@
         });
       }
     });
-    if (toolsBtn) {
-      toolsBtn.addEventListener('click', function () {
-        setToolsOpen(bar.hidden);
-        if (!bar.hidden) {
-          var first = bar.querySelector('button');
-          if (first) first.focus();
-        }
-      });
-    }
-    document.addEventListener('pointerdown', function (e) {
-      if (bar.hidden) return;
-      if (bar.contains(e.target)) return;
-      if (toolsBtn && toolsBtn.contains(e.target)) return;
-      closeTools(false);
-    });
   }
 
   // skip link：把焦點真的移進 main（P1-7）
@@ -746,16 +708,6 @@
   initReadTools();
   syncNav();
   loadTree();
-
-  // 「更多」選單：點外面或開閱讀工具時收起
-  if (moreMenu) {
-    moreMenu.addEventListener('toggle', function () {
-      if (moreMenu.open) closeTools(false);
-    });
-    document.addEventListener('pointerdown', function (e) {
-      if (moreMenu.open && !moreMenu.contains(e.target)) moreMenu.open = false;
-    });
-  }
 
   if (toggle) toggle.addEventListener('click', toggleNav);
   if (closeBtn) closeBtn.addEventListener('click', function () { closeDrawer(true); });
@@ -814,7 +766,7 @@
   }
 
   window.addEventListener('resize', function () {
-    var bar = document.querySelector('.toolpanel');
+    var bar = document.querySelector('.tb-readtools');
     if (bar) syncReadButtons(bar);
   });
 

@@ -1,7 +1,7 @@
-/* 南山律典・白話對照 全站樣式 v13
+/* 南山律典・白話對照 全站樣式 v14
    單一變數、單一深色覆蓋、桌面／抽屜共用；列印另行收斂。
-   2026-11-23 頂部收窄：45／46px sticky 頂部列（目錄／麵包屑／全域搜尋／更多／閱讀工具）、
-   側欄只留導覽、閱讀工具改單排緊湊面板。 */
+   2026-11-23 PDF reader 式：頂部列＝目錄／分卷／書名／搜尋／常駐閱讀工具；
+   側欄只留書目與卷／篇 TOC；手機兩排但不溢出。 */
 :root {
   --topbar-h: 45px;
   --side-w: 280px;
@@ -72,17 +72,17 @@ img { max-width: 100%; }
 }
 .skip-link:focus { left: 0; }
 
-/* ── 全域頂部列（首頁／搜尋／附錄／未譯／六書／合編共用） ── */
+/* ── 全域頂部列（PDF reader 式：目錄／分卷／書名／搜尋／常駐閱讀工具） ── */
 .topbar {
   position: sticky; top: 0; z-index: 90;
-  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center; gap: .4rem;
+  display: flex; align-items: center; gap: .35rem;
   height: var(--topbar-h); min-height: var(--topbar-h);
   padding: 0 .55rem;
   background: var(--panel);
   border-bottom: 1px solid var(--line);
   box-shadow: 0 1px 0 rgba(40, 30, 15, .05);
   font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  overflow: hidden;
 }
 .tb-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: .3rem;
@@ -101,20 +101,43 @@ img { max-width: 100%; }
 .tb-menu[aria-expanded="false"] { color: var(--accent); border-color: var(--accent2); }
 .tb-ico { font-size: 16px; line-height: 1; }
 .tb-crumb {
-  display: flex; align-items: center; gap: .32rem;
-  min-width: 0; overflow: hidden; white-space: nowrap;
+  display: flex; align-items: center; gap: .3rem;
+  flex: 1 1 auto; min-width: 0;
+  overflow: hidden; white-space: nowrap;
   color: var(--fg2); font-size: 12.5px;
 }
+.tb-crumb > * { flex: 0 0 auto; }
 .tb-home { color: var(--fg2); font-weight: 600; }
 .tb-home:hover { color: var(--accent); text-decoration: none; }
-.tb-book { color: var(--fg); font-weight: 700; overflow: hidden; text-overflow: ellipsis; }
-.tb-where { color: var(--fg2); overflow: hidden; text-overflow: ellipsis; }
+.tb-book {
+  max-width: 16em;
+  color: var(--fg); font-weight: 700;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.tb-where { color: var(--fg2); max-width: 8em; overflow: hidden; text-overflow: ellipsis; }
 .tb-sep { color: var(--line); }
-.tb-right { display: flex; align-items: center; gap: .15rem; }
-.tb-tools { color: var(--fg2); }
-.tb-tools.is-active { background: var(--surface-4); color: var(--accent); border-color: var(--accent2); }
-.tb-tools-short { display: none; }
+.tb-right { display: flex; align-items: center; gap: .2rem; margin-left: auto; flex: 0 0 auto; }
 .tb-searchbtn { color: var(--fg2); }
+
+/* 分卷導覽：← 上一卷／目前卷／下一卷 →；首末卷單邊隱藏 */
+.tb-volnav {
+  display: flex; align-items: center; gap: .05rem;
+  flex: 0 0 auto; min-width: 0;
+  font-size: 12.5px;
+}
+.tb-vol {
+  display: inline-flex; align-items: center; gap: .2rem;
+  min-height: 30px; padding: 0 .4rem;
+  border: 1px solid transparent; border-radius: 6px;
+  color: var(--fg2); line-height: 1.2; white-space: nowrap;
+}
+.tb-vol:hover { background: var(--surface-3); color: var(--accent); text-decoration: none; }
+.tb-vol-arrow { font-size: 14px; line-height: 1; }
+.tb-volcur {
+  padding: 0 .45rem;
+  border-left: 1px solid var(--line); border-right: 1px solid var(--line);
+  color: var(--fg); font-weight: 700; white-space: nowrap;
+}
 
 /* 全域搜尋：≥1200px 用 compact 輸入框，窄螢幕退回「搜尋」按鈕 */
 .tb-searchform { display: none; align-items: center; margin: 0; }
@@ -136,30 +159,38 @@ img { max-width: 100%; }
   .tb-searchbtn { display: none; }
 }
 
-/* 「更多」：收納原本佔用側欄頂端的全書連結 */
-.tb-more, .tb-more[open] { position: relative; margin: 0; padding: 0; border: 0; background: none; }
-.tb-more > summary {
-  list-style: none; cursor: pointer;
+/* 常駐閱讀工具：不再有「閱讀工具」按鈕／下拉面板 */
+.tb-readtools {
+  display: flex; align-items: center; gap: .2rem;
+  flex: 0 0 auto;
   font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
-  color: var(--fg2); letter-spacing: 0;
+  font-size: 12.5px;
 }
-.tb-more > summary::-webkit-details-marker { display: none; }
-.tb-more > summary::marker { content: ""; }
-.tb-more[open] > summary {
-  background: var(--surface-4); color: var(--accent); border-color: var(--accent2);
+.tb-seg {
+  display: inline-flex; align-items: center;
+  border: 1px solid var(--line); border-radius: 7px;
+  background: var(--surface); overflow: hidden;
 }
-.tb-morepanel {
-  position: absolute; right: 0; top: calc(100% + 7px); z-index: 96;
-  display: flex; flex-direction: column; gap: .1rem;
-  min-width: 8.5rem; padding: .3rem;
-  border: 1px solid var(--line); border-radius: 8px;
-  background: var(--surface); box-shadow: var(--shadow);
+.tb-readtools button {
+  min-height: 28px; padding: 0 .45rem;
+  border: 1px solid var(--line); border-radius: 6px;
+  background: var(--surface-2); color: var(--fg2);
+  font: inherit; font-size: 12.5px; line-height: 1.2;
+  white-space: nowrap; cursor: pointer;
 }
-.tb-morepanel a {
-  display: block; padding: .34rem .55rem; border-radius: 5px;
-  color: var(--fg2); font-size: 12.5px; line-height: 1.5; white-space: nowrap;
+.tb-seg button {
+  border: 0; border-right: 1px solid var(--line); border-radius: 0;
+  background: transparent;
 }
-.tb-morepanel a:hover { background: var(--surface-3); color: var(--accent); text-decoration: none; }
+.tb-seg button:last-child { border-right: 0; }
+.tb-readtools button:hover { border-color: var(--accent2); color: var(--accent); }
+.tb-seg button:hover { border-color: transparent; background: var(--surface-3); }
+.tb-readtools button:disabled { opacity: .45; cursor: not-allowed; }
+.tb-readtools button[aria-pressed="true"] {
+  background: var(--surface-4); border-color: var(--accent2);
+  color: var(--accent); font-weight: 700;
+}
+.tb-seg button[aria-pressed="true"] { border-color: transparent; }
 .iconbtn {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 36px; min-height: 36px; padding: 0 .5rem;
@@ -243,20 +274,20 @@ nav#sidebar {
 nav .brand { font-size: 15px; margin: 0 0 1rem; letter-spacing: .06em; font-weight: 600; line-height: 1.5; }
 nav .brand a { color: var(--fg); text-decoration: none; }
 #navclose { display: none; }
-nav .grp { margin: .4rem 0 .6rem; }
-nav .grp > b {
-  display: block; padding: .3rem 1rem;
-  color: var(--fg2); font-size: 11.5px; letter-spacing: .1em; font-weight: 600;
-}
-nav .grp > a {
-  display: inline-block; margin: 0 .15rem .2rem 0; padding: .2rem .55rem;
-  border: 1px solid var(--line); border-radius: 999px;
-  background: var(--surface-2); color: var(--fg2);
-  font-size: 12.5px; line-height: 1.5; text-decoration: none;
-}
-nav .grp > a:hover { background: var(--surface-4); color: var(--accent); text-decoration: none; }
+/* 側欄只留書目與卷／篇 TOC；分卷與全書連結都不在側欄。 */
 
-/* 側欄只留導覽：搜尋與全書連結已移到頂部列／搜尋頁，不在側欄放輸入框。 */
+/* 首頁／非書頁：只列書目，不顯示空 TOC */
+.navbooklist { display: flex; flex-direction: column; gap: .3rem; padding: 0 .55rem 1.4rem; }
+.navbookitem {
+  display: flex; align-items: center; gap: .4rem;
+  padding: .5rem .6rem;
+  border: 1px solid var(--line); border-radius: 7px;
+  background: var(--surface-2); color: var(--fg);
+  font-size: 12.5px; line-height: 1.45; text-decoration: none;
+}
+.navbookitem:hover { border-color: var(--accent2); background: var(--surface-4); color: var(--accent); text-decoration: none; }
+.navbookitem .bk { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.navbookitem .bcount { margin-left: auto; flex: 0 0 auto; color: var(--fg2); font-size: 10.5px; }
 
 /* 書目下拉 */
 .navgrouplabel {
@@ -562,29 +593,7 @@ h2.sec, span[id^="p"] { scroll-margin-top: 14px; }
 .pager .pgidx { grid-column: 2; justify-self: center; color: var(--fg2); font-size: 13px; }
 .pager .pgnext { grid-column: 3; justify-self: end; }
 
-/* ── 閱讀工具下拉面板（由頂部列右側按鈕開合；單排緊湊，約 420×36） ── */
-.toolpanel {
-  position: absolute; right: .55rem; top: calc(100% + 5px); z-index: 95;
-  width: 420px; max-width: calc(100vw - 24px);
-  display: flex; flex-wrap: wrap; align-items: center; gap: .25rem;
-  padding: .3rem .45rem;
-  border: 1px solid var(--line); border-radius: 9px;
-  background: var(--surface); box-shadow: var(--shadow);
-  font-family: "Microsoft YaHei", "PingFang SC", sans-serif; font-size: 12.5px;
-}
-.toolpanel[hidden] { display: none !important; }
-.tp-row { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem; }
-.tp-div { flex: 0 0 1px; align-self: stretch; width: 1px; margin: .1rem .15rem; background: var(--line); }
-.toolpanel button {
-  padding: .18rem .42rem; border: 1px solid var(--line); border-radius: 5px;
-  background: var(--surface-2); color: var(--fg2); font: inherit; font-size: 12.5px; line-height: 1.25;
-  cursor: pointer; white-space: nowrap;
-}
-.toolpanel button:hover { border-color: var(--accent2); color: var(--accent); }
-.toolpanel button:disabled { opacity: .45; cursor: not-allowed; }
-.toolpanel button[aria-pressed="true"] {
-  background: var(--surface-4); border-color: var(--accent2); color: var(--accent); font-weight: 700;
-}
+/* ── 閱讀工具（樣式在頂部列；此處只留顯示切換與雙欄） ── */
 /* 顯示切換：html.hide-o 隱藏原文、html.hide-t 隱藏白話 */
 html.hide-o .pair > .o, html.hide-o .pair > .o2, html.hide-o .pair > pre { display: none; }
 html.hide-t .pair > .t { display: none; }
@@ -824,7 +833,6 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
   }
   nav#sidebar { background: var(--panel); }
   .topbar { background: var(--panel); }
-  nav .grp > a { background: var(--surface-2); }
   details.art-plain { border-left-color: #5c7059; }
   details.art-plain > summary { color: #8fae8a; }
   details.art-plain strong { color: #a9c7a4; }
@@ -865,18 +873,37 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
   .searchbar input { flex-basis: 100%; }
   .searchbar select { width: 100%; }
 }
-@media (max-width: 700px) {
-  .topbar { gap: .22rem; padding: 0 .4rem; }
-  .tb-home, .tb-sep-home { display: none; }
-  .tb-tools-long { display: none; }
-  .tb-tools-short { display: inline; }
-  .tb-btn { padding: 0 .42rem; font-size: 12.5px; }
-  .tb-menu { font-size: 13px; }
-  .tb-crumb { font-size: 12.5px; gap: .22rem; }
-  .toolpanel {
-    position: fixed; left: 8px; right: 8px; top: calc(var(--topbar-h) + 5px);
-    width: auto; max-height: calc(100dvh - var(--topbar-h) - 20px); overflow: auto;
+/* 平板／手機：兩排頂部列。上排目錄＋分卷＋搜尋，下排常駐閱讀工具；
+   抽屜與 sticky 位移都跟著 --topbar-h 走。 */
+@media (max-width: 900px) {
+  body.page-reader { --topbar-h: 74px; }
+  .topbar {
+    flex-wrap: wrap; align-content: center; row-gap: 3px;
+    height: auto; min-height: 46px;
+    padding: 3px .45rem;
   }
+  body.page-reader .topbar { min-height: var(--topbar-h); }
+  .tb-menu { order: 1; }
+  .tb-volnav { order: 2; }
+  .tb-crumb { order: 3; flex: 1 1 4em; }
+  .tb-right { display: contents; }
+  .tb-searchform, .tb-searchbtn { order: 4; margin-left: auto; }
+  .tb-readtools {
+    order: 5; flex: 1 0 100%;
+    justify-content: flex-end;
+    max-width: 100%; overflow-x: auto; scrollbar-width: none;
+  }
+  .tb-readtools::-webkit-scrollbar { display: none; }
+}
+@media (max-width: 700px) {
+  .topbar { gap: .22rem; padding: 3px .4rem; }
+  .tb-home, .tb-sep-home, .tb-crumb { display: none; }
+  .tb-btn { padding: 0 .4rem; font-size: 12.5px; }
+  .tb-menu { font-size: 13px; }
+  .tb-vol { padding: 0 .3rem; }
+  .tb-volcur { padding: 0 .32rem; }
+  .tb-readtools { gap: .15rem; }
+  .tb-readtools button { padding: 0 .38rem; font-size: 12px; }
   h1 { font-size: 1.55rem; }
   h2 { font-size: 1.3rem; }
   details.art-toc ul { columns: 1; }

@@ -725,6 +725,11 @@
     if (wrap && !btns.some(function (b) { return !b.hidden; })) wrap.hidden = true;
   }
 
+  var bookPick = document.getElementById('tb-bookpick');
+  if (bookPick) bookPick.addEventListener('change', function () {
+    if (bookPick.value) location.href = bookPick.value;
+  });
+
   // skip link：把焦點真的移進 main（P1-7）
   var skip = document.querySelector('.skip-link');
   if (skip) {

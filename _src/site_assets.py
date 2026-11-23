@@ -13,7 +13,17 @@
 """
 import html
 
-ASSET_VERSION = '36'
+ASSET_VERSION = '37'
+
+BOOK_OPTIONS = [
+    ('行事鈔', 'xingshichao/卷上.html'),
+    ('戒本疏行宗記', 'jieshu/卷一.html'),
+    ('業疏', 'yeshu/卷一.html'),
+    ('資持記', 'zhichi/上一上.html'),
+    ('尼鈔', 'nicao/卷上.html'),
+    ('義鈔', 'yichao/卷上.html'),
+    ('合編', 'hebian/卷上之一.html'),
+]
 
 FOOTER = (
     '<footer class="sitefoot">'
@@ -126,7 +136,11 @@ def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
     if book_short:
         title_attr = (' title="%s"' % e(book_label)) if book_label else ''
         crumb.append('<span class="tb-sep tb-sep-home" aria-hidden="true">›</span>')
-        crumb.append('<span class="tb-book"' + title_attr + '>' + e(book_short) + '</span>')
+        opts = ''.join('<option value="%s"%s>%s</option>'
+                       % (prefix + href, ' selected' if short == book_short else '', short)
+                       for short, href in BOOK_OPTIONS)
+        crumb.append('<select id="tb-bookpick" class="tb-bookselect" aria-label="切換書目"'
+                     + title_attr + '>' + opts + '</select>')
     if current_label:
         if book_short:
             crumb.append('<span class="tb-sep" aria-hidden="true">・</span>')

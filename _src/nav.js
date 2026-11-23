@@ -784,4 +784,48 @@
   window.addEventListener('scroll', function () {
     top.classList.toggle('show', window.scrollY > 600);
   }, { passive: true });
+
+  // ── 側欄／閱讀工具列收合 ────────────────────────────────────
+  function initCollapse() {
+    var body = document.body;
+    var side = document.getElementById('sidebar');
+    var sideClose = document.getElementById('navcollapse');
+    var sideOpen = document.getElementById('sideopen');
+    var SIDE_KEY = 'dsh-side-collapsed-v1';
+    var TOOLS_KEY = 'dsh-tools-collapsed-v1';
+
+    function setSide(collapsed, save) {
+      if (!side) return;
+      body.classList.toggle('nav-collapsed', collapsed);
+      if (sideClose) sideClose.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      if (sideOpen) sideOpen.setAttribute('aria-expanded', collapsed ? 'true' : 'false');
+      if (save) writeStr(SIDE_KEY, collapsed ? '1' : '0');
+    }
+    if (sideClose) sideClose.addEventListener('click', function () {
+      setSide(true, true);
+      if (isMobile()) closeDrawer(false);
+    });
+    if (sideOpen) sideOpen.addEventListener('click', function () {
+      setSide(false, true);
+    });
+    if (readStr(SIDE_KEY) === '1') setSide(true, false);
+
+    var tools = document.querySelector('.readtools');
+    if (!tools) return;
+    var tbtn = tools.querySelector('[data-tools-toggle]');
+    function setTools(collapsed, save) {
+      tools.classList.toggle('is-collapsed', collapsed);
+      if (tbtn) {
+        tbtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        tbtn.textContent = collapsed ? '閱讀工具' : '收合工具';
+      }
+      if (save) writeStr(TOOLS_KEY, collapsed ? '1' : '0');
+    }
+    if (tbtn) tbtn.addEventListener('click', function () {
+      setTools(!tools.classList.contains('is-collapsed'), true);
+    });
+    if (readStr(TOOLS_KEY) === '1') setTools(true, false);
+  }
+  initCollapse();
+
 })();

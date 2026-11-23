@@ -11,7 +11,7 @@
 """
 import html
 
-ASSET_VERSION = '16'
+ASSET_VERSION = '17'
 
 FOOTER = (
     '<footer class="sitefoot">'
@@ -62,9 +62,11 @@ def pager_html(prev_url, next_url, prev_label, next_label, index_url):
 
 
 def tools_html():
-    """內容頁閱讀工具列：顯示模式、雙欄對照、複製本段連結。"""
+    """內容頁閱讀工具列：顯示模式、雙欄對照、複製本段連結；可收合。"""
     return (
         '<div class="readtools" role="group" aria-label="閱讀設定">'
+        '<button type="button" class="rttoggle" data-tools-toggle aria-expanded="true">閱讀工具</button>'
+        '<div class="rtbody">'
         '<span class="rtlabel">顯示</span>'
         '<button type="button" data-read="both" aria-pressed="true">兩欄</button>'
         '<button type="button" data-read="o" aria-pressed="false">只原文</button>'
@@ -72,6 +74,7 @@ def tools_html():
         '<span class="rtsep" aria-hidden="true"></span>'
         '<button type="button" data-twocol-toggle aria-pressed="false">雙欄對照</button>'
         '<button type="button" data-copy-anchor>複製本段連結</button>'
+        '</div>'
         '</div>'
     )
 
@@ -82,6 +85,7 @@ def nav_parts(prefix='', prev_url=None, next_url=None,
     e = html.escape
     head = [
         '<a class="skip-link" href="#main">跳至正文</a>',
+        '<button id="sideopen" class="sideopen" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="展開目錄">目錄</button>',
         '<header class="mobilebar">',
         '<button id="navtoggle" class="iconbtn" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="開啟目錄">☰</button>',
         '<a class="mobiletitle" href="' + prefix + 'index.html">南山律典</a>',
@@ -93,7 +97,8 @@ def nav_parts(prefix='', prev_url=None, next_url=None,
     parts = [
         '<nav id="sidebar" aria-label="全書目錄">',
         '<div class="navhead"><p class="brand"><a href="' + prefix + 'index.html">南山律典・白話對照</a></p>'
-        '<button id="navclose" class="iconbtn" type="button" aria-label="關閉目錄">×</button></div>',
+        '<button id="navclose" class="iconbtn" type="button" aria-label="關閉目錄">×</button>'
+        '<button id="navcollapse" class="navcollapse" type="button" aria-label="收合目錄" aria-expanded="true">⟨</button></div>',
         '<div class="grp"><b>全書</b>'
         '<a href="' + prefix + 'index.html">目錄</a>'
         '<a href="' + prefix + 'search.html">全文搜尋</a>'

@@ -103,14 +103,14 @@ img { max-width: 100%; }
 .tb-homelabel { font-size: 12px; }
 .tb-gohome:hover { color: var(--accent); }
 .tb-bookselect {
-  max-width: 7.2em; padding: .12rem .2rem;
-  border: 1px solid transparent; border-radius: 5px;
-  background: transparent; color: var(--fg);
-  font: inherit; font-size: 12.5px; font-weight: 700;
+  max-width: 8.2em; padding: .25rem .3rem;
+  border: 1.5px solid var(--accent2); border-radius: 7px;
+  background: var(--surface); color: var(--accent);
+  font: inherit; font-size: 13px; font-weight: 700;
   cursor: pointer;
 }
 .tb-bookselect:hover, .tb-bookselect:focus {
-  border-color: var(--line); background: var(--surface); outline: none;
+  border-color: var(--accent); background: var(--surface-3); outline: none;
 }
 .tb-menu[aria-expanded="false"] { color: var(--accent); border-color: var(--accent2); }
 .tb-ico { font-size: 16px; line-height: 1; }
@@ -207,14 +207,15 @@ img { max-width: 100%; }
 .tb-seg button[aria-pressed="true"] { border-color: transparent; }
 .tb-labelseg button { color: var(--fg); }
 .tb-labelseg button[aria-pressed="true"] {
-  background: var(--accent) !important;
-  border-color: var(--accent) !important;
-  color: #fff !important;
+  background: var(--surface-4) !important;
+  border-color: var(--accent2) !important;
+  color: var(--accent) !important;
   font-weight: 700;
 }
+.tb-labelseg button[aria-pressed="false"] { opacity: .45; }
 .tb-labelseg button[aria-pressed="true"]:hover {
-  background: var(--accent2) !important;
-  border-color: var(--accent2) !important;
+  background: var(--surface-3) !important;
+  border-color: var(--accent) !important;
 }
 /* 段別隱藏：工具列下拉，不另外佔一整排 */
 .tb-labelfilter { position: relative; flex: 0 0 auto; }
@@ -342,6 +343,17 @@ nav .brand a { color: var(--fg); text-decoration: none; }
 }
 .navhomelink:hover { color: var(--accent); border-color: var(--accent2); text-decoration: none; }
 body.page-home .navhomelink { display: none; }
+.homebooks { display: flex; flex-direction: column; gap: .28rem; padding: .1rem .5rem .9rem; }
+.homebook {
+  display: flex; align-items: center; gap: .4rem;
+  padding: .38rem .58rem;
+  border: 1px solid var(--line); border-left: 3px solid var(--accent2);
+  border-radius: 6px; background: var(--surface);
+  color: var(--fg); text-decoration: none;
+}
+.homebook:hover { border-color: var(--accent2); color: var(--accent); text-decoration: none; }
+.homebook .hb-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.homebook .hb-count { margin-left: auto; flex: 0 0 auto; color: var(--fg2); font-size: 10.5px; }
 .navbooklist { display: flex; flex-direction: column; gap: 0; padding: 0 .35rem .8rem; }
 .navbookitem {
   display: flex; align-items: center; gap: .4rem;

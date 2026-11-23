@@ -86,16 +86,14 @@
 
   // 首頁與非書頁沒有「目前卷」：側欄只列書目，不顯示空的卷／篇 TOC。
   function renderHome() {
-    var html = '<p class="navgrouplabel">書目</p><div class="navbooklist">';
+    var html = '<p class="navgrouplabel">書目</p><div class="homebooks">';
     (DATA.books || []).forEach(function (b) {
       var vols = b.vols || [];
-      html += '<details class="navbookhome"><summary>' +
-        '<span class="bk">' + esc(b.title) + '</span>' +
-        '<span class="bcount">' + vols.length + ' 卷</span></summary><ul>';
-      vols.forEach(function (v) {
-        html += '<li><a href="' + root + b.out + '/' + v.v + '.html">' + esc(v.v) + '</a></li>';
-      });
-      html += '</ul></details>';
+      if (!vols.length) return;
+      var href = root + b.out + '/' + vols[0].v + '.html';
+      html += '<a class="homebook" href="' + href + '">' +
+        '<span class="hb-title">' + esc(b.title) + '</span>' +
+        '<span class="hb-count">' + vols.length + ' 卷</span></a>';
     });
     html += '</div>';
 
@@ -114,17 +112,7 @@
     curBook = b.out;
     writeStr(BOOK_KEY, b.out);
 
-    var html = '<p class="navgrouplabel">書目</p>' +
-      '<details class="navbookpick"><summary><span class="bk">' + esc(b.title) +
-      '</span></summary><ul>';
-    (DATA.books || []).forEach(function (x) {
-      html += '<li><button type="button" data-out="' + esc(x.out) + '"' +
-        (x.out === b.out ? ' class="cur" aria-current="true"' : '') + '>' +
-        esc(x.title) + '</button></li>';
-    });
-    html += '</ul></details>';
-
-    html += '<div class="navvols">';
+    var html = '<div class="navvols">';
     var curVolName = '';
     (b.vols || []).forEach(function (v) {
       var isCurPage = path.indexOf('/' + b.out + '/' + v.v + '.html') >= 0;
@@ -708,10 +696,11 @@
       var has = !!document.querySelector('.pair.' + cls);
       btn.hidden = !has;
       if (!has) return;
-      function set(on, save) {
-        document.documentElement.classList.toggle('hide-' + cls, on);
-        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-        saved[cls] = !!on;
+      function set(hidden, save) {
+        document.documentElement.classList.toggle('hide-' + cls, hidden);
+        btn.setAttribute('aria-pressed', hidden ? 'false' : 'true');
+        btn.title = (hidden ? '顯示' : '隱藏') + btn.textContent.trim();
+        saved[cls] = !!hidden;
         if (save) writeStr(KEY, JSON.stringify(saved));
       }
       set(!!saved[cls], false);

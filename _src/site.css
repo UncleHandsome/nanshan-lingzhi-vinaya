@@ -209,7 +209,7 @@ img { max-width: 100%; }
 }
 .tb-labelfilter[open] > summary { border-color: var(--accent2); color: var(--accent); }
 .tb-labelmenu {
-  position: absolute; right: 0; top: calc(100% + 5px); z-index: 95;
+  position: fixed; right: 8px; top: 50px; z-index: 120;
   display: flex; flex-wrap: wrap; gap: .3rem;
   width: 174px; padding: .45rem;
   border: 1px solid var(--line); border-radius: 8px;
@@ -973,6 +973,7 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
   .tb-readtools::-webkit-scrollbar { display: none; }
 }
 @media (max-width: 700px) {
+  .tb-labelmenu { top: 76px; right: 6px; }
   .topbar { gap: .22rem; padding: 3px .4rem; }
   .tb-home, .tb-sep-home, .tb-crumb { display: none; }
   .tb-btn { padding: 0 .4rem; font-size: 12.5px; }

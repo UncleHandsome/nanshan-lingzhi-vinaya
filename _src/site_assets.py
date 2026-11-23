@@ -13,7 +13,7 @@
 """
 import html
 
-ASSET_VERSION = '30'
+ASSET_VERSION = '31'
 
 FOOTER = (
     '<footer class="sitefoot">'

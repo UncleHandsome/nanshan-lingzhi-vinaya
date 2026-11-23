@@ -13,7 +13,7 @@
 """
 import html
 
-ASSET_VERSION = '34'
+ASSET_VERSION = '35'
 
 FOOTER = (
     '<footer class="sitefoot">'
@@ -78,12 +78,12 @@ def tools_html():
         '<button type="button" data-twocol-toggle aria-pressed="false" title="原文與白話左右並排，需寬螢幕">並排</button>'
         '<button type="button" data-copy-anchor title="複製目前段落的網址">複製</button>'
         '<span class="tb-seg tb-labelseg" role="group" aria-label="隱藏段別">'
-        '<button type="button" data-hide-label="j" aria-pressed="false">記文</button>'
-        '<button type="button" data-hide-label="z" aria-pressed="false">註文</button>'
-        '<button type="button" data-hide-label="lv" aria-pressed="false">律文</button>'
-        '<button type="button" data-hide-label="x" aria-pressed="false">序文</button>'
-        '<button type="button" data-hide-label="s" aria-pressed="false">疏文</button>'
-        '<button type="button" data-hide-label="c" aria-pressed="false">鈔文</button>'
+        '<button type="button" data-hide-label="j" aria-pressed="false" title="隱藏記文">記文</button>'
+        '<button type="button" data-hide-label="z" aria-pressed="false" title="隱藏註文">註文</button>'
+        '<button type="button" data-hide-label="lv" aria-pressed="false" title="隱藏律文">律文</button>'
+        '<button type="button" data-hide-label="x" aria-pressed="false" title="隱藏序文">序文</button>'
+        '<button type="button" data-hide-label="s" aria-pressed="false" title="隱藏疏文">疏文</button>'
+        '<button type="button" data-hide-label="c" aria-pressed="false" title="隱藏鈔文">鈔文</button>'
         '</span>'
         '</div>'
     )

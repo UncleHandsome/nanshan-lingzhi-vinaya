@@ -195,6 +195,17 @@ img { max-width: 100%; }
   color: var(--accent); font-weight: 700;
 }
 .tb-seg button[aria-pressed="true"] { border-color: transparent; }
+.tb-labelseg button { color: var(--fg); }
+.tb-labelseg button[aria-pressed="true"] {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+  font-weight: 700;
+}
+.tb-labelseg button[aria-pressed="true"]:hover {
+  background: var(--accent2) !important;
+  border-color: var(--accent2) !important;
+}
 /* 段別隱藏：工具列下拉，不另外佔一整排 */
 .tb-labelfilter { position: relative; flex: 0 0 auto; }
 .tb-labelfilter > summary {

@@ -706,7 +706,7 @@ html.hide-t .pair > .t { display: none; }
   html.twocol .content > .pager,
   html.twocol .content > .sitefoot { max-width: 1180px; padding-left: 1.4rem; padding-right: 1.4rem; }
   html.twocol .pair {
-    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
     gap: .2rem 1.6rem; align-items: start; max-width: none;
   }
   html.twocol .pair > .o, html.twocol .pair > .o2, html.twocol .pair > .t { min-width: 0; overflow-wrap: anywhere; }

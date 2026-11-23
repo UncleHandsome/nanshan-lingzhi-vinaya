@@ -11,7 +11,7 @@
 """
 import html
 
-ASSET_VERSION = '20'
+ASSET_VERSION = '21'
 
 FOOTER = (
     '<footer class="sitefoot">'
@@ -69,11 +69,11 @@ def tools_html():
         '<button type="button" class="rttoggle" data-tools-toggle aria-expanded="true">閱讀工具</button>'
         '<div class="rtbody">'
         '<span class="rtlabel">顯示</span>'
-        '<button type="button" data-read="both" aria-pressed="true">兩欄</button>'
-        '<button type="button" data-read="o" aria-pressed="false">只原文</button>'
-        '<button type="button" data-read="t" aria-pressed="false">只白話</button>'
+        '<button type="button" data-read="both" aria-pressed="true" title="原文與白話上下並列">原文＋白話</button>'
+        '<button type="button" data-read="o" aria-pressed="false" title="只顯示原文">原文</button>'
+        '<button type="button" data-read="t" aria-pressed="false" title="只顯示白話">白話</button>'
         '<span class="rtsep" aria-hidden="true"></span>'
-        '<button type="button" data-twocol-toggle aria-pressed="false">雙欄對照</button>'
+        '<button type="button" data-twocol-toggle aria-pressed="false" title="原文與白話左右並排，需寬螢幕">並排</button>'
         '<button type="button" data-copy-anchor>複製本段連結</button>'
         '</div>'
         '</div>'

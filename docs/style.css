@@ -516,7 +516,7 @@ h2.sec, span[id^="p"] { scroll-margin-top: 14px; }
 .readtools {
   display: flex; flex-wrap: wrap; align-items: center; gap: .25rem;
   position: sticky; top: .6rem; z-index: 25;
-  max-width: 50em; margin: 0 auto .9rem; padding: .26rem .4rem;
+  max-width: 100%; margin: 0 0 .9rem; padding: .26rem .4rem;
   border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2);
   backdrop-filter: blur(6px);
   font-family: "Microsoft YaHei", "PingFang SC", sans-serif; font-size: 12px;
@@ -557,6 +557,7 @@ body.tools-collapsed .toolsopen { display: inline-flex; align-items: center; }
   background: var(--surface); color: var(--fg2); font: inherit; cursor: pointer;
 }
 .readtools button:hover { border-color: var(--accent2); color: var(--accent); }
+.readtools button:disabled { opacity: .45; cursor: not-allowed; }
 .readtools button[aria-pressed="true"] {
   background: var(--surface-4); border-color: var(--accent2); color: var(--accent); font-weight: 700;
 }
@@ -569,11 +570,12 @@ html.hide-t .pair > .t { display: none; }
   html.twocol .content > .pager,
   html.twocol .content > .sitefoot { max-width: 1180px; padding-left: 1.4rem; padding-right: 1.4rem; }
   html.twocol .pair {
-    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
-    gap: .2rem 1.2rem; align-items: start; max-width: none;
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .2rem 1.6rem; align-items: start; max-width: none;
   }
+  html.twocol .pair > .o, html.twocol .pair > .o2, html.twocol .pair > .t { min-width: 0; overflow-wrap: anywhere; }
   html.twocol .pair > .o, html.twocol .pair > .o2 { grid-column: 1; }
-  html.twocol .pair > .t { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; }
+  html.twocol .pair > .t { grid-column: 2; grid-row: auto; margin-top: 0; }
   html.twocol .pair.ko { display: block; }
 }
 mark { background: var(--mark-bg); color: var(--mark-fg); padding: 0 .08em; border-radius: 2px; }
@@ -839,6 +841,11 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
   .searchbar select { width: 100%; }
 }
 @media (max-width: 700px) {
+  .rtbody { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+  .readtools button[data-twocol-toggle],
+  .readtools button[data-copy-anchor],
+  .readtools .rtsep { display: none !important; }
+  .readtools .rtlabel { display: none; }
   h1 { font-size: 1.55rem; }
   h2 { font-size: 1.3rem; }
   details.art-toc ul { columns: 1; }

@@ -638,8 +638,13 @@
       b.setAttribute('aria-pressed', b.getAttribute('data-read') === mode ? 'true' : 'false');
     });
     var two = bar.querySelector('button[data-twocol-toggle]');
-    if (two) two.setAttribute('aria-pressed',
-      document.documentElement.classList.contains('twocol') ? 'true' : 'false');
+    if (two) {
+      var wide = !window.matchMedia || window.matchMedia('(min-width: 1200px)').matches;
+      two.disabled = !wide;
+      two.title = wide ? '原文與白話左右並排' : '視窗需至少 1200px 才能並排';
+      two.setAttribute('aria-pressed',
+        document.documentElement.classList.contains('twocol') ? 'true' : 'false');
+    }
   }
 
   function setReadMode(mode) {
@@ -836,5 +841,9 @@
     if (readStr(TOOLS_KEY) === '1') setTools(true, false);
   }
   initCollapse();
+  window.addEventListener('resize', function () {
+    var bar = document.querySelector('.readtools');
+    if (bar) syncReadButtons(bar);
+  });
 
 })();

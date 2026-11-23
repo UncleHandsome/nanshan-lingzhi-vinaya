@@ -35,6 +35,11 @@ for book in ([args.book] if args.book else list(BOOKS)):
  starts={}
  for pos,v,txt in marks:
   starts.setdefault(v,pos)
+ # 行事鈔內標籤改用 CBETA 篇序（1 標宗顯德篇、10 說戒正儀篇…）
+ xs_sections=[]
+ if book=='xingshichao':
+  for m in re.finditer(r'(?m)^\s*(\d+)\s+([^\n(]+?篇)(?:\s*\([^\n)]*\))?\s*$',raw):
+   xs_sections.append((hpos[m.start()],'%s %s'%(m.group(1),m.group(2).strip())))
  order=[v for v in vols if v in starts]
  intervals=[]
  for i,v in enumerate(order):
@@ -49,9 +54,15 @@ for book in ([args.book] if args.book else list(BOOKS)):
   body=['<h1>%s・%s</h1>'%(name,v),'<p class="byline">%d 單元；依 CBETA 卷題區間，跨頁單元前後並見。</p>'%len(sel)]
   idx=0; last=None; seen=set()
   for r in sel:
-   chunk=v if book=='jieshu' else (r.get('chunk') or v)
-   if book!='jieshu' and chunk==v: continue
-   if chunk!=last and (chunk=='卷首' or chunk.startswith(v)):
+   if book=='xingshichao':
+    chunk='卷首'
+    for pos,label in xs_sections:
+     if r.get('raw_start',0) >= pos: chunk=label
+     else: break
+   else:
+    chunk=v if book=='jieshu' else (r.get('chunk') or v)
+   if book!='jieshu' and book!='xingshichao' and chunk==v: continue
+   if chunk!=last and (book=='xingshichao' or chunk=='卷首' or chunk.startswith(v)):
     if chunk not in seen:
      idx+=1; body.append('<h2 class="sec" id="p%d">%s</h2>'%(idx,html.escape(chunk))); seen.add(chunk); last=chunk
    for lab,s,tr in pairs(r):

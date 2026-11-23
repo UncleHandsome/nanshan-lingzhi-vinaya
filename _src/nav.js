@@ -813,8 +813,20 @@
     var tools = document.querySelector('.readtools');
     if (!tools) return;
     var tbtn = tools.querySelector('[data-tools-toggle]');
+    var toolsOpen = document.getElementById('toolsopen');
+    if (!toolsOpen) {
+      toolsOpen = document.createElement('button');
+      toolsOpen.id = 'toolsopen';
+      toolsOpen.className = 'toolsopen';
+      toolsOpen.type = 'button';
+      toolsOpen.textContent = '閱讀工具';
+      toolsOpen.setAttribute('aria-label', '展開閱讀工具');
+      document.body.appendChild(toolsOpen);
+    }
     function setTools(collapsed, save) {
       tools.classList.toggle('is-collapsed', collapsed);
+      document.body.classList.toggle('tools-collapsed', collapsed);
+      if (toolsOpen) toolsOpen.hidden = !collapsed;
       if (tbtn) {
         tbtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
         tbtn.textContent = collapsed ? '閱讀工具' : '收合工具';
@@ -823,6 +835,9 @@
     }
     if (tbtn) tbtn.addEventListener('click', function () {
       setTools(!tools.classList.contains('is-collapsed'), true);
+    });
+    toolsOpen.addEventListener('click', function () {
+      setTools(false, true);
     });
     if (readStr(TOOLS_KEY) === '1') setTools(true, false);
   }

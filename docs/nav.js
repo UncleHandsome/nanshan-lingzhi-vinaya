@@ -721,11 +721,8 @@
         syncCurrentByScroll();
       });
     });
-    var wrap = document.querySelector('.tb-labelfilter');
+    var wrap = document.querySelector('.tb-labelseg');
     if (wrap && !btns.some(function (b) { return !b.hidden; })) wrap.hidden = true;
-    document.addEventListener('click', function (e) {
-      if (wrap && wrap.open && !wrap.contains(e.target)) wrap.open = false;
-    });
   }
 
   // skip link：把焦點真的移進 main（P1-7）

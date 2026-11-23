@@ -101,13 +101,13 @@ img { max-width: 100%; }
 /* ── 版面 ── */
 .wrap { display: flex; min-height: 100vh; }
 nav#sidebar {
-  width: 300px; flex: 0 0 300px;
+  width: 260px; flex: 0 0 260px;
   background: var(--panel);
   border-right: 1px solid var(--line);
   position: sticky; top: 0;
   height: 100vh; height: 100dvh;
   overflow-y: auto; overscroll-behavior: contain;
-  padding: 1rem 0 3rem;
+  padding: .8rem 0 2.4rem;
   font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
   font-size: 14px;
 }
@@ -483,15 +483,17 @@ h2.sec, span[id^="p"] { scroll-margin-top: 14px; }
 
 /* 閱讀工具列（原文／白話切換、雙欄、複製連結） */
 .readtools {
-  display: flex; flex-wrap: wrap; align-items: center; gap: .35rem;
-  margin: 0 0 1.2rem; padding: .4rem .5rem;
+  display: flex; flex-wrap: wrap; align-items: center; gap: .25rem;
+  position: sticky; top: .6rem; z-index: 25;
+  max-width: 50em; margin: 0 auto .9rem; padding: .26rem .4rem;
   border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2);
-  font-family: "Microsoft YaHei", "PingFang SC", sans-serif; font-size: 12.5px;
+  backdrop-filter: blur(6px);
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif; font-size: 12px;
 }
 .readtools .rtlabel { color: var(--fg2); padding: 0 .35rem 0 .15rem; }
 .readtools .rtsep { width: 1px; height: 1.1rem; background: var(--line); margin: 0 .3rem; }
 .readtools button {
-  padding: .28rem .55rem; border: 1px solid var(--line); border-radius: 6px;
+  padding: .2rem .45rem; border: 1px solid var(--line); border-radius: 6px;
   background: var(--surface); color: var(--fg2); font: inherit; cursor: pointer;
 }
 .readtools button:hover { border-color: var(--accent2); color: var(--accent); }
@@ -777,6 +779,7 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
   .searchbar select { width: 100%; }
 }
 @media (max-width: 700px) {
+  .readtools { top: calc(54px + .35rem); }
   h1 { font-size: 1.55rem; }
   h2 { font-size: 1.3rem; }
   details.art-toc ul { columns: 1; }

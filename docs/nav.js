@@ -88,11 +88,14 @@
   function renderHome() {
     var html = '<p class="navgrouplabel">書目</p><div class="navbooklist">';
     (DATA.books || []).forEach(function (b) {
-      var first = (b.vols || [])[0];
-      var href = first ? root + b.out + '/' + first.v + '.html' : root + b.out + '/';
-      html += '<a class="navbookitem" href="' + href + '">' +
+      var vols = b.vols || [];
+      html += '<details class="navbookhome"><summary>' +
         '<span class="bk">' + esc(b.title) + '</span>' +
-        '<span class="bcount">' + ((b.vols || []).length) + ' 卷</span></a>';
+        '<span class="bcount">' + vols.length + ' 卷</span></summary><ul>';
+      vols.forEach(function (v) {
+        html += '<li><a href="' + root + b.out + '/' + v.v + '.html">' + esc(v.v) + '</a></li>';
+      });
+      html += '</ul></details>';
     });
     html += '</div>';
 
@@ -693,6 +696,38 @@
     });
   }
 
+  // ── 段別隱藏（記文／註文／律文／序文／疏文／鈔文）────────
+  function initLabelFilters() {
+    var btns = [].slice.call(document.querySelectorAll('button[data-hide-label]'));
+    if (!btns.length) return;
+    var KEY = 'dsh-hide-labels-v1';
+    var saved = {};
+    try { saved = JSON.parse(readStr(KEY) || '{}') || {}; } catch (e) { saved = {}; }
+    btns.forEach(function (btn) {
+      var cls = btn.getAttribute('data-hide-label');
+      var has = !!document.querySelector('.pair.' + cls);
+      btn.hidden = !has;
+      if (!has) return;
+      function set(on, save) {
+        document.documentElement.classList.toggle('hide-' + cls, on);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        saved[cls] = !!on;
+        if (save) writeStr(KEY, JSON.stringify(saved));
+      }
+      set(!!saved[cls], false);
+      btn.addEventListener('click', function () {
+        set(!document.documentElement.classList.contains('hide-' + cls), true);
+        collectHeads();
+        syncCurrentByScroll();
+      });
+    });
+    var wrap = document.querySelector('.tb-labelfilter');
+    if (wrap && !btns.some(function (b) { return !b.hidden; })) wrap.hidden = true;
+    document.addEventListener('click', function (e) {
+      if (wrap && wrap.open && !wrap.contains(e.target)) wrap.open = false;
+    });
+  }
+
   // skip link：把焦點真的移進 main（P1-7）
   var skip = document.querySelector('.skip-link');
   if (skip) {
@@ -706,6 +741,7 @@
   pinned = readStr(SIDE_KEY) !== 'collapsed';
   if (document.body.classList.contains('page-home')) pinned = true;
   initReadTools();
+  initLabelFilters();
   syncNav();
   loadTree();
 

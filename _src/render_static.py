@@ -73,7 +73,7 @@ def build_index(nav):
         '<p class="intro"><a href="appendix.html">附錄：名相與度量衡</a>　·　'
         '<a href="untranslated.html">未譯段落清單</a></p>',
     ]
-    cards, wide = [], []
+    by_out = {}
     for b in nav.get('books', []):
         out, title = b.get('out'), b.get('title') or TITLES.get(b.get('out'), '')
         vols = [v.get('v') for v in b.get('vols', []) if v.get('v')]
@@ -82,18 +82,13 @@ def build_index(nav):
         links = ''.join('<a href="%s/%s.html">%s</a>' % (out, v, html.escape(v)) for v in vols)
         author = AUTHORS.get(out, '')
         by = (html.escape(author) + '　·　' if author else '') + '%d 卷' % len(vols)
-        card = ('<section class="card"><h2>%s</h2><p class="byline">%s</p>'
-                '<div class="grp">%s</div></section>'
-                % (html.escape(title), by, links))
-        if out == 'hebian':
-            wide.append(card)
-        else:
-            cards.append(card)
-    col1 = ''.join(cards[0::2])
-    col2 = ''.join(cards[1::2])
+        by_out[out] = ('<section class="card"><h2>%s</h2><p class="byline">%s</p>'
+                       '<div class="grp">%s</div></section>'
+                       % (html.escape(title), by, links))
+    left = ''.join(by_out[x] for x in ('xingshichao', 'yeshu', 'nicao', 'yichao') if x in by_out)
+    right = ''.join(by_out[x] for x in ('jieshu', 'zhichi', 'hebian') if x in by_out)
     parts.append('<div class="home-grid"><div class="home-col">%s</div>'
-                 '<div class="home-col">%s</div></div>%s'
-                 % (col1, col2, ''.join(wide)))
+                 '<div class="home-col">%s</div></div>' % (left, right))
     return SA.page('目錄', ''.join(parts), body_class='page-home',
                    book_short='目錄', book_label='南山律典・白話對照',
                    description='南山律典白話對照：行事鈔、戒疏、業疏、資持記、尼鈔、義鈔與句級合編。')

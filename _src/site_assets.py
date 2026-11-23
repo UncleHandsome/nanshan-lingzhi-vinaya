@@ -13,7 +13,7 @@
 """
 import html
 
-ASSET_VERSION = '29'
+ASSET_VERSION = '30'
 
 FOOTER = (
     '<footer class="sitefoot">'
@@ -77,6 +77,15 @@ def tools_html():
         '</span>'
         '<button type="button" data-twocol-toggle aria-pressed="false" title="原文與白話左右並排，需寬螢幕">並排</button>'
         '<button type="button" data-copy-anchor title="複製目前段落的網址">複製</button>'
+        '<details class="tb-labelfilter"><summary title="隱藏段別">段別</summary>'
+        '<div class="tb-labelmenu">'
+        '<button type="button" data-hide-label="j" aria-pressed="false">記文</button>'
+        '<button type="button" data-hide-label="z" aria-pressed="false">註文</button>'
+        '<button type="button" data-hide-label="lv" aria-pressed="false">律文</button>'
+        '<button type="button" data-hide-label="x" aria-pressed="false">序文</button>'
+        '<button type="button" data-hide-label="s" aria-pressed="false">疏文</button>'
+        '<button type="button" data-hide-label="c" aria-pressed="false">鈔文</button>'
+        '</div></details>'
         '</div>'
     )
 

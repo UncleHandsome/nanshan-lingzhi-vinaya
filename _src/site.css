@@ -191,6 +191,38 @@ img { max-width: 100%; }
   color: var(--accent); font-weight: 700;
 }
 .tb-seg button[aria-pressed="true"] { border-color: transparent; }
+/* 段別隱藏：工具列下拉，不另外佔一整排 */
+.tb-labelfilter { position: relative; flex: 0 0 auto; }
+.tb-labelfilter > summary {
+  list-style: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: .25rem;
+  min-height: 28px; padding: 0 .45rem;
+  border: 1px solid var(--line); border-radius: 6px;
+  background: var(--surface-2); color: var(--fg2);
+  font-size: 12.5px; white-space: nowrap;
+}
+.tb-labelfilter > summary::-webkit-details-marker { display: none; }
+.tb-labelfilter > summary::after {
+  content: ""; width: 0; height: 0;
+  border-left: 4px solid transparent; border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+}
+.tb-labelfilter[open] > summary { border-color: var(--accent2); color: var(--accent); }
+.tb-labelmenu {
+  position: absolute; right: 0; top: calc(100% + 5px); z-index: 95;
+  display: flex; flex-wrap: wrap; gap: .3rem;
+  width: 174px; padding: .45rem;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--panel); box-shadow: var(--shadow);
+}
+.tb-labelmenu button { flex: 1 1 44%; }
+/* 段別過濾：只影響 .pair，不影響工具列本身 */
+html.hide-j .pair.j,
+html.hide-z .pair.z,
+html.hide-lv .pair.lv,
+html.hide-x .pair.x,
+html.hide-s .pair.s,
+html.hide-c .pair.c { display: none !important; }
 .iconbtn {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 36px; min-height: 36px; padding: 0 .5rem;
@@ -288,6 +320,30 @@ nav .brand a { color: var(--fg); text-decoration: none; }
 .navbookitem:hover { border-color: var(--accent2); background: var(--surface-4); color: var(--accent); text-decoration: none; }
 .navbookitem .bk { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .navbookitem .bcount { margin-left: auto; flex: 0 0 auto; color: var(--fg2); font-size: 10.5px; }
+/* 首頁書目：點書名先展開卷，不直接跳頁 */
+.navbookhome {
+  border: 1px solid var(--line); border-radius: 7px;
+  background: var(--surface-2);
+}
+.navbookhome > summary {
+  list-style: none; cursor: pointer;
+  display: flex; align-items: center; gap: .4rem;
+  padding: .5rem .6rem; color: var(--fg);
+}
+.navbookhome > summary::-webkit-details-marker { display: none; }
+.navbookhome > summary::before {
+  content: ""; flex: 0 0 auto;
+  width: 0; height: 0;
+  border-top: 4px solid transparent; border-bottom: 4px solid transparent;
+  border-left: 5px solid var(--accent2);
+  transition: transform .12s ease;
+}
+.navbookhome[open] > summary::before { transform: rotate(90deg); }
+.navbookhome > summary .bk { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.navbookhome > summary .bcount { margin-left: auto; flex: 0 0 auto; color: var(--fg2); font-size: 10.5px; }
+.navbookhome ul { list-style: none; margin: 0; padding: 0 .6rem .55rem 1.45rem; }
+.navbookhome li a { display: block; padding: .22rem .2rem; color: var(--fg2); font-size: 12.5px; text-decoration: none; }
+.navbookhome li a:hover { color: var(--accent); }
 
 /* 書目下拉 */
 .navgrouplabel {

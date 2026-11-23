@@ -12,6 +12,15 @@ BOOKS = {
 }
 def norm(v):
  m=re.match(r'卷([上中下]|[一二三四])',v); return '卷'+m.group(1) if m else v
+
+def cn_num(s):
+ vals={'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10}
+ if s in vals: return vals[s]
+ if s.startswith('十'): return 10+vals.get(s[1:],0)
+ if '十' in s:
+  a,b=s.split('十',1); return vals.get(a,0)*10+vals.get(b,0)
+ return 0
+
 PUNCT = re.compile(r'[，。；：！？、]')
 def fmt(s):
  s=html.escape(s)
@@ -35,11 +44,28 @@ for book in ([args.book] if args.book else list(BOOKS)):
  starts={}
  for pos,v,txt in marks:
   starts.setdefault(v,pos)
- # 行事鈔內標籤改用 CBETA 篇序（1 標宗顯德篇、10 說戒正儀篇…）
- xs_sections=[]
+ # 內標籤：行事鈔／尼鈔／業疏／義鈔用正文篇門，不用卷目錄
+ section_marks=[]
+ first=re.search(pat,raw); body_start=first.start() if first else 0
  if book=='xingshichao':
   for m in re.finditer(r'(?m)^\s*(\d+)\s+([^\n(]+?篇)(?:\s*\([^\n)]*\))?\s*$',raw):
-   xs_sections.append((hpos[m.start()],'%s %s'%(m.group(1),m.group(2).strip())))
+   if m.start()>body_start:
+    section_marks.append((hpos[m.start()],'%s %s'%(m.group(1),m.group(2).strip())))
+ elif book=='nicao':
+  for m in re.finditer(r'(?m)^○([^\n]{1,16}?篇)第([一二三四五六七八九十]+)\s*$',raw):
+   if m.start()>body_start:
+    section_marks.append((hpos[m.start()],'%d %s'%(cn_num(m.group(2)),m.group(1).strip())))
+ elif book=='yeshu':
+  for m in re.finditer(r'(?m)^\s*([^\n]{1,16}?篇)第([一二三四五六七八九十]+)\s*$',raw):
+   if m.start()>body_start:
+    section_marks.append((hpos[m.start()],'%d %s'%(cn_num(m.group(2)),m.group(1).strip())))
+ elif book=='yichao':
+  titles=['毗尼大綱','起戒差別','十三難','不學無知','轉業變根','破僧大意','時非時',
+          '四波羅夷','十三僧殘','二不定','三十捨墮','九十單提','四提舍尼','眾學','七滅諍','四諍']
+  for i,t in enumerate(titles,1):
+   m=re.search(r'(?m)^'+re.escape(t)+r'\s*$',raw[body_start:])
+   if m: section_marks.append((hpos[body_start+m.start()],'%d %s'%(i,t)))
+ section_marks.sort()
  order=[v for v in vols if v in starts]
  intervals=[]
  for i,v in enumerate(order):
@@ -54,15 +80,15 @@ for book in ([args.book] if args.book else list(BOOKS)):
   body=['<h1>%s・%s</h1>'%(name,v),'<p class="byline">%d 單元；依 CBETA 卷題區間，跨頁單元前後並見。</p>'%len(sel)]
   idx=0; last=None; seen=set()
   for r in sel:
-   if book=='xingshichao':
+   if section_marks:
     chunk='卷首'
-    for pos,label in xs_sections:
+    for pos,label in section_marks:
      if r.get('raw_start',0) >= pos: chunk=label
      else: break
    else:
     chunk=v if book=='jieshu' else (r.get('chunk') or v)
-   if book!='jieshu' and book!='xingshichao' and chunk==v: continue
-   if chunk!=last and (book=='xingshichao' or chunk=='卷首' or chunk.startswith(v)):
+   if not section_marks and book!='jieshu' and chunk==v: continue
+   if chunk!=last and (bool(section_marks) or book=='jieshu' or chunk=='卷首' or chunk.startswith(v)):
     if chunk not in seen:
      idx+=1; body.append('<h2 class="sec" id="p%d">%s</h2>'%(idx,html.escape(chunk))); seen.add(chunk); last=chunk
    for lab,s,tr in pairs(r):

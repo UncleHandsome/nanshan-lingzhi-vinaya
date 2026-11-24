@@ -44,6 +44,8 @@ BASE = 'https://token-plan.maas.qwencloudapi.com/compatible-mode/v1'
 MODEL = os.environ.get('QWEN_MODEL', 'qwen4-max-preview')
 MAX_TOKENS = int(os.environ.get('QWEN_MAX_TOKENS', '262144'))
 EFFORT = os.environ.get('QWEN_EFFORT', 'xhigh')
+CALL_TIMEOUT = int(os.environ.get('QWEN_CALL_TIMEOUT', '1800'))
+CALL_DEADLINE = int(os.environ.get('QWEN_CALL_DEADLINE', '0'))
 USE_WEB_EXTRACTOR = os.environ.get('QWEN_WEB_EXTRACTOR', '1') != '0'
 WORKERS = 50
 ROUNDS = 5
@@ -291,25 +293,42 @@ def call_qwen(text, key, usage_out=None):
         elif t == 'error':
             stream_err = ev
 
-    with urllib.request.urlopen(req, timeout=1800) as r:
+    t0 = time.time()
+    with urllib.request.urlopen(req, timeout=CALL_TIMEOUT) as r:
         cur_event = None
         data_buf = []
-        for raw in r:
-            line = raw.decode('utf-8', errors='replace').rstrip('\r\n')
-            if not line:
-                if data_buf:
-                    handle_sse(cur_event, '\n'.join(data_buf))
-                    data_buf = []
-                    cur_event = None
-                continue
-            if line.startswith(':'):
-                continue
-            if line.startswith('event:'):
-                cur_event = line[6:].strip()
-            elif line.startswith('data:'):
-                data_buf.append(line[5:].lstrip())
-        if data_buf:
-            handle_sse(cur_event, '\n'.join(data_buf))
+        timer = None
+        if CALL_DEADLINE:
+            def _abort():
+                try:
+                    r.close()
+                except Exception:
+                    pass
+            timer = threading.Timer(CALL_DEADLINE, _abort)
+            timer.daemon = True
+            timer.start()
+        try:
+            for raw in r:
+                line = raw.decode('utf-8', errors='replace').rstrip('\r\n')
+                if not line:
+                    if data_buf:
+                        handle_sse(cur_event, '\n'.join(data_buf))
+                        data_buf = []
+                        cur_event = None
+                    continue
+                if line.startswith(':'):
+                    continue
+                if line.startswith('event:'):
+                    cur_event = line[6:].strip()
+                elif line.startswith('data:'):
+                    data_buf.append(line[5:].lstrip())
+            if data_buf:
+                handle_sse(cur_event, '\n'.join(data_buf))
+        finally:
+            if timer is not None:
+                timer.cancel()
+        if CALL_DEADLINE and time.time() - t0 > CALL_DEADLINE:
+            raise QwenStreamError('deadline', 'call exceeded %ds' % CALL_DEADLINE)
 
     if stream_err is not None:
         err = stream_err.get('error') if isinstance(stream_err.get('error'), dict) else stream_err

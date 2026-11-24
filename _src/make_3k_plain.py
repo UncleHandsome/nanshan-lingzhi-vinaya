@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""重建材料：鈔類每檔原文約 300 字、記文類（資持記）約 500 字；書序＋書內原文由長到短。"""
+"""重建材料：戒疏／業疏／資持記每檔原文約 550 字，其餘鈔類約 350 字；書序＋書內原文由長到短。"""
 import io
 import json
 import os
@@ -25,8 +25,8 @@ BOOKS = [
 ]
 PROMPT_FILE = os.path.join(B, '_src', 'review_prompt_universal.md')
 PROMPT = io.open(PROMPT_FILE, encoding='utf-8').read().strip() + '\n'
-LIMITS = {'zhichi': 500}
-DEFAULT_LIMIT = 300
+LIMITS = {'jieshu': 550, 'yeshu': 550, 'zhichi': 550}
+DEFAULT_LIMIT = 350
 
 
 def block(book_id, book_label, key, s):

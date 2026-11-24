@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""重建材料：戒疏／業疏／資持記每檔原文約 550 字，其餘鈔類約 350 字；書序＋書內原文由長到短。"""
+"""重建材料：戒疏／業疏／資持記每檔原文約 550 字，其餘鈔類約 350 字；依原文順序裝箱。"""
 import io
 import json
 import os
@@ -54,8 +54,8 @@ def main():
             segs = r.get('segments') or []
             for si, s in enumerate(segs, 1):
                 key = str(r['key']) if len(segs) == 1 else '%s-%d' % (r['key'], si)
-                items.append((han(s.get('source') or ''), key, s))
-        items.sort(key=lambda x: -x[0])  # 原文段落由長到短
+                items.append((int(r.get('raw_start') or 0), si, key, s))
+        items.sort(key=lambda x: (x[0], x[1]))  # 依原文順序
         buf = []
         size = 0
 
@@ -72,7 +72,7 @@ def main():
             size = 0
 
         limit = LIMITS.get(book_id, DEFAULT_LIMIT)
-        for _, key, s in items:
+        for _, _si, key, s in items:
             b = block(book_id, label, key, s)
             n = han(s.get('source') or '')
             if buf and size + n > limit:

@@ -85,8 +85,8 @@ def build_index(nav):
         by_out[out] = ('<section class="card"><h2>%s</h2><p class="byline">%s</p>'
                        '<div class="grp">%s</div></section>'
                        % (html.escape(title), by, links))
-    left = ''.join(by_out[x] for x in ('xingshichao', 'yeshu', 'nicao', 'yichao') if x in by_out)
-    right = ''.join(by_out[x] for x in ('jieshu', 'zhichi', 'hebian') if x in by_out)
+    left = ''.join(by_out[x] for x in ('xingshichao', 'zhichi', 'hebian') if x in by_out)
+    right = ''.join(by_out[x] for x in ('jieshu', 'yeshu', 'nicao', 'yichao') if x in by_out)
     parts.append('<div class="home-grid"><div class="home-col">%s</div>'
                  '<div class="home-col">%s</div></div>' % (left, right))
     return SA.page('目錄', ''.join(parts), body_class='page-home',

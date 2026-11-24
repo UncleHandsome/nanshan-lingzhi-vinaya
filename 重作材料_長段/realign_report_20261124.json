@@ -1,0 +1,140 @@
+{
+ "xingshichao": {
+  "rows": 2142,
+  "kept": 2134,
+  "fixed": 0,
+  "span": 7,
+  "fail": 1,
+  "slice_ok": 2134,
+  "monotonic": true,
+  "issues": [
+   [
+    "97",
+    "span"
+   ],
+   [
+    "171",
+    "span"
+   ],
+   [
+    "192",
+    "fail"
+   ],
+   [
+    "196",
+    "span"
+   ],
+   [
+    "504",
+    "span"
+   ],
+   [
+    "529",
+    "span"
+   ],
+   [
+    "997",
+    "span"
+   ],
+   [
+    "1189",
+    "span"
+   ]
+  ]
+ },
+ "jieshu": {
+  "rows": 4563,
+  "kept": 4563,
+  "fixed": 0,
+  "span": 0,
+  "fail": 0,
+  "slice_ok": 4563,
+  "monotonic": true,
+  "issues": []
+ },
+ "yeshu": {
+  "rows": 2728,
+  "kept": 2716,
+  "fixed": 1,
+  "span": 8,
+  "fail": 3,
+  "slice_ok": 2717,
+  "monotonic": true,
+  "issues": [
+   [
+    "01a_卷一之一_0047",
+    "fail"
+   ],
+   [
+    "01a_卷一之一_0046",
+    "fail"
+   ],
+   [
+    "07b_卷二之一_0013",
+    "span"
+   ],
+   [
+    "09a_卷二之三_0008",
+    "fail"
+   ],
+   [
+    "09a_卷二之三_0009",
+    "span"
+   ],
+   [
+    "09b_卷二之三_0007",
+    "span"
+   ],
+   [
+    "13b_卷三之二_0047",
+    "span"
+   ],
+   [
+    "18a_卷四之一_0055",
+    "span"
+   ],
+   [
+    "18a_卷四之一_0090",
+    "span"
+   ],
+   [
+    "18b_卷四之一_0101",
+    "span"
+   ],
+   [
+    "18b_卷四之一_0121",
+    "span"
+   ]
+  ]
+ },
+ "nicao": {
+  "rows": 1100,
+  "kept": 1100,
+  "fixed": 0,
+  "span": 0,
+  "fail": 0,
+  "slice_ok": 1100,
+  "monotonic": true,
+  "issues": []
+ },
+ "yichao": {
+  "rows": 509,
+  "kept": 508,
+  "fixed": 0,
+  "span": 1,
+  "fail": 0,
+  "slice_ok": 508,
+  "monotonic": true,
+  "issues": [
+   [
+    "GAP17-12",
+    "span"
+   ]
+  ]
+ },
+ "zhichi": {
+  "rows": 4182,
+  "monotonic": true,
+  "note": "座標系與 TXT 不同，僅驗證順序"
+ }
+}

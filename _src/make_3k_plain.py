@@ -52,9 +52,12 @@ def main():
                 continue
             r = json.loads(ln)
             segs = r.get('segments') or []
+            unit = []
             for si, s in enumerate(segs, 1):
                 key = str(r['key']) if len(segs) == 1 else '%s-%d' % (r['key'], si)
-                items.append((int(r.get('raw_start') or 0), si, key, s))
+                unit.append((key, s))
+            if unit:
+                items.append((int(r.get('raw_start') or 0), unit))
         items.sort(key=lambda x: (x[0], x[1]))  # 依原文順序
         buf = []
         size = 0
@@ -72,12 +75,12 @@ def main():
             size = 0
 
         limit = LIMITS.get(book_id, DEFAULT_LIMIT)
-        for _, _si, key, s in items:
-            b = block(book_id, label, key, s)
-            n = han(s.get('source') or '')
+        for _pos, unit in items:
+            blocks = [block(book_id, label, key, s) for key, s in unit]
+            n = sum(han(s.get('source') or '') for _, s in unit)
             if buf and size + n > limit:
                 flush()
-            buf.append(b)
+            buf.extend(blocks)
             size += n
         flush()
     print('files', idx, 'OUT', OUT)

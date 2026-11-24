@@ -40,7 +40,7 @@ B = M.B
 ROOT = os.path.join(B, '六書_3K_校對_20261124')
 KEY_FILE = os.path.join(B, 'qwk2.txt')
 BASE = 'https://token-plan.maas.qwencloudapi.com/compatible-mode/v1'
-MODEL = os.environ.get('QWEN_MODEL', 'qwen4-max')
+MODEL = os.environ.get('QWEN_MODEL', 'qwen4-max-preview')
 MAX_TOKENS = int(os.environ.get('QWEN_MAX_TOKENS', '262144'))
 USE_WEB_EXTRACTOR = os.environ.get('QWEN_WEB_EXTRACTOR', '1') != '0'
 WORKERS = 50
@@ -691,6 +691,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--smoke', action='store_true')
     ap.add_argument('--workers', type=int, default=WORKERS)
+    ap.add_argument('--rounds', type=int, default=ROUNDS,
+                    help='跑到第幾輪為止（預設 %d；今晚只跑一輪可用 1）' % ROUNDS)
     ap.add_argument('--allow-fail', action='store_true',
                     help='非 stop/配額中斷時，允許略過 failed.json 檔案繼續套用與下一輪')
     a = ap.parse_args()
@@ -714,7 +716,7 @@ def main():
         return
 
     st = load_state()
-    for r in range(1, ROUNDS + 1):
+    for r in range(1, max(1, a.rounds) + 1):
         if r in st['rounds_done']:
             log('round%d 已完成，跳過' % r)
             continue

@@ -27,6 +27,7 @@ PROMPT_FILE = os.path.join(B, '_src', 'review_prompt_universal.md')
 PROMPT = io.open(PROMPT_FILE, encoding='utf-8').read().strip() + '\n'
 LIMITS = {'jieshu': 550, 'yeshu': 550, 'zhichi': 550}
 DEFAULT_LIMIT = 350
+PENDING_FILE = os.path.join(B, '抽樣_修白話_20261124', '_pending.json')
 
 
 def block(book_id, book_label, key, s):
@@ -41,6 +42,10 @@ def block(book_id, book_label, key, s):
 
 
 def main():
+    pend = set()
+    if os.path.exists(PENDING_FILE):
+        for x in json.load(io.open(PENDING_FILE, encoding='utf-8')):
+            pend.add((x.get('book'), x.get('row')))
     if os.path.isdir(OUT):
         shutil.rmtree(OUT)
     os.makedirs(OUT)
@@ -51,6 +56,8 @@ def main():
             if not ln.strip():
                 continue
             r = json.loads(ln)
+            if (book_id, str(r.get('key'))) in pend:
+                continue
             segs = r.get('segments') or []
             unit = []
             for si, s in enumerate(segs, 1):

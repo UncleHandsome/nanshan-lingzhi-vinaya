@@ -15,6 +15,7 @@
 import argparse
 import glob
 import io
+import json
 import os
 import re
 import sys
@@ -93,18 +94,19 @@ def main():
                 '# %s 白話校對（千問）\n\n%s\n\n---\n\n## 輸入\n\n%s\n\n'
                 '---\n\n## 千問結果\n\n（跳過：條目標題不屬於《%s》，'
                 '避免 book_id 誤標）\n' % (stem, meta, inp, book_name))
-            return dst, 0, 'skip-book'
+            return dst, 0, 'skip-book', {}
         last = ''
+        usage = {}
         for attempt in range(3):
             if QUOTA.is_set():
                 last = 'quota-stop'
                 break
             try:
-                out = R.call_qwen(inp, key)
+                out = R.call_qwen(inp, key, usage)
                 body = ('# %s 白話校對（千問）\n\n%s\n\n---\n\n## 輸入\n\n' % (stem, meta)) \
                     + inp + '\n\n---\n\n## 千問結果\n\n' + out.strip() + '\n'
                 io.open(dst, 'w', encoding='utf-8', newline='\n').write(body)
-                return dst, len(out), 'ok'
+                return dst, len(out), 'ok', usage
             except R.QwenStreamError as e:
                 last = '%s: %s' % (e.code, e.message[:120])
                 if is_quota(e.code, e.message):
@@ -117,13 +119,33 @@ def main():
         body = ('# %s 白話校對（千問）\n\n%s\n\n---\n\n## 輸入\n\n' % (stem, meta)) \
             + inp + '\n\n---\n\n## 千問結果\n\n（呼叫失敗：%s）\n' % last
         io.open(dst, 'w', encoding='utf-8', newline='\n').write(body)
-        return dst, 0, 'fail ' + last
+        return dst, 0, 'fail ' + last, usage
 
+    total = {'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0,
+             'reasoning_tokens': 0, 'cached_tokens': 0}
+    per_file = []
     with ThreadPoolExecutor(max_workers=a.workers) as ex:
         futs = {ex.submit(run, p): p for p in files}
         for f in as_completed(futs):
-            dst, n, st = f.result()
+            dst, n, st, usage = f.result()
             print(st, os.path.basename(dst), 'result_len', n, flush=True)
+            row = {'file': os.path.basename(dst), 'status': st.split()[0]}
+            for k in total:
+                v = usage.get(k, 0) if isinstance(usage.get(k), int) else 0
+                total[k] += v
+                row[k] = v
+            if usage:
+                total['calls'] += 1
+                row['calls'] = 1
+            per_file.append(row)
+    up = os.path.join(a.outdir, 'usage.json')
+    io.open(up, 'w', encoding='utf-8').write(json.dumps(
+        {'total': total, 'per_file': per_file}, ensure_ascii=False, indent=1))
+    print('\n=== TOKEN 用量 ===', flush=True)
+    print('calls %d | input %d | output %d | total %d | reasoning %d | cached %d' % (
+        total['calls'], total['input_tokens'], total['output_tokens'],
+        total['total_tokens'], total['reasoning_tokens'], total['cached_tokens']), flush=True)
+    print('usage.json ->', up, flush=True)
 
 
 if __name__ == '__main__':

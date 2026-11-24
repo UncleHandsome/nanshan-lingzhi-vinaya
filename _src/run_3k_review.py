@@ -52,6 +52,36 @@ STOP_REASON = ''
 LOG_LOCK = threading.Lock()
 RATE_LOCK = threading.Lock()
 RATE_UNTIL = 0.0
+USAGE = {'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0,
+         'reasoning_tokens': 0, 'cached_tokens': 0}
+USAGE_LOCK = threading.Lock()
+
+
+def add_usage(u):
+    if not isinstance(u, dict):
+        return
+    with USAGE_LOCK:
+        USAGE['calls'] += 1
+        for k in ('input_tokens', 'output_tokens', 'total_tokens'):
+            v = u.get(k)
+            if isinstance(v, int):
+                USAGE[k] += v
+        itd = u.get('input_tokens_details') or {}
+        otd = u.get('output_tokens_details') or {}
+        if isinstance(itd.get('cached_tokens'), int):
+            USAGE['cached_tokens'] += itd['cached_tokens']
+        if isinstance(otd.get('reasoning_tokens'), int):
+            USAGE['reasoning_tokens'] += otd['reasoning_tokens']
+
+
+def usage_delta(before):
+    with USAGE_LOCK:
+        return {k: USAGE[k] - before.get(k, 0) for k in USAGE}
+
+
+def usage_snapshot():
+    with USAGE_LOCK:
+        return dict(USAGE)
 
 JSONL_BLK_RE = re.compile(r'<<<JSONL_START>>>\s*(.*?)\s*<<<JSONL_END>>>', re.S)
 
@@ -207,7 +237,7 @@ def extract_response_text(resp):
     return '\n'.join(parts)
 
 
-def call_qwen(text, key):
+def call_qwen(text, key, usage_out=None):
     """以 Token Plan Responses API（串流）呼叫 qwen4-max-preview，確保 completed 且未截斷。"""
     tools = [{'type': 'web_search'}]
     if USE_WEB_EXTRACTOR:
@@ -295,6 +325,13 @@ def call_qwen(text, key):
         inc = final_resp.get('incomplete_details') or {}
         raise QwenStreamError('incomplete', inc.get('reason') or str(status))
 
+    try:
+        u = final_resp.get('usage')
+        add_usage(u)
+        if usage_out is not None and isinstance(u, dict):
+            usage_out.update(u)
+    except Exception:
+        pass
     out_text = extract_response_text(final_resp)
     if out_text:
         return out_text

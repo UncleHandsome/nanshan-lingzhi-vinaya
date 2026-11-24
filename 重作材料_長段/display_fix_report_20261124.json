@@ -1,0 +1,32 @@
+{
+ "xingshichao": {
+  "fixed_row": 0,
+  "fixed_seg": 0,
+  "unresolved": []
+ },
+ "jieshu": {
+  "fixed_row": 0,
+  "fixed_seg": 0,
+  "unresolved": []
+ },
+ "yeshu": {
+  "fixed_row": 1,
+  "fixed_seg": 0,
+  "unresolved": []
+ },
+ "nicao": {
+  "fixed_row": 0,
+  "fixed_seg": 0,
+  "unresolved": []
+ },
+ "yichao": {
+  "fixed_row": 0,
+  "fixed_seg": 0,
+  "unresolved": []
+ },
+ "zhichi": {
+  "fixed_row": 0,
+  "fixed_seg": 0,
+  "unresolved": []
+ }
+}

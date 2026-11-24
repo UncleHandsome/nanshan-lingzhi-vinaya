@@ -7,6 +7,39 @@
 
 ---
 
+## 2026-11-24 最新版：標楷體單欄／雙欄
+
+依卷分檔，六書共 20 卷；Word 與 PDF 各 20 份。
+
+| 版型 | Word | PDF |
+|:--|:--|:--|
+| 單欄 | [白話對照本_標楷_單欄_DOCX](白話對照本_標楷_單欄_DOCX) | [白話對照本_標楷_單欄_PDF](白話對照本_標楷_單欄_PDF) |
+| 雙欄 | [白話對照本_標楷_雙欄_DOCX](白話對照本_標楷_雙欄_DOCX) | [白話對照本_標楷_雙欄_PDF](白話對照本_標楷_雙欄_PDF) |
+
+- 內文：標楷體（DFKai-SB）14pt
+- 原文棕色、白話深色、段別標籤照網站配色
+- 單欄直排；雙欄為 Word 雙欄 section
+- 依卷分檔，書名與卷名都在檔名中
+- 產生程式：[`_src/export_kaiti_books.py`](_src/export_kaiti_books.py)
+
+分享用完整網址：
+
+```text
+單欄 Word
+https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/tree/main/%E7%99%BD%E8%A9%B1%E5%B0%8D%E7%85%A7%E6%9C%AC_%E6%A8%99%E6%A5%B7_%E5%96%AE%E6%AC%84_DOCX
+
+單欄 PDF
+https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/tree/main/%E7%99%BD%E8%A9%B1%E5%B0%8D%E7%85%A7%E6%9C%AC_%E6%A8%99%E6%A5%B7_%E5%96%AE%E6%AC%84_PDF
+
+雙欄 Word
+https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/tree/main/%E7%99%BD%E8%A9%B1%E5%B0%8D%E7%85%A7%E6%9C%AC_%E6%A8%99%E6%A5%B7_%E9%9B%99%E6%AC%84_DOCX
+
+雙欄 PDF
+https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/tree/main/%E7%99%BD%E8%A9%B1%E5%B0%8D%E7%85%A7%E6%9C%AC_%E6%A8%99%E6%A5%B7_%E9%9B%99%E6%AC%84_PDF
+```
+
+---
+
 ## 一、收錄內容
 
 | 編號 | 書名 | 卷數 | 撰述 | 底本 | PDF 頁數 |

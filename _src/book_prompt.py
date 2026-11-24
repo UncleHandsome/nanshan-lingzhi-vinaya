@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-"""按書別渲染校對提示詞（共用骨架＋切換參數）。
+"""【舊模式】按書別渲染校對提示詞（共用骨架＋切換參數）。
+
+現行預設已改為六書共用版：_src/review_prompt_universal.md（review_entries 不帶 --book 即使用）。
+本檔保留作 name→book_id 對照（apply_review_results 會用）與舊 --book 相容。
 
 模板：_src/review_prompt_v4_template.md
 佔位：{BOOK_ID}、{AUTHORITY_CONTEXT}、{GENRE_RULES}

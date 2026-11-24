@@ -27,6 +27,7 @@ import run_3k_review as R
 import book_prompt
 
 QUOTA = threading.Event()
+UNIVERSAL_PROMPT = os.path.join(os.path.dirname(__file__), 'review_prompt_universal.md')
 
 
 def prep(path):
@@ -51,14 +52,16 @@ def main():
     ap.add_argument('--outdir', required=True)
     ap.add_argument('--workers', type=int, default=4)
     a = ap.parse_args()
-    if not a.book and not a.prompt:
-        ap.error('--book 或 --prompt 至少一個')
     book_name = None
     if a.book:
+        # 舊模式：按書切模板（保留相容；現行建議用通用版）
         header = book_prompt.render_prompt(a.book) + '\n'
         book_name = book_prompt.PROFILES[a.book]['name']
-    else:
+    elif a.prompt:
         header = io.open(a.prompt, encoding='utf-8').read().rstrip() + '\n\n'
+    else:
+        # 預設：六書共用的通用版提示詞
+        header = io.open(UNIVERSAL_PROMPT, encoding='utf-8').read().rstrip() + '\n\n'
     files = list(a.entries or [])
     if a.folder:
         files += sorted(p for p in glob.glob(os.path.join(a.folder, '*.md'))
@@ -66,6 +69,8 @@ def main():
     os.makedirs(a.outdir, exist_ok=True)
     key = io.open(R.KEY_FILE, encoding='utf-8-sig').read().strip()
     meta = '模型：%s｜xhigh｜Responses API web_search＋web_extractor｜金鑰 qwk2' % R.MODEL
+    if not book_name and not a.prompt:
+        meta += '｜提示詞：通用版（六書共用）'
     if book_name:
         meta += '｜書別：%s（%s）' % (book_name, a.book)
 

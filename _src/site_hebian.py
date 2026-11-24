@@ -613,9 +613,10 @@ def emit_pair(u, kind, sid, used=None):
         if used is not None:
             used.add(pid)
     idattr = (' id="%s"' % pid) if pid else ''
-    return ('<div class="pair"%s><div class="%s">【%s】%s</div>'
+    pcls = 'pair c' if kind == '鈔' else 'pair j'
+    return ('<div class="%s"%s><div class="%s">【%s】%s</div>'
             '<div class="t">%s</div></div>'
-            % (idattr, cls, esc(label), fmt(u['source']), fmt(u['translation'])))
+            % (pcls, idattr, cls, esc(label), fmt(u['source']), fmt(u['translation'])))
 
 
 def main():

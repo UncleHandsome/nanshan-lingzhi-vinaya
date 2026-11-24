@@ -15,17 +15,8 @@ BOOKS = [
     ('yichao', '05_義鈔', '義鈔'),
     ('zhichi', '06_資持記', '資持記'),
 ]
-PROMPT = '''<!--
-Qwen 校閱指示：
-逐段檢查下面各段「白話」有沒有問題。只回報有問題的段，不要重寫沒問題的段。
-- 有問題：輸出該段修正後完整白話。
-- 沒問題：不要輸出。
-- 只輸出 JSONL，每行一個物件：{{"book_id":"{book_id}","key":"...","translation":"..."}}
-- key 只填 ## 後面斜線後的代號，不要包含書名。
-- 不要 code fence、前言、解釋，也不要改原文或 key。
-- 整檔全部沒問題，只回覆：NONE
--->
-'''
+PROMPT_FILE = os.path.join(B, '_src', 'review_prompt_universal.md')
+PROMPT = io.open(PROMPT_FILE, encoding='utf-8').read().strip() + '\n'
 
 
 def block(book_id, book_label, key, s):
@@ -51,7 +42,7 @@ def main():
             if not buf:
                 return
             idx += 1
-            body = (PROMPT.format(book_id=book_id) + '\n\n'
+            body = (PROMPT.replace('{book_id}', book_id) + '\n\n'
                     + '\n'.join(buf))
             io.open(os.path.join(OUT, '%04d_%s.md' % (idx, book_id)), 'w',
                     encoding='utf-8', newline='\n').write(body)

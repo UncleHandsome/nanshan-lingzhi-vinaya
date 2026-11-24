@@ -120,6 +120,7 @@ def one(path, key, win):
     usage = {}
     last = ''
     out = ''
+    ts = time.time()
     for attempt in range(3):
         try:
             out = R.call_qwen(text, key, usage)
@@ -133,8 +134,10 @@ def one(path, key, win):
         except Exception as e:
             last = type(e).__name__ + ': ' + str(e)[:120]
             time.sleep(8 * (attempt + 1))
+    te = time.time()
     if not out:
-        return stem, 'fail ' + last, {}, 0
+        return stem, 'fail ' + last, {}, 0, time.strftime('%H:%M:%S', time.localtime(ts)), \
+            time.strftime('%H:%M:%S', time.localtime(te)), round(te - ts, 1)
     io.open(rawpath, 'w', encoding='utf-8', newline='\n').write(out)
     objs = parse_objs(out)
     if not objs:
@@ -160,7 +163,9 @@ def one(path, key, win):
     io.open(dst, 'w', encoding='utf-8', newline='\n').write('\n'.join(lines) + ('\n' if lines else ''))
     with LOCK:
         STAT['fixed'] += len(lines); STAT['orphan'] += orph; STAT['missing'] += missing
-    return stem, 'ok', usage, len(lines), missing, orph
+    return stem, 'ok', usage, len(lines), missing, orph, \
+        time.strftime('%H:%M:%S', time.localtime(ts)), \
+        time.strftime('%H:%M:%S', time.localtime(te)), round(te - ts, 1)
 
 
 def main():
@@ -203,7 +208,10 @@ def main():
                     STAT['fail'] += 1
                 append_jsonl(PROG, {'t': time.strftime('%H:%M:%S'), 'file': stem, 'status': st[:90],
                                     'usage': usage, 'done': done, 'total': len(files),
-                                    'lines': res[3] if len(res) > 3 else 0})
+                                    'lines': res[3] if len(res) > 3 else 0,
+                                    't_start': res[6] if len(res) > 6 else '',
+                                    't_end': res[7] if len(res) > 7 else '',
+                                    'dur_s': res[8] if len(res) > 8 else 0})
                 flush_usage()
                 if done % 10 == 0 or st.startswith('fail'):
                     log('progress %d/%d %s %s usage=%s stat=%s' % (

@@ -43,6 +43,7 @@ KEY_FILE = os.path.join(B, 'qwk2.txt')
 BASE = 'https://token-plan.maas.qwencloudapi.com/compatible-mode/v1'
 MODEL = os.environ.get('QWEN_MODEL', 'qwen4-max-preview')
 MAX_TOKENS = int(os.environ.get('QWEN_MAX_TOKENS', '262144'))
+EFFORT = os.environ.get('QWEN_EFFORT', 'xhigh')
 USE_WEB_EXTRACTOR = os.environ.get('QWEN_WEB_EXTRACTOR', '1') != '0'
 WORKERS = 50
 ROUNDS = 5
@@ -246,7 +247,7 @@ def call_qwen(text, key, usage_out=None):
     payload = {
         'model': MODEL,
         'input': text,
-        'reasoning': {'effort': 'xhigh'},
+        'reasoning': {'effort': EFFORT},
         'tools': tools,
         'max_output_tokens': MAX_TOKENS,
         'store': False,

@@ -69,7 +69,7 @@ def main():
                         if '輸入與結果' not in p and not os.path.basename(p).startswith('_'))
     os.makedirs(a.outdir, exist_ok=True)
     key = io.open(R.KEY_FILE, encoding='utf-8-sig').read().strip()
-    meta = '模型：%s｜xhigh｜Responses API web_search＋web_extractor｜金鑰 qwk2' % R.MODEL
+    meta = '模型：%s｜%s｜Responses API web_search＋web_extractor｜金鑰 qwk2' % (R.MODEL, R.EFFORT)
     if not book_name and not a.prompt:
         meta += '｜提示詞：通用版（六書共用）'
     if book_name:

@@ -2,7 +2,7 @@
 """六書 3K 材料多輪校對 orchestrator（Token Plan / Responses API 版）。
 
 設定：
-  - qwk2 金鑰（sk-sp-）、50 workers、qwen4-max、reasoning=xhigh
+  - qwk2 金鑰（sk-sp-）、50 workers、qwen4-max-preview、reasoning=xhigh
   - Responses API（/responses）+ web_search（可選 web_extractor）+ stream=True
 流程：
   - 第 1–3 輪：全量 3K 材料校對；每輪完成後套用 fixed 修正、重產材料；完整保留每輪報告與輸出。
@@ -205,7 +205,7 @@ def extract_response_text(resp):
 
 
 def call_qwen(text, key):
-    """以 Token Plan Responses API（串流）呼叫 qwen4-max，確保 completed 且未截斷。"""
+    """以 Token Plan Responses API（串流）呼叫 qwen4-max-preview，確保 completed 且未截斷。"""
     tools = [{'type': 'web_search'}]
     if USE_WEB_EXTRACTOR:
         tools.append({'type': 'web_extractor'})

@@ -46,6 +46,7 @@ MAX_TOKENS = int(os.environ.get('QWEN_MAX_TOKENS', '262144'))
 EFFORT = os.environ.get('QWEN_EFFORT', 'xhigh')
 CALL_TIMEOUT = int(os.environ.get('QWEN_CALL_TIMEOUT', '1800'))
 CALL_DEADLINE = int(os.environ.get('QWEN_CALL_DEADLINE', '0'))
+CALL_IDLE = int(os.environ.get('QWEN_IDLE_TIMEOUT', '0'))
 USE_WEB_EXTRACTOR = os.environ.get('QWEN_WEB_EXTRACTOR', '1') != '0'
 WORKERS = 50
 ROUNDS = 5
@@ -294,7 +295,8 @@ def call_qwen(text, key, usage_out=None):
             stream_err = ev
 
     t0 = time.time()
-    with urllib.request.urlopen(req, timeout=CALL_TIMEOUT) as r:
+    sock_to = min(CALL_TIMEOUT, CALL_IDLE) if CALL_IDLE else CALL_TIMEOUT
+    with urllib.request.urlopen(req, timeout=sock_to) as r:
         cur_event = None
         data_buf = []
         timer = None
@@ -324,6 +326,10 @@ def call_qwen(text, key, usage_out=None):
                     data_buf.append(line[5:].lstrip())
             if data_buf:
                 handle_sse(cur_event, '\n'.join(data_buf))
+        except TimeoutError:
+            if CALL_IDLE:
+                raise QwenStreamError('idle_timeout', 'no data for %ds' % sock_to)
+            raise
         finally:
             if timer is not None:
                 timer.cancel()

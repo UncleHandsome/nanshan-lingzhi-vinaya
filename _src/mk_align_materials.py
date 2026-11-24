@@ -56,6 +56,64 @@ def split_groups(items, k):
         groups.append(items[a:b])
     return groups
 
+def split_by_raw(items, lo, hi, k):
+    """依 raw_start 在 [lo,hi) 的位置比例切 k 組（鈔記同進度對齊）。"""
+    groups = [[] for _ in range(k)]
+    span = hi - lo
+    for r in items:
+        rs = int(r.get('raw_start') or lo)
+        f = (rs - lo) / span if span > 0 else 0
+        g = min(k-1, max(0, int(f*k)))
+        groups[g].append(r)
+    return groups
+
+def ji_anchored_windows(chao, ji, target_ji=40):
+    """記文錨定切窗：記文切小組，用每組首/尾記段牒釋詞反查鈔段範圍，
+    保證每窗鈔記對應。回傳 [(chao_segs, ji_segs), ...]。"""
+    # 鈔段漢字流＋每段起始位置
+    ch_han = []; ch_pos = []; acc = 0
+    for r in chao:
+        t = ''.join(HAN.findall(text_of(r)))
+        ch_pos.append(acc); ch_han.append(t); acc += len(t)
+    # 鈔文 n-gram 索引 → 鈔段 idx
+    NG = 8
+    index = {}
+    for ci, t in enumerate(ch_han):
+        for s in range(len(t)-NG+1):
+            index.setdefault(t[s:s+NG], ci)
+    def anchor(jr):
+        s = ''.join(HAN.findall(text_of(jr)))
+        votes = {}
+        for p in range(len(s)-NG+1):
+            ci = index.get(s[p:p+NG])
+            if ci is not None:
+                votes[ci] = votes.get(ci, 0)+1
+        if not votes: return None
+        return max(votes, key=lambda c: (votes[c], -c))
+    anchors = [anchor(r) for r in ji]
+    MAXSPAN = 34; MAXJI = 40
+    wins = []; n = len(ji)
+    start = 0; mn = None; mx = None; cnt = 0
+    def close(end):
+        if end <= start: return
+        if mn is None:
+            c = int(start/n*len(chao)); lo = max(0, c-5); hi = min(len(chao), c+12)
+        else:
+            lo = max(0, mn-3); hi = min(len(chao), mx+4)
+        wins.append((chao[lo:hi], ji[start:end]))
+    for i in range(n):
+        a = anchors[i]
+        if cnt > 0:
+            span_exceed = (a is not None and mn is not None and (max(mx, a)-min(mn, a)) > MAXSPAN)
+            if cnt >= MAXJI or span_exceed:
+                close(i); start = i; mn = None; mx = None; cnt = 0
+        if a is not None:
+            mn = a if mn is None else min(mn, a)
+            mx = a if mx is None else max(mx, a)
+        cnt += 1
+    close(n)
+    return wins
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     for f in os.listdir(OUT): os.remove(os.path.join(OUT, f))
@@ -67,11 +125,14 @@ def main():
         ch = sum(han(text_of(r)) for r in chao)
         jh = sum(han(text_of(r)) for r in ji)
         k = max(1, math.ceil((ch+jh)/TARGET))
-        cg = split_groups(chao, k); jg = split_groups(ji, k)
-        for p in range(k):
-            csegs = cg[p]; jsegs = jg[p]
+        if k > 1:
+            pairs = ji_anchored_windows(chao, ji, target_ji=40)
+        else:
+            pairs = [(chao, ji)]
+        nparts = len(pairs)
+        for p, (csegs, jsegs) in enumerate(pairs):
             fn = 'pian%02d_%s_part%02d.md' % (i, name, p+1)
-            L = [HEADER, '', '## 篇：%s（第 %d/%d 窗）' % (name, p+1, k), '',
+            L = [HEADER, '', '## 篇：%s（第 %d/%d 窗）' % (name, p+1, nparts), '',
                  '### 左欄：行事鈔 鈔段（共 %d）' % len(csegs), '']
             for r in csegs:
                 L += ['[鈔 %s]' % r['key'], text_of(r), '']
@@ -80,7 +141,7 @@ def main():
                 L += ['[記 %s]' % r['key'], text_of(r), '']
             body = '\n'.join(L)
             io.open(os.path.join(OUT, fn), 'w', encoding='utf-8', newline='\n').write(body)
-            windows.append({'file': fn, 'pian': i, 'name': name, 'part': p+1, 'parts': k,
+            windows.append({'file': fn, 'pian': i, 'name': name, 'part': p+1, 'parts': nparts,
                             'chao_n': len(csegs), 'ji_n': len(jsegs),
                             'bytes': len(body.encode('utf-8')),
                             'chao_keys': [str(r['key']) for r in csegs],

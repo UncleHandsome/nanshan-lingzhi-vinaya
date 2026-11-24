@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""重建簡短版材料：每檔約 3KB，依書序、不按長度排序，不含分段指示。"""
+"""重建材料：鈔類每檔原文約 300 字、記文類（資持記）約 500 字；書序＋書內原文由長到短。"""
 import io
 import json
 import os
@@ -25,6 +25,8 @@ BOOKS = [
 ]
 PROMPT_FILE = os.path.join(B, '_src', 'review_prompt_universal.md')
 PROMPT = io.open(PROMPT_FILE, encoding='utf-8').read().strip() + '\n'
+LIMITS = {'zhichi': 500}
+DEFAULT_LIMIT = 300
 
 
 def block(book_id, book_label, key, s):
@@ -69,10 +71,11 @@ def main():
             buf = []
             size = 0
 
+        limit = LIMITS.get(book_id, DEFAULT_LIMIT)
         for _, key, s in items:
             b = block(book_id, label, key, s)
-            n = len(b.encode('utf-8')) + 1
-            if buf and size + n > 3000:
+            n = han(s.get('source') or '')
+            if buf and size + n > limit:
                 flush()
             buf.append(b)
             size += n

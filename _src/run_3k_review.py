@@ -212,8 +212,9 @@ def gen_materials(outdir, keymap, target=None):
                 continue
             mk = kid.split('|', 1)[1]
             b = M.block(book_id, label, mk, s)
-            n = len(b.encode('utf-8')) + 1
-            if buf and size + n > 3000:
+            n = M.han(s.get('source') or '')
+            limit = M.LIMITS.get(book_id, M.DEFAULT_LIMIT)
+            if buf and size + n > limit:
                 flush()
             buf.append(b)
             size += n

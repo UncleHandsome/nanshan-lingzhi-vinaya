@@ -61,10 +61,19 @@ def main():
             if nd != (s.get('display_source') or ''):
                 s['display_source'] = nd
                 n += 1
-        joined = '\n'.join(s.get('display_source') or s.get('source') or '' for s in segs)
-        if joined != (r.get('display_source') or ''):
-            r['display_source'] = joined
+        nd = fix_one(r.get('display_source') or '', r.get('source') or '')
+        if nd != (r.get('display_source') or ''):
+            r['display_source'] = nd
             n += 1
+        # 尾段對齊 row 尾標點
+        rd = r.get('display_source') or ''
+        sd = segs[-1].get('display_source') or ''
+        if (rd and sd and han(rd) == han(r.get('source') or '')
+                and han(sd) == han(segs[-1].get('source') or '')):
+            t_ = tail_run(rd)
+            if t_ and not sd.rstrip().endswith(tuple(ENDS)):
+                segs[-1]['display_source'] = sd.rstrip() + t_
+                n += 1
     print('yeshu fixed', n)
     if apply:
         bak = path + '.bak_yeshu_punct_20261124'

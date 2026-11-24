@@ -31,6 +31,7 @@ import threading
 import time
 import urllib.error
 import urllib.request
+from datetime import datetime, timedelta
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -687,12 +688,24 @@ def do_round(r, st, workers, allow_fail=False):
     return True
 
 
+def next_clock(hhmm):
+    """回傳下一個 HH:MM 的 datetime（跨午夜自動 +1 天），用作停止界限。"""
+    h, m = [int(x) for x in hhmm.split(':')]
+    now = datetime.now()
+    t = now.replace(hour=h, minute=m, second=0, microsecond=0)
+    if t <= now:
+        t += timedelta(days=1)
+    return t
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--smoke', action='store_true')
     ap.add_argument('--workers', type=int, default=WORKERS)
     ap.add_argument('--rounds', type=int, default=ROUNDS,
-                    help='跑到第幾輪為止（預設 %d；今晚只跑一輪可用 1）' % ROUNDS)
+                    help='最多跑到第幾輪（預設 %d）' % ROUNDS)
+    ap.add_argument('--until', default='',
+                    help='時限 HH:MM；每輪開始前若已過此時刻就停（例如 05:00）')
     ap.add_argument('--allow-fail', action='store_true',
                     help='非 stop/配額中斷時，允許略過 failed.json 檔案繼續套用與下一輪')
     a = ap.parse_args()
@@ -716,12 +729,18 @@ def main():
         return
 
     st = load_state()
+    cutoff = next_clock(a.until) if a.until else None
+    if cutoff:
+        log('本輪時限：%s，之後不再開新輪' % cutoff.strftime('%m-%d %H:%M'))
     for r in range(1, max(1, a.rounds) + 1):
         if r in st['rounds_done']:
             log('round%d 已完成，跳過' % r)
             continue
         if os.path.exists(stop_flag()):
             log('STOP 存在，停止')
+            break
+        if cutoff and datetime.now() >= cutoff:
+            log('已過時限 %s，停止開新輪' % cutoff.strftime('%H:%M'))
             break
         cont = do_round(r, st, a.workers, allow_fail=a.allow_fail)
         if not cont:

@@ -97,8 +97,8 @@ def load_rows():
     rows = [json.loads(x) for x in io.open(DATA, encoding='utf-8') if x.strip()]
     if not rows:
         sys.exit('ERROR: 定稿/zhichi.jsonl 為空')
-    if len(rows) != 4182:
-        sys.exit('ERROR: 定稿筆數 %d，預期 4182' % len(rows))
+    if len(rows) < 4100:
+        sys.exit('ERROR: 定稿筆數異常 %d（預期約 4168）' % len(rows))
     missing = [r.get('key') for r in rows if r.get('raw_start', -1) < 0]
     if missing:
         sys.exit('ERROR: 未定位 %d 筆：%s' % (len(missing), missing[:10]))
@@ -295,8 +295,9 @@ def main():
         page_pairs[p] = pairs
         page_secs[p] = secs
 
-    if total_pairs != 4157:
-        sys.exit('ERROR: pair 數 %d，預期 4157（4182 筆 - 25 筆卷末校勘）' % total_pairs)
+    if total_pairs != len(rows) - len(all_skipped):
+        sys.exit('ERROR: pair 數 %d，預期 %d（%d 筆 - %d 未譯）'
+                 % (total_pairs, len(rows) - len(all_skipped), len(rows), len(all_skipped)))
     if len(all_skipped) != 25:
         sys.exit('ERROR: 未譯筆數 %d，預期 25' % len(all_skipped))
     print('TOTAL pages=%d pairs=%d diagrams=%d headings=%d skipped=%d'

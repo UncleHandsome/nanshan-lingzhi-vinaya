@@ -13,7 +13,7 @@
 """
 import html
 
-ASSET_VERSION = '42'
+ASSET_VERSION = '43'
 
 BOOK_OPTIONS = [
     ('行事鈔', 'xingshichao/卷上.html'),
@@ -36,7 +36,9 @@ FOOTER = (
 _HEAD_SCRIPT = (
     '<script>try{var h=document.documentElement,m=localStorage.getItem("dsh-read-mode")||"";'
     'if(m==="o")h.classList.add("hide-t");else if(m==="t")h.classList.add("hide-o");'
-    'if(localStorage.getItem("dsh-twocol")==="1")h.classList.add("twocol");}catch(e){}</script>'
+    'var t=localStorage.getItem("dsh-twocol");'
+    'if(t!=="0" && (!window.matchMedia || window.matchMedia("(min-width: 1200px)").matches))h.classList.add("twocol");'
+    '}catch(e){}</script>'
 )
 
 

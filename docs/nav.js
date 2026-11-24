@@ -87,7 +87,12 @@
   // 首頁與非書頁沒有「目前卷」：側欄只列書目，不顯示空的卷／篇 TOC。
   function renderHome() {
     var html = '<p class="navgrouplabel">書目</p><div class="homebooks">';
-    (DATA.books || []).forEach(function (b) {
+    var HOME_ORDER = {xingshichao: 0, zhichi: 1, hebian: 2, jieshu: 3, yeshu: 4, nicao: 5, yichao: 6};
+    var books = (DATA.books || []).slice().sort(function (a, b) {
+      return (HOME_ORDER[a.out] == null ? 99 : HOME_ORDER[a.out]) -
+             (HOME_ORDER[b.out] == null ? 99 : HOME_ORDER[b.out]);
+    });
+    books.forEach(function (b) {
       var vols = b.vols || [];
       if (!vols.length) return;
       var href = root + b.out + '/' + vols[0].v + '.html';

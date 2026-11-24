@@ -153,6 +153,8 @@ def gen_materials(outdir, keymap, target=None):
     os.makedirs(outdir)
     idx = 0
     filekeys = {}
+    # 每本書內：原文 segment 由長到短
+    ordered = sorted(keymap.items(), key=lambda kv: -M.han(kv[1][4].get('source') or ''))
     for book_id, _, label in M.BOOKS:
         buf = []
         size = 0
@@ -172,7 +174,7 @@ def gen_materials(outdir, keymap, target=None):
             size = 0
             curkeys = []
 
-        for kid, (bid, rowkey, si, lab, s) in keymap.items():
+        for kid, (bid, rowkey, si, lab, s) in ordered:
             if bid != book_id:
                 continue
             if target is not None and kid not in target:

@@ -3,10 +3,18 @@
 import io
 import json
 import os
+import re
 import shutil
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
 OUT = os.path.join(B, '六書_3K_20261124')
+HAN = re.compile(r'[\u4e00-\u9fff]')
+
+
+def han(s):
+    return len(HAN.findall(s or ''))
+
+
 BOOKS = [
     ('xingshichao', '01_行事鈔', '行事鈔'),
     ('jieshu', '02_戒本疏行宗記', '戒本疏行宗記'),
@@ -36,7 +44,19 @@ def main():
     os.makedirs(OUT)
     idx = 0
     for book_id, _, label in BOOKS:
-        buf = []; size = 0
+        items = []
+        for ln in io.open(os.path.join(B, '定稿', book_id + '.jsonl'), encoding='utf-8'):
+            if not ln.strip():
+                continue
+            r = json.loads(ln)
+            segs = r.get('segments') or []
+            for si, s in enumerate(segs, 1):
+                key = str(r['key']) if len(segs) == 1 else '%s-%d' % (r['key'], si)
+                items.append((han(s.get('source') or ''), key, s))
+        items.sort(key=lambda x: -x[0])  # 原文段落由長到短
+        buf = []
+        size = 0
+
         def flush():
             nonlocal buf, size, idx
             if not buf:
@@ -46,22 +66,18 @@ def main():
                     + '\n'.join(buf))
             io.open(os.path.join(OUT, '%04d_%s.md' % (idx, book_id)), 'w',
                     encoding='utf-8', newline='\n').write(body)
-            buf = []; size = 0
-        for ln in io.open(os.path.join(B, '定稿', book_id + '.jsonl'), encoding='utf-8'):
-            if not ln.strip():
-                continue
-            r = json.loads(ln)
-            segs = r.get('segments') or []
-            for si, s in enumerate(segs, 1):
-                key = str(r['key']) if len(segs) == 1 else '%s-%d' % (r['key'], si)
-                b = block(book_id, label, key, s)
-                n = len(b.encode('utf-8')) + 1
-                if buf and size + n > 3000:
-                    flush()
-                buf.append(b); size += n
+            buf = []
+            size = 0
+
+        for _, key, s in items:
+            b = block(book_id, label, key, s)
+            n = len(b.encode('utf-8')) + 1
+            if buf and size + n > 3000:
+                flush()
+            buf.append(b)
+            size += n
         flush()
     print('files', idx, 'OUT', OUT)
-
 
 if __name__ == '__main__':
     main()

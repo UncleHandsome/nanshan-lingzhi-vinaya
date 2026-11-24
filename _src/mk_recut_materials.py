@@ -41,7 +41,7 @@ def block(g):
 
 
 def main():
-    groups = json.load(io.open(SRC, encoding='utf-8'))['groups']
+    groups = [g for g in json.load(io.open(SRC, encoding='utf-8'))['groups'] if g.get('need_cut', True)]
     os.makedirs(OUT, exist_ok=True)
     for f in os.listdir(OUT):
         os.remove(os.path.join(OUT, f))

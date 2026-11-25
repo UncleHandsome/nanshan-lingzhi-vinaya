@@ -172,14 +172,15 @@ def build_from_manifest(man):
          % (man.get('tag', ''), man.get('commit', ''), man.get('generated', ''),
             man.get('release_url', '#'))]
 
+    # v70：所有書合併成同一張緊湊表格（書別用 rowspan，省掉六個大標題）
+    L.append('<table class="dl-table dl-all"><thead><tr>'
+             '<th>書</th><th>卷</th><th>單欄 DOCX</th><th>單欄 PDF</th>'
+             '<th>雙欄 DOCX</th><th>雙欄 PDF</th></tr></thead><tbody>')
     for bk in BOOK_ORDER:
         if bk not in groups:
             continue
-        L.append('<h2 class="sec" id="%s">%s</h2>' % (bk, BOOK_LABEL.get(bk, bk)))
-        L.append('<table class="dl-table"><thead><tr>'
-                 '<th>卷</th><th>單欄 DOCX</th><th>單欄 PDF</th><th>雙欄 DOCX</th><th>雙欄 PDF</th>'
-                 '</tr></thead><tbody>')
-        for vol, m in sorted(groups[bk].items(), key=lambda kv: volkey(kv[0])):
+        vols = sorted(groups[bk].items(), key=lambda kv: volkey(kv[0]))
+        for i, (vol, m) in enumerate(vols):
             cells = []
             for key in [('單欄', 'DOCX'), ('單欄', 'PDF'), ('雙欄', 'DOCX'), ('雙欄', 'PDF')]:
                 item = m.get(key)
@@ -188,15 +189,17 @@ def build_from_manifest(man):
                     cells.append('<a class="dl" href="%s">%s</a>' % (url, fmt_size(sz)))
                 else:
                     cells.append('—')
-            L.append('<tr><td class="dl-vol">%s</td>%s</tr>'
-                     % (vol or '全書', ''.join('<td>%s</td>' % c for c in cells)))
-        L.append('</tbody></table>')
+            bookcell = ('<td class="dl-book" rowspan="%d">%s</td>'
+                        % (len(vols), BOOK_LABEL.get(bk, bk))) if i == 0 else ''
+            L.append('<tr>%s<td class="dl-vol">%s</td>%s</tr>'
+                     % (bookcell, vol or '全書', ''.join('<td>%s</td>' % c for c in cells)))
+    L.append('</tbody></table>')
 
     tot = sum(f['size'] for f in man.get('files', []))
     L.append('<p class="dl-note">共 %d 個檔案、%s。下載位置為 GitHub Releases 資產。</p>'
              % (len(man.get('files', [])), fmt_size(tot)))
     html = SA.page('下載・六書白話對照本｜南山律典', '\n'.join(L), prefix='',
-                   book_label='下載', book_short='下載',
+                   book_label='下載', book_short='下載', body_class='page-download',
                    description='六書白話對照本 Word 與 PDF 下載（單欄／雙欄）。')
     io.open(os.path.join(DOCS, 'download.html'), 'w', encoding='utf-8', newline='\n').write(html)
     print('由 manifest 產生下載頁：%s，%d 檔' % (man.get('tag'), len(man.get('files', []))))

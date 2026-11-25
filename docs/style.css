@@ -1594,3 +1594,21 @@ body.page-home .content > .sitefoot { margin-top: auto; }
 @media (max-width: 1100px) {
   .home-grid .card { padding: .72rem .82rem .76rem; }
 }
+
+/* ── 下載頁 v70：緊湊排版（單表、書別合併列、縮小留白） ── */
+body.page-download main { padding-top: 1rem; padding-bottom: 2.2rem; }
+body.page-download h1 { font-size: 1.5rem; margin: 0 0 .3rem; letter-spacing: .03em; }
+body.page-download .byline { margin: 0 0 .45rem; font-size: 12.5px; }
+body.page-download .dl-note { margin: .3rem 0; font-size: 12px; line-height: 1.6; }
+body.page-download .dl-table.dl-all { margin: .5rem 0 .7rem; font-size: 12.5px; }
+body.page-download .dl-table.dl-all th,
+body.page-download .dl-table.dl-all td { padding: .22rem .45rem; }
+body.page-download .dl-table.dl-all td.dl-book {
+  font-weight: 700; color: var(--fg); white-space: nowrap;
+  border-right: 1px solid var(--line); vertical-align: middle;
+}
+body.page-download .dl-table.dl-all td.dl-vol { font-weight: 600; white-space: nowrap; }
+body.page-download .dl-table.dl-all a.dl { border-bottom: none; }
+@media (max-width: 760px) {
+  body.page-download .dl-table.dl-all { display: block; overflow-x: auto; white-space: nowrap; }
+}

@@ -13,7 +13,7 @@
 """
 import html
 
-ASSET_VERSION = '49'
+ASSET_VERSION = '50'
 
 BOOK_OPTIONS = [
     ('行事鈔', 'xingshichao/卷上.html'),
@@ -155,6 +155,8 @@ def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
         if book_short:
             crumb.append('<span class="tb-sep" aria-hidden="true">・</span>')
         crumb.append('<span class="tb-where">' + e(current_label) + '</span>')
+    crumb.append('<a class="tb-btn tb-dl" href="' + prefix + 'download.html" '
+                 'title="下載 Word／PDF 對照本" aria-label="下載 Word 與 PDF">下載</a>')
 
     search = (
         '<form class="tb-searchform" action="' + prefix + 'search.html" method="get" role="search">'
@@ -175,10 +177,7 @@ def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
         '<span class="tb-homeicon" aria-hidden="true">⌂</span><span class="tb-homelabel">首頁</span></a>'
         + volnav_html(prev_url, next_url, prev_label, next_label, current_label)
         + '<div class="tb-crumb">' + ''.join(crumb) + '</div>'
-        '<div class="tb-right">'
-        '<a class="tb-btn tb-dl" href="' + prefix + 'download.html" '
-        'title="下載 Word／PDF 對照本" aria-label="下載 Word 與 PDF">下載</a>'
-        + search + (tools_html() if tools else '') + '</div>'
+        '<div class="tb-right">' + search + (tools_html() if tools else '') + '</div>'
         + '</header>'
         '<button id="edgepeek" class="edgepeek" type="button" aria-controls="sidebar" '
         'aria-label="顯示目錄" title="顯示目錄：滑鼠移到左緣，或按 [／Alt+M">'

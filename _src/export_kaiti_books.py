@@ -223,6 +223,84 @@ def rewrite_headers(doc, title, vol):
         page_number(fp)
 
 
+def _cell_bottom_border(cell):
+    """表格儲存格淡底線（段與段之間的分隔）。"""
+    tcPr = cell._tc.get_or_add_tcPr()
+    borders = OxmlElement('w:tcBorders')
+    bottom = OxmlElement('w:bottom')
+    bottom.set(qn('w:val'), 'single')
+    bottom.set(qn('w:sz'), '4')
+    bottom.set(qn('w:space'), '0')
+    bottom.set(qn('w:color'), 'D9D0BE')
+    borders.append(bottom)
+    tcPr.append(borders)
+
+
+def _cell_para(cell, first):
+    if first and cell.paragraphs:
+        p = cell.paragraphs[0]
+    else:
+        p = cell.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    p.paragraph_format.space_before = Pt(0)
+    p.paragraph_format.space_after = Pt(1)
+    p.paragraph_format.line_spacing = 1.12
+    return p
+
+
+def _build_pairs_two_col(doc, rows):
+    """雙欄版：左原文、右白話，逐段一列（和網站「並排」一致）。
+
+    每篇（chunk）一張無框線表格，欄寬 原文 8cm／白話 10cm（A4 內文寬 18cm），
+    段與段之間用淡底線分隔；每列左格放原文（含段別），右格放白話。
+    """
+    groups = OrderedDict()
+    for r in rows:
+        groups.setdefault(r.get('chunk') or '', []).append(r)
+    vols = []
+    for r in rows:
+        v = r.get('vol') or '卷首'
+        if v not in vols:
+            vols.append(v)
+    for vi, v in enumerate(vols):
+        p = doc.add_paragraph()
+        p.paragraph_format.space_before = Pt(0 if vi == 0 else 10)
+        p.paragraph_format.space_after = Pt(3)
+        set_run(p.add_run(v), 16, True, RGBColor(0x8B, 0x5E, 0x3C))
+        bottom_border(p, 'B9AD95', '8')
+    for ch, rs in groups.items():
+        if ch:
+            p = doc.add_paragraph()
+            p.paragraph_format.space_before = Pt(6)
+            p.paragraph_format.space_after = Pt(2)
+            set_run(p.add_run(ch), 11, True, RGBColor(0x6B, 0x5B, 0x4A))
+        tbl = doc.add_table(rows=0, cols=2)
+        tbl.autofit = False
+        for i, w in enumerate((8.0, 10.0)):
+            tbl.columns[i].width = Cm(w)
+        for r in rs:
+            row = tbl.add_row()
+            left, right = row.cells[0], row.cells[1]
+            left.width = Cm(8.0); right.width = Cm(10.0)
+            first_l = first_r = True
+            for lab, src, tr in parts(r):
+                src = clean(src); tr = clean(tr)
+                if not src and not tr:
+                    continue
+                p = _cell_para(left, first_l)
+                first_l = False
+                if src:
+                    set_run(p.add_run('【%s】' % lab), LABEL_PT, True,
+                            LABEL_COLORS.get(lab, SRC_COLOR))
+                    set_run(p.add_run(src), BODY_PT, False, SRC_COLOR)
+                if tr:
+                    p2 = _cell_para(right, first_r)
+                    first_r = False
+                    set_run(p2.add_run(tr), BODY_PT, False, TR_COLOR)
+            _cell_bottom_border(left)
+            _cell_bottom_border(right)
+
+
 def build_volume(book, title, series, vol, rows, two, do_pdf=True):
     doc = Document()
     # Normal style
@@ -240,46 +318,49 @@ def build_volume(book, title, series, vol, rows, two, do_pdf=True):
     add_title(doc, title, series, vol)
     # 標題頁單欄；內文另起 section
     body = doc.add_section(WD_SECTION.NEW_PAGE)
-    if two:
-        columns(body, 2)
     for si, section in enumerate(doc.sections):
         header_footer(section, title, vol)
-    last_vol = last_chunk = None
-    for r in rows:
-        vol = r.get('vol') or '卷首'
-        ch = r.get('chunk') or ''
-        if vol != last_vol:
-            p = doc.add_paragraph()
-            p.paragraph_format.space_before = Pt(10 if last_vol else 0)
-            p.paragraph_format.space_after = Pt(3)
-            set_run(p.add_run(vol), 16, True, RGBColor(0x8B, 0x5E, 0x3C))
-            bottom_border(p, 'B9AD95', '8')
-            last_vol = vol; last_chunk = None
-        if ch and ch != last_chunk:
-            p = doc.add_paragraph()
-            p.paragraph_format.space_before = Pt(5)
-            p.paragraph_format.space_after = Pt(2)
-            set_run(p.add_run(ch), 11, True, RGBColor(0x6B, 0x5B, 0x4A))
-            last_chunk = ch
-        for lab, src, tr in parts(r):
-            src = clean(src); tr = clean(tr)
-            if not src and not tr:
-                continue
-            p = doc.add_paragraph()
-            p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-            p.paragraph_format.space_before = Pt(1)
-            p.paragraph_format.space_after = Pt(0)
-            p.paragraph_format.line_spacing = 1.15
-            set_run(p.add_run('【%s】' % lab), LABEL_PT, True, LABEL_COLORS.get(lab, SRC_COLOR))
-            set_run(p.add_run(src), BODY_PT, False, SRC_COLOR)
-            if tr:
-                p2 = doc.add_paragraph()
-                p2.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-                p2.paragraph_format.left_indent = Cm(0.25)
-                p2.paragraph_format.space_before = Pt(0)
-                p2.paragraph_format.space_after = Pt(4)
-                p2.paragraph_format.line_spacing = 1.15
-                set_run(p2.add_run(tr), BODY_PT, False, TR_COLOR)
+    if two:
+        # 雙欄＝左原文、右白話，逐段對照（與網站並排一致）
+        _build_pairs_two_col(doc, rows)
+    else:
+        last_vol = last_chunk = None
+        for r in rows:
+            v = r.get('vol') or '卷首'
+            ch = r.get('chunk') or ''
+            if v != last_vol:
+                p = doc.add_paragraph()
+                p.paragraph_format.space_before = Pt(10 if last_vol else 0)
+                p.paragraph_format.space_after = Pt(3)
+                set_run(p.add_run(v), 16, True, RGBColor(0x8B, 0x5E, 0x3C))
+                bottom_border(p, 'B9AD95', '8')
+                last_vol = v; last_chunk = None
+            if ch and ch != last_chunk:
+                p = doc.add_paragraph()
+                p.paragraph_format.space_before = Pt(5)
+                p.paragraph_format.space_after = Pt(2)
+                set_run(p.add_run(ch), 11, True, RGBColor(0x6B, 0x5B, 0x4A))
+                last_chunk = ch
+            for lab, src, tr in parts(r):
+                src = clean(src); tr = clean(tr)
+                if not src and not tr:
+                    continue
+                p = doc.add_paragraph()
+                p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+                p.paragraph_format.space_before = Pt(1)
+                p.paragraph_format.space_after = Pt(0)
+                p.paragraph_format.line_spacing = 1.15
+                set_run(p.add_run('【%s】' % lab), LABEL_PT, True,
+                        LABEL_COLORS.get(lab, SRC_COLOR))
+                set_run(p.add_run(src), BODY_PT, False, SRC_COLOR)
+                if tr:
+                    p2 = doc.add_paragraph()
+                    p2.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+                    p2.paragraph_format.left_indent = Cm(0.25)
+                    p2.paragraph_format.space_before = Pt(0)
+                    p2.paragraph_format.space_after = Pt(4)
+                    p2.paragraph_format.line_spacing = 1.15
+                    set_run(p2.add_run(tr), BODY_PT, False, TR_COLOR)
     layout = '雙欄' if two else '單欄'
     ddir, pdir = OUT[layout]
     os.makedirs(ddir, exist_ok=True); os.makedirs(pdir, exist_ok=True)

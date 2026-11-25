@@ -214,7 +214,7 @@
   // ── 段落錨點 § ─────────────────────────────────────────
   var mark = null;
   function initMarks() {
-    mark = document.createElement('a');
+    mark = null; if (false) mark = document.createElement('a');
     mark.className = 'ui-anchor';
     mark.textContent = '§';
     mark.title = '複製本段連結';

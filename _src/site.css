@@ -1265,3 +1265,7 @@ body {
 @media (max-width: 900px) {
   .tb-crumb .tb-bookselect, #tb-bookpick { width: 7.5em; max-width: 7.5em; }
 }
+
+/* 合編：記段只退一層（取消 .pair.j 本身的內縮，只留 tie 的層次） */
+.pair.j.tie { margin-left: 0 !important; padding-left: .9em !important; border-left: 3px solid var(--ji-border) !important; }
+.pair.j.tie::before { left: -1.05em; }

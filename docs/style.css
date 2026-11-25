@@ -1142,3 +1142,54 @@ body {
 @media (max-width: 700px) {
   .dl-table { display: block; overflow-x: auto; white-space: nowrap; }
 }
+
+/* ── 進度條 ─────────────────────────────────────────────── */
+.ui-progress {
+  position: fixed; left: 0; top: 0; height: 2px; width: 0;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  z-index: 90; pointer-events: none; transition: width .12s linear;
+}
+
+/* ── 篇內目錄 ───────────────────────────────────────────── */
+.ui-tocbtn {
+  position: fixed; right: 1.1rem; bottom: 4.5rem; z-index: 60;
+  width: 2.6rem; height: 2.6rem; border-radius: 50%;
+  border: 1px solid var(--line); background: var(--surface); color: var(--accent);
+  font-size: 1rem; line-height: 1; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(60,45,20,.16);
+}
+.ui-tocbtn:hover { border-color: var(--accent2); }
+.ui-toc {
+  position: fixed; right: 1.1rem; top: 60px; bottom: 8rem; width: 17em;
+  z-index: 59; overflow-y: auto; padding: .7rem .8rem;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+  box-shadow: 0 6px 22px rgba(60,45,20,.18);
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif; font-size: 12.5px;
+  display: none;
+}
+.ui-toc.open { display: block; }
+.ui-toc-h { font-weight: 700; color: var(--fg2); margin-bottom: .45rem; letter-spacing: .04em; }
+.ui-toc a {
+  display: block; padding: .2rem .3rem; color: var(--fg); text-decoration: none;
+  border-left: 2px solid transparent; line-height: 1.5;
+}
+.ui-toc a:hover { background: var(--surface-3); border-left-color: var(--accent2); }
+.ui-toc a.lv2 { padding-left: 1.1rem; color: var(--fg2); font-size: 12px; }
+@media (max-width: 900px) {
+  .ui-toc { right: .4rem; left: .4rem; width: auto; top: 52px; bottom: 9rem; }
+}
+
+/* ── 手機版：工具列收合 ─────────────────────────────────── */
+@media (max-width: 900px) {
+  .tb-readtools { max-width: 100%; }
+  .tb-readtools .tb-seg button, .tb-readtools > button { font-size: 11.5px; padding: .18rem .34rem; }
+  body.ui-tools-collapsed .tb-readtools > :not(.tb-fsseg):not([data-read="both"]) { display: none; }
+}
+.ui-toolstoggle {
+  display: none;
+}
+@media (max-width: 900px) {
+  .ui-toolstoggle {
+    display: inline-block; margin-left: .2rem;
+  }
+}

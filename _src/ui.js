@@ -32,6 +32,13 @@
   applyFS(getFS());
 
   document.addEventListener('click', function (ev) {
+    var tt = ev.target.closest ? ev.target.closest('.ui-toolstoggle') : null;
+    if (tt) {
+      document.body.classList.toggle('ui-tools-collapsed');
+      tt.textContent = document.body.classList.contains('ui-tools-collapsed') ? '▸' : '▾';
+      ev.preventDefault();
+      return;
+    }
     var t = ev.target.closest ? ev.target.closest('[data-fs]') : null;
     if (t) {
       var pct = getFS();
@@ -77,6 +84,82 @@
     toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 1600);
   }
 
+
+  // ── 閱讀進度條 ─────────────────────────────────────────
+  var bar = document.createElement('div');
+  bar.className = 'ui-progress';
+  document.body.appendChild(bar);
+  function updateBar() {
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    var pct = max > 0 ? (h.scrollTop || window.scrollY) / max * 100 : 0;
+    bar.style.width = Math.max(0, Math.min(100, pct)) + '%';
+  }
+
+  // ── 篇內小目錄（h2/h3）──────────────────────────────────
+  var toc = null, tocBtn = null;
+  function buildToc() {
+    var items = [];
+    var nodes = document.querySelectorAll('h2.sec, h3.sub, h2.sec + h3, .content h3');
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var txt = (el.textContent || '').trim();
+      if (!txt) continue;
+      if (!el.id) el.id = 'sec-' + i;
+      items.push({ id: el.id, text: txt, level: el.tagName === 'H2' ? 1 : 2 });
+    }
+    if (items.length < 3) return;
+    toc = document.createElement('nav');
+    toc.className = 'ui-toc';
+    toc.setAttribute('aria-label', '篇內目錄');
+    var h = '<div class="ui-toc-h">篇內目錄</div>';
+    for (var j = 0; j < items.length; j++) {
+      h += '<a class="lv' + items[j].level + '" href="#' + items[j].id + '">' +
+           escU(items[j].text) + '</a>';
+    }
+    toc.innerHTML = h;
+    document.body.appendChild(toc);
+    tocBtn = document.createElement('button');
+    tocBtn.type = 'button';
+    tocBtn.className = 'ui-tocbtn';
+    tocBtn.title = '篇內目錄';
+    tocBtn.setAttribute('aria-label', '開合篇內目錄');
+    tocBtn.textContent = '☰';
+    tocBtn.addEventListener('click', function () { toc.classList.toggle('open'); });
+    document.body.appendChild(tocBtn);
+  }
+  function escU(s) {
+    return s.replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  // ── 鍵盤：j 下一篇 / k 上一篇 / t 目錄 ────────────────────
+  function navByKey(dir) {
+    var sel = dir > 0
+      ? '.pager a[rel~="next"], .pager .next a, a.pager-next'
+      : '.pager a[rel~="prev"], .pager .prev a, a.pager-prev';
+    var a = document.querySelector(sel);
+    if (!a) {
+      var links = document.querySelectorAll('.pager a');
+      for (var i = 0; i < links.length; i++) {
+        var tx = links[i].textContent || '';
+        if (dir > 0 && /下一/.test(tx)) { a = links[i]; break; }
+        if (dir < 0 && /上一/.test(tx)) { a = links[i]; break; }
+      }
+    }
+    if (a && a.href) location.href = a.href;
+  }
+  document.addEventListener('keydown', function (ev) {
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    var tag = (ev.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || ev.target.isContentEditable) return;
+    var k = ev.key;
+    if (k === 'j') { navByKey(1); ev.preventDefault(); }
+    else if (k === 'k') { navByKey(-1); ev.preventDefault(); }
+    else if (k === 't' && toc) { toc.classList.toggle('open'); ev.preventDefault(); }
+  });
+
   // ── 目前篇名 + 回到頂端 ────────────────────────────────
   var secs = [], nowEl = null, topBtn = null;
   function init() {
@@ -98,7 +181,9 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
     document.body.appendChild(topBtn);
+    buildToc();
     onScroll();
+    updateBar();
   }
 
   var tick = false;
@@ -109,6 +194,7 @@
       tick = false;
       var y = window.scrollY || document.documentElement.scrollTop || 0;
       if (topBtn) topBtn.classList.toggle('show', y > 700);
+      updateBar();
       if (nowEl) {
         var cur = '';
         for (var i = 0; i < secs.length; i++) {

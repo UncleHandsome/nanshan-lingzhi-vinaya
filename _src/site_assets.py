@@ -13,7 +13,7 @@
 """
 import html
 
-ASSET_VERSION = '47'
+ASSET_VERSION = '48'
 
 BOOK_OPTIONS = [
     ('行事鈔', 'xingshichao/卷上.html'),
@@ -96,6 +96,7 @@ def tools_html():
         '<button type="button" data-fs="reset" title="重設字級">100%</button>'
         '<button type="button" data-fs="inc" title="放大字級">A＋</button>'
         '</span>'
+        '<button type="button" class="ui-toolstoggle" title="顯示／隱藏閱讀工具">▾</button>'
         '<span class="tb-seg tb-labelseg" role="group" aria-label="隱藏段別">'
         '<button type="button" data-hide-label="j" aria-pressed="false" title="隱藏記文">記文</button>'
         '<button type="button" data-hide-label="z" aria-pressed="false" title="隱藏註文">註文</button>'

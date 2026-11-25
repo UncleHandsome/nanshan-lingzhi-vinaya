@@ -413,6 +413,38 @@ body.page-home .navhomelink { display: none; }
 .navbookhome li a { display: block; padding: .12rem .2rem; color: var(--fg2); font-size: 12px; text-decoration: none; }
 .navbookhome li a:hover { color: var(--accent); }
 
+/* 首頁側欄三層樹：書 → 卷 → 篇（書／卷只展開，點篇才進入內文） */
+.navhometree { padding: 0 .35rem 1.2rem; }
+.navhometree .navbookhome:last-child { border-bottom: 0; }
+.navbookhome details.navvol {
+  margin: 0; padding: 0; border: 0;
+  border-top: 1px dotted var(--line); border-radius: 0;
+  background: transparent;
+}
+.navbookhome details.navvol > summary {
+  list-style: none; cursor: pointer;
+  display: flex; align-items: center; gap: .28rem;
+  padding: .16rem .3rem .16rem .85rem;
+  color: var(--fg2); font-size: 12px; line-height: 1.4;
+}
+.navbookhome details.navvol > summary::-webkit-details-marker { display: none; }
+.navbookhome details.navvol > summary::before {
+  content: ""; flex: 0 0 auto; width: 0; height: 0;
+  border-top: 3.5px solid transparent; border-bottom: 3.5px solid transparent;
+  border-left: 4.5px solid var(--line);
+  transition: transform .12s ease;
+}
+.navbookhome details.navvol[open] > summary::before { transform: rotate(90deg); }
+.navbookhome details.navvol > summary .vname {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.navbookhome details.navvol > summary .vcount {
+  margin-left: auto; flex: 0 0 auto; color: var(--fg2); font-size: 10.5px;
+}
+.navbookhome details.navvol > ul { padding: .02rem 0 .2rem 1.45rem; }
+.navbookhome details.navvol li a { font-size: 11.8px; }
+.navbookhome .navvolwhole { display: block; padding: .12rem .2rem .12rem .85rem; }
+
 /* 書目下拉 */
 .navgrouplabel {
   margin: 0 .7rem .15rem;

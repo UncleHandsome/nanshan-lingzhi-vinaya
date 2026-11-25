@@ -85,20 +85,38 @@
   }
 
   // 首頁與非書頁沒有「目前卷」：側欄只列書目，不顯示空的卷／篇 TOC。
+  // 首頁／搜尋頁側欄：書 → 卷 → 篇 三層樹。
+  // 點書名、卷名都只展開，不跳頁；點到最後一層（篇）才進入內文。
   function renderHome() {
-    var html = '<p class="navgrouplabel">書目</p><div class="homebooks">';
     var HOME_ORDER = {xingshichao: 0, zhichi: 1, hebian: 2, jieshu: 3, yeshu: 4, nicao: 5, yichao: 6};
     var books = (DATA.books || []).slice().sort(function (a, b) {
       return (HOME_ORDER[a.out] == null ? 99 : HOME_ORDER[a.out]) -
              (HOME_ORDER[b.out] == null ? 99 : HOME_ORDER[b.out]);
     });
+    var html = '<p class="navgrouplabel">書目（點書名展開）</p><div class="navhometree">';
     books.forEach(function (b) {
       var vols = b.vols || [];
       if (!vols.length) return;
-      var href = root + b.out + '/' + vols[0].v + '.html';
-      html += '<a class="homebook" href="' + href + '">' +
-        '<span class="hb-title">' + esc(b.title) + '</span>' +
-        '<span class="hb-count">' + vols.length + ' 卷</span></a>';
+      html += '<details class="navbookhome" data-book="' + esc(b.out) + '">' +
+        '<summary><span class="bk">' + esc(b.title) + '</span>' +
+        '<span class="bcount">' + vols.length + ' 卷</span></summary><ul>';
+      vols.forEach(function (v) {
+        var secs = v.secs || [];
+        if (!secs.length) {
+          html += '<li><a class="navvolwhole" href="' + root + b.out + '/' + v.v + '.html">' +
+            esc(v.v) + '</a></li>';
+          return;
+        }
+        html += '<li><details class="navvol"><summary>' +
+          '<span class="vname">' + esc(v.v) + '</span>' +
+          '<span class="vcount">' + secs.length + ' 篇</span></summary><ul>';
+        secs.forEach(function (s) {
+          html += '<li><a href="' + root + b.out + '/' + v.v + '.html#' +
+            esc(s[0]) + '">' + esc(s[1]) + '</a></li>';
+        });
+        html += '</ul></details></li>';
+      });
+      html += '</ul></details>';
     });
     html += '</div>';
 
@@ -107,6 +125,20 @@
     bodyEl.innerHTML = html;
     box.innerHTML = '';
     box.appendChild(bodyEl);
+    bindHomeTree();
+  }
+
+  // 首頁樹：同時只展開一本書（避免側欄過長）；卷可多個展開。
+  function bindHomeTree() {
+    if (!bodyEl) return;
+    bodyEl.querySelectorAll('.navbookhome').forEach(function (d) {
+      d.addEventListener('toggle', function () {
+        if (!d.open) return;
+        bodyEl.querySelectorAll('.navbookhome').forEach(function (o) {
+          if (o !== d) o.open = false;
+        });
+      });
+    });
   }
 
   function render() {

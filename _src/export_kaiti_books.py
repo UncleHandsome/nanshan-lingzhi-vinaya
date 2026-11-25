@@ -114,10 +114,20 @@ def columns(section, num):
 
 
 def load_rows(book):
+    """讀定稿。**保留定稿檔序**（＝原文順序），只依卷分組。
+
+    2026-11-26 修：原本再依 (vol, chunk, raw_start) 排序，但定稿的 chunk
+    欄有新舊兩種命名（`卷一上之一` 與 `01a_卷一上之一` 並存），字串排序會把
+    同一卷的段落區塊搬來搬去，Word／PDF 內文順序因此錯亂（網站是依 raw_start
+    排，所以網站正常）。定稿檔序本身就是 canonical（各卷 raw_start 單調遞增），
+    卷內直接保持檔序即可。
+    """
     p = os.path.join(B, '定稿', book + '.jsonl')
     rows = [json.loads(x) for x in io.open(p, encoding='utf-8') if x.strip()]
-    rows.sort(key=lambda r: (r.get('vol') or '', r.get('chunk') or '', r.get('raw_start', 0)))
-    return rows
+    groups = OrderedDict()
+    for r in rows:
+        groups.setdefault(r.get('vol') or '卷首', []).append(r)
+    return [r for g in groups.values() for r in g]
 
 
 def parts(row):

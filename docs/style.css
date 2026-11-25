@@ -1128,3 +1128,17 @@ body {
 }
 .pair.j.tie + .pair.j.tie { margin-top: .1em; }
 .pair.c.has-many { border-bottom: 1px dashed var(--line); }
+
+/* ── 下載頁 ─────────────────────────────────────────────── */
+.tb-dl { text-decoration: none; white-space: nowrap; }
+.dl-note { color: var(--fg2); font-size: 13.5px; }
+.dl-table { width: 100%; border-collapse: collapse; margin: .6rem 0 1.6rem;
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif; font-size: 13.5px; }
+.dl-table th, .dl-table td { border-bottom: 1px solid var(--line); padding: .42rem .5rem; text-align: left; }
+.dl-table th { background: var(--surface-3); font-weight: 600; color: var(--fg2); white-space: nowrap; }
+.dl-table td.dl-vol { font-weight: 600; white-space: nowrap; }
+.dl-table a.dl { color: var(--accent); text-decoration: none; border-bottom: 1px dashed var(--accent2); }
+.dl-table a.dl:hover { color: var(--accent2); }
+@media (max-width: 700px) {
+  .dl-table { display: block; overflow-x: auto; white-space: nowrap; }
+}

@@ -328,15 +328,13 @@
   });
 
   function topGap() {
-    // 頂部列＋（內文頁的）閱讀工具列，兩層加起來才是內容真正的上緣
+    // 頂部列高度（單列；內容真正的上緣）
     var h = 0;
-    ['.topbar', '.toolsbar'].forEach(function (sel) {
-      var bar = document.querySelector(sel);
-      if (!bar) return;
+    var bar = document.querySelector('.topbar');
+    if (bar) {
       var cs = window.getComputedStyle(bar);
-      if (cs.display === 'none') return;
-      h += bar.getBoundingClientRect().height;
-    });
+      if (cs.display !== 'none') h = bar.getBoundingClientRect().height;
+    }
     return h > 0 ? h + 12 : 14;
   }
 
@@ -625,16 +623,23 @@
       });
   }
 
-  // ── 閱讀工具列（P2-3 顯示切換、P2-4 雙欄、P1-6 複製連結）───────
-  var READ_KEY = 'dsh-read-mode';
+  // ── 閱讀工具列（原文／白話各自開關、雙欄、複製連結）───────
+  var SHOW_O_KEY = 'dsh-show-o';
+  var SHOW_T_KEY = 'dsh-show-t';
   var TWO_KEY = 'dsh-twocol';
 
+  function showState() {
+    var h = document.documentElement;
+    return {o: !h.classList.contains('hide-o'), t: !h.classList.contains('hide-t')};
+  }
+
   function syncReadButtons(bar) {
-    var mode = 'both';
-    if (document.documentElement.classList.contains('hide-t')) mode = 'o';
-    else if (document.documentElement.classList.contains('hide-o')) mode = 't';
-    [].slice.call(bar.querySelectorAll('button[data-read]')).forEach(function (b) {
-      b.setAttribute('aria-pressed', b.getAttribute('data-read') === mode ? 'true' : 'false');
+    var st = showState();
+    [].slice.call(bar.querySelectorAll('button[data-show]')).forEach(function (b) {
+      var isO = b.getAttribute('data-show') === 'o';
+      var on = isO ? st.o : st.t;
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.title = (on ? '隱藏' : '顯示') + (isO ? '原文' : '白話');
     });
     var two = bar.querySelector('button[data-twocol-toggle]');
     if (two) {
@@ -646,12 +651,10 @@
     }
   }
 
-  function setReadMode(mode) {
+  function setShow(side, on) {
     var h = document.documentElement;
-    h.classList.remove('hide-o', 'hide-t');
-    if (mode === 'o') h.classList.add('hide-t');        // 只原文 → 隱藏白話
-    else if (mode === 't') h.classList.add('hide-o');   // 只白話 → 隱藏原文
-    writeStr(READ_KEY, mode || 'both');
+    h.classList.toggle(side === 'o' ? 'hide-o' : 'hide-t', !on);
+    writeStr(side === 'o' ? SHOW_O_KEY : SHOW_T_KEY, on ? '1' : '0');
     // 版面高度變了，重算節位置與所在篇
     collectHeads();
     syncCurrentByScroll();
@@ -701,8 +704,10 @@
     bar.addEventListener('click', function (e) {
       var btn = e.target.closest ? e.target.closest('button') : null;
       if (!btn) return;
-      if (btn.hasAttribute('data-read')) {
-        setReadMode(btn.getAttribute('data-read'));
+      if (btn.hasAttribute('data-show')) {
+        var side = btn.getAttribute('data-show');
+        var st = showState();
+        setShow(side, side === 'o' ? !st.o : !st.t);
         syncReadButtons(bar);
         return;
       }

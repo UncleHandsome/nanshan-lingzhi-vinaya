@@ -4,8 +4,7 @@
    側欄只留書目與卷／篇 TOC；手機兩排但不溢出。 */
 :root {
   --topbar-h: 45px;
-  --toolsbar-h: 0px;
-  --chrome-h: calc(var(--topbar-h) + var(--toolsbar-h));
+  --chrome-h: var(--topbar-h);
   --side-w: 280px;
   --fg: #1f1b16;
   --fg2: #5d554a;
@@ -46,8 +45,7 @@
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-/* 內文頁（有閱讀工具列）才把工具列高度算進「頂部列總高」 */
-html.has-tools { --toolsbar-h: 34px; }
+/* 頂部列總高（單列） */
 html { scroll-behavior: auto; scroll-padding-top: calc(var(--chrome-h) + 10px); }
 body {
   margin: 0;
@@ -108,7 +106,7 @@ img { max-width: 100%; }
 .tb-gohome:hover { color: var(--accent); }
 .tb-bookslot { flex: 0 0 auto; display: flex; align-items: center; }
 .tb-bookselect {
-  width: 10.5em; max-width: 10.5em; padding: .25rem .3rem;
+  width: 5.4em; max-width: 5.4em; padding: .25rem .2rem .25rem .3rem;
   border: 1.5px solid var(--accent2); border-radius: 7px;
   background: var(--surface); color: var(--accent);
   font: inherit; font-size: 13px; font-weight: 700;
@@ -135,25 +133,17 @@ img { max-width: 100%; }
 }
 .tb-where { color: var(--fg2); max-width: 8em; overflow: hidden; text-overflow: ellipsis; }
 .tb-sep { color: var(--line); }
-.tb-right { display: flex; align-items: center; gap: .2rem; margin-left: auto; flex: 0 0 auto; }
-.tb-right .tb-searchform { order: 0; }
-.tb-right .tb-dl { order: 1; }
-.tb-searchbtn { color: var(--fg2); }
-
-/* 第二列：常駐閱讀工具（只有內文頁；幾何獨立於第一列，不影響搜尋／下載位置） */
-.toolsbar {
-  position: sticky; top: var(--topbar-h); z-index: 88;
-  display: flex; align-items: center; gap: .35rem;
-  height: var(--toolsbar-h); min-height: var(--toolsbar-h);
-  padding: 0 .55rem;
-  background: var(--panel);
-  border-bottom: 1px solid var(--line);
-  overflow-x: auto; overflow-y: hidden;
-  scrollbar-width: none;
-  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+/* 右側固定區：閱讀工具（可壓縮橫捲）＋搜尋＋下載
+   搜尋、下載永遠在最右緣 → 進入書本（工具出現）位置也不會跳 */
+.tb-right {
+  display: flex; align-items: center; gap: .3rem;
+  margin-left: auto; flex: 0 1 auto; min-width: 0;
 }
-.toolsbar::-webkit-scrollbar { display: none; }
-.toolsbar .tb-readtools { flex: 0 0 auto; }
+.tb-right .tb-readtools { order: 0; }
+.tb-right .tb-searchform { order: 1; flex: 0 0 auto; }
+.tb-right .tb-dl { order: 2; flex: 0 0 auto; }
+.tb-right .tb-searchbtn { order: 1; flex: 0 0 auto; }
+.tb-searchbtn { color: var(--fg2); }
 
 /* 分卷導覽：← 上一卷／目前卷／下一卷 →；首末卷單邊隱藏 */
 .tb-volnav {
@@ -178,8 +168,8 @@ img { max-width: 100%; }
 /* 全域搜尋：≥1200px 用 compact 輸入框，窄螢幕退回「搜尋」按鈕 */
 .tb-searchform { display: none; align-items: center; margin: 0; }
 .tb-searchform input {
-  width: 200px; height: 30px; margin: 0;
-  padding: 0 1.9rem 0 1.7rem;
+  width: 132px; height: 30px; margin: 0;
+  padding: 0 1.25rem 0 1.5rem;
   border: 1px solid var(--line); border-radius: 999px;
   background-color: var(--surface); color: var(--fg);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b8b8b' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.7-3.7'/%3E%3C/svg%3E");
@@ -195,13 +185,17 @@ img { max-width: 100%; }
   .tb-searchbtn { display: none; }
 }
 
-/* 常駐閱讀工具：不再有「閱讀工具」按鈕／下拉面板 */
+/* 常駐閱讀工具：單列時放在「搜尋／下載」左側，空間不足可橫向捲動 */
 .tb-readtools {
   display: flex; align-items: center; gap: .2rem;
-  flex: 0 0 auto;
+  flex: 0 1 auto; min-width: 0;
+  overflow-x: auto; overflow-y: hidden;
+  scrollbar-width: none;
   font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
   font-size: 12.5px;
 }
+.tb-readtools::-webkit-scrollbar { display: none; }
+.tb-readtools > * { flex: 0 0 auto; }
 .tb-seg {
   display: inline-flex; align-items: center;
   border: 1px solid var(--line); border-radius: 7px;
@@ -235,6 +229,9 @@ img { max-width: 100%; }
   font-weight: 700;
 }
 .tb-labelseg button[aria-pressed="false"] { opacity: .45; }
+/* 原文／白話：各自獨立的開關（關閉時變淡） */
+.tb-showseg button[aria-pressed="false"] { opacity: .45; }
+.tb-showseg button { min-width: 3em; }
 .tb-labelseg button[aria-pressed="true"]:hover {
   background: var(--surface-3) !important;
   border-color: var(--accent) !important;
@@ -1051,21 +1048,17 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
   .searchbar input { flex-basis: 100%; }
   .searchbar select { width: 100%; }
 }
-/* 平板／手機：頂部列維持單排；閱讀工具自己一列（可橫向捲動），
-   不擠進第一列，書目切換／搜尋／下載的位置因此固定。 */
+/* 平板／手機：頂部列維持單列；閱讀工具在右側可橫向捲動，搜尋／下載固定在右緣 */
 @media (max-width: 900px) {
   .topbar { gap: .22rem; padding: 0 .4rem; }
   .tb-crumb { flex: 1 1 4em; }
   .tb-crumb .tb-where { max-width: 12em; }
-  .toolsbar { padding: 0 .4rem; }
   .tb-readtools button, .tb-seg button { font-size: 11.5px; padding: .16rem .34rem; }
 }
 @media (max-width: 700px) {
   .tb-homelabel { display: none; }
   .tb-gohome { padding: 0 .35rem; }
   .tb-home, .tb-sep, .tb-crumb { display: none; }
-  .tb-bookslot { flex: 0 1 auto; min-width: 0; }
-  .tb-bookselect { width: 7.5em; max-width: 7.5em; }
   .tb-btn { padding: 0 .4rem; font-size: 12.5px; }
   .tb-menu { font-size: 13px; }
   .tb-vol { padding: 0 .3rem; }
@@ -1220,13 +1213,14 @@ body {
   .ui-toc { right: .4rem; left: .4rem; width: auto; top: calc(var(--chrome-h) + 6px); bottom: 9rem; }
 }
 
-/* ── v56：頂部列定版（兩層固定骨架） ─────────────────────
-   第一列：☰｜⌂｜書目切換｜分卷｜目前位置｜……｜搜尋｜下載
-   第二列：閱讀工具（僅內文頁）
-   重點：書目切換固定在首頁鈕之後；搜尋、下載固定在右緣，
-   首頁／搜尋／內文頁的位置一致，進入書本不再左右跳動。 */
+/* ── v59：頂部列定版（單列固定骨架） ─────────────────────
+   ☰｜⌂｜書目切換｜分卷｜目前位置｜……｜閱讀工具｜搜尋｜下載
+   重點：書目切換固定在首頁鈕之後；搜尋、下載固定在右緣；
+   閱讀工具可壓縮、橫向捲動，不推擠右緣的搜尋／下載。 */
 .topbar { display: flex; align-items: center; column-gap: .3rem; }
 .topbar > * { flex: 0 0 auto; }
+.topbar > .tb-crumb { flex: 1 1 auto; }
+.topbar > .tb-right { flex: 0 1 auto; min-width: 0; }
 .tb-crumb { flex: 1 1 auto; min-width: 0; overflow: hidden; }
 .tb-crumb > * { flex: 0 0 auto; }
 .tb-crumb .tb-where {
@@ -1238,6 +1232,7 @@ body {
 .tb-right .tb-dl,
 .tb-right .tb-searchform,
 .tb-right .tb-searchbtn { flex: 0 0 auto; }
+.tb-right .tb-readtools { flex: 0 1 auto; min-width: 0; }
 .tb-readtools { display: flex; align-items: center; gap: .2rem; }
 .tb-readtools .tb-seg { display: inline-flex; }
 .tb-readtools button, .tb-seg button { padding: .18rem .4rem; }
@@ -1245,18 +1240,19 @@ body {
   .tb-readtools button, .tb-seg button { padding: .16rem .3rem; }
 }
 
-/* 書目切換固定寬度（位置永遠在首頁鈕之後） */
+/* 書目切換固定寬度（約三個字；位置永遠在首頁鈕之後） */
 #tb-bookpick {
   flex: 0 0 auto;
-  width: 10.5em; max-width: 10.5em;
+  width: 5.4em; max-width: 5.4em;
   text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
 }
-@media (max-width: 900px) { #tb-bookpick { width: 8.5em; max-width: 8.5em; } }
-/* 窄螢幕：書目切換、分卷壓縮，搜尋與下載仍固定在右緣 */
+/* 窄螢幕：分卷名壓縮，搜尋與下載仍固定在右緣 */
 @media (max-width: 700px) {
   .tb-vol-name { display: none; }
   .tb-vol { padding: 0 .3rem; }
-  #tb-bookpick { width: 7em; max-width: 7em; }
+}
+@media (max-width: 560px) {
+  .tb-volnav { display: none; }
 }
 @media (max-width: 480px) {
   .tb-menulabel { display: none; }

@@ -13,11 +13,11 @@
 """
 import html
 
-ASSET_VERSION = '58'
+ASSET_VERSION = '59'
 
 BOOK_OPTIONS = [
     ('行事鈔', 'xingshichao/卷上.html'),
-    ('戒本疏行宗記', 'jieshu/卷一.html'),
+    ('戒疏', 'jieshu/卷一.html'),
     ('業疏', 'yeshu/卷一.html'),
     ('資持記', 'zhichi/上一上.html'),
     ('尼鈔', 'nicao/卷上.html'),
@@ -34,10 +34,15 @@ FOOTER = (
 )
 
 _HEAD_SCRIPT = (
-    '<script>try{var h=document.documentElement,m=localStorage.getItem("dsh-read-mode")||"";'
-    'if(m==="o")h.classList.add("hide-t");else if(m==="t")h.classList.add("hide-o");'
-    'var t=localStorage.getItem("dsh-twocol");'
-    'if(t!=="0" && (!window.matchMedia || window.matchMedia("(min-width: 1200px)").matches))h.classList.add("twocol");'
+    '<script>try{var h=document.documentElement;'
+    # 原文／白話各自獨立開關（dsh-show-o / dsh-show-t；舊 dsh-read-mode 自動換算）
+    'var o=localStorage.getItem("dsh-show-o"),t=localStorage.getItem("dsh-show-t");'
+    'if(o===null&&t===null){var m=localStorage.getItem("dsh-read-mode")||"";'
+    'if(m==="o"){o="1";t="0";}else if(m==="t"){o="0";t="1";}}'
+    'if(o==="0")h.classList.add("hide-o");'
+    'if(t==="0")h.classList.add("hide-t");'
+    'var tw=localStorage.getItem("dsh-twocol");'
+    'if(tw!=="0" && (!window.matchMedia || window.matchMedia("(min-width: 1200px)").matches))h.classList.add("twocol");'
     'var f=parseInt(localStorage.getItem("dsh-fs")||"100",10);'
     'if(f>=80&&f<=170){document.documentElement.style.setProperty("--fs",(18*f/100).toFixed(1)+"px");}'
     '}catch(e){}</script>'
@@ -84,10 +89,9 @@ def tools_html():
     """
     return (
         '<div class="tb-readtools toolpanel readtools" id="toolpanel" role="group" aria-label="閱讀設定">'
-        '<span class="tb-seg" role="group" aria-label="顯示模式">'
-        '<button type="button" data-read="both" aria-pressed="true" title="原文與白話上下並列">原文＋白話</button>'
-        '<button type="button" data-read="o" aria-pressed="false" title="只顯示原文">原文</button>'
-        '<button type="button" data-read="t" aria-pressed="false" title="只顯示白話">白話</button>'
+        '<span class="tb-seg tb-showseg" role="group" aria-label="顯示欄位">'
+        '<button type="button" data-show="o" aria-pressed="true" title="顯示／隱藏原文">原文</button>'
+        '<button type="button" data-show="t" aria-pressed="true" title="顯示／隱藏白話">白話</button>'
         '</span>'
         '<button type="button" data-twocol-toggle aria-pressed="false" title="原文與白話左右並排，需寬螢幕">並排</button>'
         '<button type="button" data-copy-anchor title="複製目前段落的網址">複製</button>'
@@ -135,14 +139,12 @@ def volnav_html(prev_url=None, next_url=None, prev_label=None,
 def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
                 tools=False, prev_url=None, next_url=None,
                 prev_label=None, next_label=None):
-    """全站共用頂部列。固定兩層骨架：
+    """全站共用頂部列（單列）：固定骨架
 
-    第一列（所有頁面，幾何固定）：
-      ☰ 目錄｜⌂ 首頁｜書目切換｜分卷導覽｜目前位置｜……｜搜尋｜下載
-    第二列（只有內文頁）：閱讀工具（顯示模式／並排／複製／字級／段別）。
+    ☰ 目錄｜⌂ 首頁｜書目切換｜分卷導覽｜目前位置｜……｜閱讀工具｜搜尋｜下載
 
-    首頁、搜尋頁、內文頁的「書目切換／搜尋／下載」位置完全一致；
-    分卷與目前位置是唯一會依頁面增減的區塊，吃掉中間彈性空間。
+    幾何固定：書目切換在首頁鈕之後；搜尋、下載固定在右緣（閱讀工具在它們
+    左側，寬度由 crumb 吸收），首頁／搜尋頁／內文頁位置一致。
     書目切換在首頁／搜尋頁顯示「選書…」，選了直接進該書第一卷。
     """
     e = html.escape
@@ -170,7 +172,7 @@ def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
 
     search = (
         '<form class="tb-searchform" action="' + prefix + 'search.html" method="get" role="search">'
-        '<input id="tbq" name="q" type="search" placeholder="全站搜尋…" autocomplete="off" '
+        '<input id="tbq" name="q" type="search" placeholder="搜尋…" autocomplete="off" '
         'aria-label="全站全文搜尋" title="輸入關鍵字後按 Enter（Ctrl/⌘ K）">'
         '</form>'
         '<a class="tb-btn tb-searchbtn" href="' + prefix + 'search.html" '
@@ -187,13 +189,13 @@ def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
         + booksel
         + vol
         + '<div class="tb-crumb">' + ''.join(crumb) + '</div>'
-        '<div class="tb-right">' + search
+        '<div class="tb-right">'
+        + (tools_html() if tools else '')
+        + search
         + '<a class="tb-btn tb-dl" href="' + prefix + 'download.html" '
         'title="下載 Word／PDF 對照本" aria-label="下載 Word 與 PDF">下載</a></div>'
         '</header>'
     )
-    if tools:
-        bars += '<div class="toolsbar" id="toolsbar">' + tools_html() + '</div>'
     return (
         '<a class="skip-link" href="#main">跳至正文</a>'
         + bars
@@ -258,7 +260,7 @@ def page(title, body, prefix='', prev_url=None, next_url=None,
     classes = [c for c in (body_class, 'page-reader' if tools else '') if c]
     bc = (' class="%s"' % e(' '.join(classes))) if classes else ''
     return (
-        '<!doctype html><html lang="zh-Hant"' + (' class="has-tools"' if tools else '') + '>'
+        '<!doctype html><html lang="zh-Hant">'
         '<head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
         '<title>' + e(title) + '｜南山律典・白話對照</title>'

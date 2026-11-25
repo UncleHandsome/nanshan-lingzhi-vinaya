@@ -193,12 +193,10 @@
       var y = window.scrollY || document.documentElement.scrollTop || 0;
       updateBar();
       if (nowEl) {
-        // 「目前篇名」判定的門檻＝頂部列＋工具列實際高度
+        // 「目前篇名」判定的門檻＝頂部列實際高度
         var base = 45;
         var bar = document.querySelector('.topbar');
         if (bar) base = bar.getBoundingClientRect().height;
-        var tbar = document.querySelector('.toolsbar');
-        if (tbar) base += tbar.getBoundingClientRect().height;
         base += 30;
         var cur = '';
         for (var i = 0; i < secs.length; i++) {

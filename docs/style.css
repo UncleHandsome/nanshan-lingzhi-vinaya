@@ -1538,3 +1538,33 @@ body.page-home .ui-dl-inline { display: none !important; }
   .homehero .homefind button { flex: 0 0 auto; width: auto; padding: .3rem .8rem; }
   .homehero-hint { white-space: normal; font-size: 11px; }
 }
+
+/* ── 首頁書卡 v65：緊湊排版（標題與書訊同排、卷連結縮小） ───── */
+.home-grid { gap: .6rem; margin: .6rem 0 1.1rem; }
+.home-col { gap: .6rem; }
+.home-grid .card { padding: .5rem .72rem .52rem; border-radius: 7px; }
+.home-grid .cardhead {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: .1rem .55rem; flex-wrap: wrap; min-width: 0;
+}
+.home-grid .card h2 {
+  font-size: 1.02rem; line-height: 1.35; letter-spacing: .01em;
+  margin: 0; min-width: 0; overflow-wrap: break-word;
+}
+.home-grid .card .cardmeta {
+  margin-left: auto; flex: 0 0 auto;
+  color: var(--fg2); font-size: 11px; line-height: 1.5; white-space: nowrap;
+}
+.home-grid .card .grp { margin-top: 0; gap: .22rem; }
+.home-grid .card .grp a {
+  padding: .08rem .46rem; border-radius: 5px;
+  font-size: 12px; line-height: 1.5;
+}
+@media (max-width: 900px) {
+  .home-grid .card { padding: .48rem .62rem .5rem; }
+  .home-grid .card h2 { font-size: .98rem; }
+  .home-grid .card .grp a { font-size: 11.5px; padding: .06rem .42rem; }
+}
+/* 首頁內容不滿一屏時：main 撐滿，頁尾貼齊視窗底部 */
+body.page-home .content { display: flex; flex-direction: column; }
+body.page-home .content > .sitefoot { margin-top: auto; }

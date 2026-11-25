@@ -89,7 +89,9 @@ def build_index(nav):
         links = ''.join('<a href="%s/%s.html">%s</a>' % (out, v, html.escape(v)) for v in vols)
         author = AUTHORS.get(out, '')
         by = (html.escape(author) + '　·　' if author else '') + '%d 卷' % len(vols)
-        by_out[out] = ('<section class="card"><h2>%s</h2><p class="byline">%s</p>'
+        by_out[out] = ('<section class="card">'
+                       '<div class="cardhead"><h2>%s</h2>'
+                       '<span class="cardmeta">%s</span></div>'
                        '<div class="grp">%s</div></section>'
                        % (html.escape(title), by, links))
     left = ''.join(by_out[x] for x in ('xingshichao', 'zhichi', 'hebian') if x in by_out)

@@ -1064,3 +1064,67 @@ main .card .grp a:hover { background: var(--surface-4); border-color: var(--acce
   .scroll { overflow: visible; }
   .tools { display: none; }
 }
+
+/* ── 2026-11-25 閱讀增強 ───────────────────────────────── */
+html { --fs: 18px; }
+body {
+  font-size: var(--fs);
+  font-family: "KaiTi", "STKaiti", "Kaiti SC", "Noto Serif CJK TC", "Noto Serif TC",
+               "Songti SC", "SimSun", serif;
+}
+.tb-fsseg button { min-width: 3.1em; }
+.tb-fsseg [data-fs="reset"] { min-width: 4.2em; font-variant-numeric: tabular-nums; }
+
+/* 頂部列的「目前所在篇」 */
+.tb-now {
+  font-size: 12.5px; color: var(--accent); font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 16em;
+  padding-left: .5em; border-left: 1px solid var(--line);
+}
+
+/* 回到頂端 */
+.ui-totop {
+  position: fixed; right: 1.1rem; bottom: 1.4rem; z-index: 60;
+  width: 2.6rem; height: 2.6rem; border-radius: 50%;
+  border: 1px solid var(--line); background: var(--surface); color: var(--accent);
+  font-size: 1.1rem; line-height: 1; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(60,45,20,.16);
+  opacity: 0; transform: translateY(.6rem); pointer-events: none;
+  transition: opacity .18s, transform .18s;
+}
+.ui-totop.show { opacity: .95; transform: none; pointer-events: auto; }
+.ui-totop:hover { border-color: var(--accent2); }
+
+/* 段落錨點 § */
+.ui-anchor {
+  position: absolute; z-index: 55; display: none;
+  padding: .1rem .35rem; border-radius: 4px;
+  background: var(--surface-3); border: 1px solid var(--line);
+  color: var(--fg2); font-size: 12px; text-decoration: none;
+}
+.ui-anchor.show { display: block; }
+.ui-anchor:hover { color: var(--accent); border-color: var(--accent2); }
+
+/* 複製提示 */
+.ui-toast {
+  position: fixed; left: 50%; bottom: 5rem; transform: translate(-50%, .5rem);
+  z-index: 80; padding: .45rem .9rem; border-radius: 6px;
+  background: var(--fg); color: var(--surface); font-size: 13px;
+  opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s;
+}
+.ui-toast.show { opacity: .94; transform: translate(-50%, 0); }
+
+/* 合編本：記段掛在同一個鈔段下的視覺分層 */
+.pair.j.tie {
+  margin-left: 1.4em;
+  border-left: 3px solid var(--ji-border);
+  padding-left: .9em;
+  position: relative;
+}
+.pair.j.tie::before {
+  content: "↳";
+  position: absolute; left: -1.15em; top: .55em;
+  color: var(--ji-border); font-size: .85em;
+}
+.pair.j.tie + .pair.j.tie { margin-top: .1em; }
+.pair.c.has-many { border-bottom: 1px dashed var(--line); }

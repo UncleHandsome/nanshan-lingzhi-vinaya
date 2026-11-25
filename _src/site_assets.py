@@ -13,7 +13,7 @@
 """
 import html
 
-ASSET_VERSION = '44'
+ASSET_VERSION = '45'
 
 BOOK_OPTIONS = [
     ('行事鈔', 'xingshichao/卷上.html'),
@@ -38,6 +38,8 @@ _HEAD_SCRIPT = (
     'if(m==="o")h.classList.add("hide-t");else if(m==="t")h.classList.add("hide-o");'
     'var t=localStorage.getItem("dsh-twocol");'
     'if(t!=="0" && (!window.matchMedia || window.matchMedia("(min-width: 1200px)").matches))h.classList.add("twocol");'
+    'var f=parseInt(localStorage.getItem("dsh-fs")||"100",10);'
+    'if(f>=80&&f<=170){document.documentElement.style.setProperty("--fs",(18*f/100).toFixed(1)+"px");}'
     '}catch(e){}</script>'
 )
 
@@ -89,6 +91,11 @@ def tools_html():
         '</span>'
         '<button type="button" data-twocol-toggle aria-pressed="false" title="原文與白話左右並排，需寬螢幕">並排</button>'
         '<button type="button" data-copy-anchor title="複製目前段落的網址">複製</button>'
+        '<span class="tb-seg tb-fsseg" role="group" aria-label="字級">'
+        '<button type="button" data-fs="dec" title="縮小字級">A－</button>'
+        '<button type="button" data-fs="reset" title="重設字級">100%</button>'
+        '<button type="button" data-fs="inc" title="放大字級">A＋</button>'
+        '</span>'
         '<span class="tb-seg tb-labelseg" role="group" aria-label="隱藏段別">'
         '<button type="button" data-hide-label="j" aria-pressed="false" title="隱藏記文">記文</button>'
         '<button type="button" data-hide-label="z" aria-pressed="false" title="隱藏註文">註文</button>'
@@ -224,7 +231,7 @@ def page(title, body, prefix='', prev_url=None, next_url=None,
                              index_url or (prefix + 'index.html'))
     else:
         pager_s = ''
-    scripts = ['nav.js'] + list(extra_scripts or [])
+    scripts = ['nav.js', 'ui.js'] + list(extra_scripts or [])
     tags = ''.join('<script defer src="' + asset(prefix, s) + '"></script>' for s in scripts)
     desc = ('<meta name="description" content="' + e(description) + '">') if description else ''
     classes = [c for c in (body_class, 'page-reader' if tools else '') if c]

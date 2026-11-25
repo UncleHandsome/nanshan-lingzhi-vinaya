@@ -81,17 +81,23 @@ def main():
         cur_ch = None
         used_ids = set()
 
-        def emit_chao(uidx):
+        def emit_chao(uidx, many=False):
             u = chao[uidx]
-            body.append(SH.emit_pair(u, '鈔', 0, used_ids))
+            h = SH.emit_pair(u, '鈔', 0, used_ids)
+            if many:
+                h = h.replace('class="pair c"', 'class="pair c has-many"', 1)
+            body.append(h)
             stats['chao'] += 1
 
-        def emit_ji(jidx, note=''):
+        def emit_ji(jidx, note='', tie=False):
             if jidx in emitted_ji:
                 return
             emitted_ji.add(jidx)
             u = ji[jidx]
-            body.append(SH.emit_pair(u, '記', 0, used_ids))
+            h = SH.emit_pair(u, '記', 0, used_ids)
+            if tie:
+                h = h.replace('class="pair j"', 'class="pair j tie"', 1)
+            body.append(h)
             stats['ji'] += 1
             if note:
                 body.append('<div class="pair j"><div class="t">（%s）</div></div>' % note)
@@ -107,18 +113,14 @@ def main():
                     toc.append(['p%d' % ch, label])
                     body.append('<h2 class="sec" id="p%d">%s</h2>' % (ch, SH.esc(label)))
                     stats['sections'] += 1
-            emit_chao(uidx)
             jkeys = c2j.get(str(u['key'])) or []
-            n_ji = 0
-            for jk in jkeys:
-                for jidx in ji_by_key.get(jk, []):
-                    if jidx in emitted_ji:
-                        continue
-                    emit_ji(jidx)
-                    n_ji += 1
-            if n_ji:
+            todo = [j for jk in jkeys for j in ji_by_key.get(jk, []) if j not in emitted_ji]
+            emit_chao(uidx, many=len(todo) > 1)
+            for jidx in todo:
+                emit_ji(jidx, tie=True)
+            if todo:
                 stats['pairs'] += 1
-                if n_ji > 1:
+                if len(todo) > 1:
                     stats['multi'] += 1
 
         # 本卷 orphan 補在卷末

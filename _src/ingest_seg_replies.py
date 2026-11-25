@@ -26,7 +26,7 @@ import sys
 B = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MAT = os.path.join(B, '細配材料_20261125')
 REPLY = os.path.join(MAT, '_回')
-SEGMAP = os.path.join(B, '對位結果_20261125', 'seg_groups.json')
+SEGMAP = os.path.join(B, '定稿', '對位結果_20261125', 'seg_groups.json')
 MANIFEST = os.path.join(MAT, '_清單.json')
 
 
@@ -70,9 +70,8 @@ def main():
                 row_ji[cur[0]].append(m.group(1))
 
     files = []
-    for pat in ('*.txt', '*.jsonl', '*.md'):
-        files += sorted(glob.glob(os.path.join(REPLY, pat)))
-    files += sorted(glob.glob(os.path.join(MAT, 'win*_回*.txt')))
+    for pat in ('_回/*.txt', '_回/*.jsonl', '_回/*.md', '*.txt'):
+        files += sorted(glob.glob(os.path.join(MAT, pat)))
     if not files:
         print('沒找到回覆檔。請把回覆放進：', REPLY)
         sys.exit(1)
@@ -105,7 +104,7 @@ def main():
                 continue
             ck, nseg, win = ji2row[k]
             a = str(d.get('A', '')).strip()
-            if a != ck:
+            if a and a != ck:
                 errs.append(('A_MISMATCH', k, a, ck))
                 continue
             s = norm_s(d.get('s'), nseg)

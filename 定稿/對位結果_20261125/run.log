@@ -1,0 +1,87 @@
+[11-25 04:30:34] start align: files=1 workers=1 socket=1800s deadline=1500s
+[11-25 04:31:25] DONE done=1/1 usage={'calls': 1, 'input_tokens': 14881, 'output_tokens': 1938, 'total_tokens': 16819} stat={'ok': 1, 'skip': 0, 'fail': 0, 'fixed': 0, 'orphan': 0, 'missing': 1}
+[11-25 04:32:53] start align: files=1 workers=1 socket=1800s deadline=1500s
+[11-25 04:38:23] DONE done=1/1 usage={'calls': 1, 'input_tokens': 50768, 'output_tokens': 9940, 'total_tokens': 60708} stat={'ok': 1, 'skip': 0, 'fail': 0, 'fixed': 1, 'orphan': 0, 'missing': 0}
+[11-25 05:31:45] start align: files=128 workers=10 socket=1800s deadline=0s idle=0s
+[11-25 05:32:45] heartbeat done=0/128 calls=0 in_flight=128 elapsed=60s usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0}
+[11-25 05:33:45] heartbeat done=0/128 calls=0 in_flight=128 elapsed=120s usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0}
+[11-25 05:34:45] heartbeat done=4/128 calls=4 in_flight=124 elapsed=180s usage={'calls': 4, 'input_tokens': 41298, 'output_tokens': 71912, 'total_tokens': 113210}
+[11-25 05:35:45] heartbeat done=5/128 calls=5 in_flight=123 elapsed=240s usage={'calls': 5, 'input_tokens': 51767, 'output_tokens': 97591, 'total_tokens': 149358}
+[11-25 05:36:12] progress 8/128 pian15_持犯方軌_part05 fail server_error: <400> InternalError.A usage={'calls': 7, 'input_tokens': 123657, 'output_tokens': 127084, 'total_tokens': 250741} stat={'ok': 7, 'skip': 0, 'fail': 1, 'fixed': 280, 'orphan': 96, 'missing': 0, 'done': 8, 'total': 128}
+[11-25 05:36:45] heartbeat done=8/128 calls=7 in_flight=120 elapsed=300s usage={'calls': 7, 'input_tokens': 123657, 'output_tokens': 127084, 'total_tokens': 250741}
+[11-25 05:37:45] heartbeat done=9/128 calls=8 in_flight=119 elapsed=360s usage={'calls': 8, 'input_tokens': 182180, 'output_tokens': 143776, 'total_tokens': 325956}
+[11-25 05:38:38] progress 10/128 pian14_隨戒釋相_part21 ok usage={'calls': 9, 'input_tokens': 345398, 'output_tokens': 159572, 'total_tokens': 504970} stat={'ok': 9, 'skip': 0, 'fail': 1, 'fixed': 350, 'orphan': 157, 'missing': 0, 'done': 10, 'total': 128}
+[11-25 05:38:45] heartbeat done=10/128 calls=9 in_flight=118 elapsed=420s usage={'calls': 9, 'input_tokens': 345398, 'output_tokens': 159572, 'total_tokens': 504970}
+[11-25 05:39:45] heartbeat done=11/128 calls=10 in_flight=117 elapsed=480s usage={'calls': 10, 'input_tokens': 440373, 'output_tokens': 190697, 'total_tokens': 631070}
+[11-25 05:40:45] heartbeat done=14/128 calls=13 in_flight=114 elapsed=540s usage={'calls': 13, 'input_tokens': 729428, 'output_tokens': 303219, 'total_tokens': 1032647}
+[11-25 05:41:45] heartbeat done=16/128 calls=15 in_flight=112 elapsed=600s usage={'calls': 15, 'input_tokens': 787611, 'output_tokens': 376821, 'total_tokens': 1164432}
+[11-25 05:42:45] heartbeat done=19/128 calls=18 in_flight=109 elapsed=660s usage={'calls': 18, 'input_tokens': 813482, 'output_tokens': 443369, 'total_tokens': 1256851}
+[11-25 05:43:45] heartbeat done=19/128 calls=18 in_flight=109 elapsed=720s usage={'calls': 18, 'input_tokens': 813482, 'output_tokens': 443369, 'total_tokens': 1256851}
+[11-25 05:43:53] progress 20/128 pian14_隨戒釋相_part19 ok usage={'calls': 19, 'input_tokens': 821853, 'output_tokens': 464007, 'total_tokens': 1285860} stat={'ok': 19, 'skip': 0, 'fail': 1, 'fixed': 743, 'orphan': 380, 'missing': 0, 'done': 20, 'total': 128}
+[11-25 05:44:45] heartbeat done=21/128 calls=20 in_flight=107 elapsed=780s usage={'calls': 20, 'input_tokens': 864163, 'output_tokens': 493475, 'total_tokens': 1357638}
+[11-25 05:45:45] start align: files=98 workers=10 socket=1800s deadline=0s idle=0s
+[11-25 05:45:45] progress 10/98 pian12_自恣宗要_part01 skip usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0} stat={'ok': 0, 'skip': 10, 'fail': 0, 'fixed': 0, 'orphan': 0, 'missing': 0, 'done': 10, 'total': 98}
+[11-25 05:46:45] heartbeat done=13/98 calls=0 in_flight=85 elapsed=59s usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0}
+[11-25 05:50:32] start align: files=28 workers=10 socket=1800s deadline=0s idle=0s
+[11-25 05:51:32] heartbeat done=0/28 calls=0 in_flight=28 elapsed=59s usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0}
+[11-25 05:52:32] heartbeat done=0/28 calls=0 in_flight=28 elapsed=120s usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0}
+[11-25 05:53:32] heartbeat done=0/28 calls=0 in_flight=28 elapsed=180s usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0}
+[11-25 05:54:32] heartbeat done=0/28 calls=0 in_flight=28 elapsed=240s usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0}
+[11-25 05:55:32] heartbeat done=3/28 calls=3 in_flight=25 elapsed=300s usage={'calls': 3, 'input_tokens': 61472, 'output_tokens': 102484, 'total_tokens': 163956}
+[11-25 05:56:32] heartbeat done=3/28 calls=3 in_flight=25 elapsed=360s usage={'calls': 3, 'input_tokens': 61472, 'output_tokens': 102484, 'total_tokens': 163956}
+[11-25 05:57:32] heartbeat done=4/28 calls=4 in_flight=24 elapsed=420s usage={'calls': 4, 'input_tokens': 97280, 'output_tokens': 156151, 'total_tokens': 253431}
+[11-25 05:58:32] heartbeat done=4/28 calls=4 in_flight=24 elapsed=480s usage={'calls': 4, 'input_tokens': 97280, 'output_tokens': 156151, 'total_tokens': 253431}
+[11-25 05:59:32] heartbeat done=4/28 calls=4 in_flight=24 elapsed=540s usage={'calls': 4, 'input_tokens': 97280, 'output_tokens': 156151, 'total_tokens': 253431}
+[11-25 06:00:32] heartbeat done=4/28 calls=4 in_flight=24 elapsed=600s usage={'calls': 4, 'input_tokens': 97280, 'output_tokens': 156151, 'total_tokens': 253431}
+[11-25 06:01:32] heartbeat done=4/28 calls=4 in_flight=24 elapsed=660s usage={'calls': 4, 'input_tokens': 97280, 'output_tokens': 156151, 'total_tokens': 253431}
+[11-25 06:02:32] heartbeat done=6/28 calls=6 in_flight=22 elapsed=720s usage={'calls': 6, 'input_tokens': 185757, 'output_tokens': 281805, 'total_tokens': 467562}
+[11-25 06:03:32] heartbeat done=7/28 calls=7 in_flight=21 elapsed=780s usage={'calls': 7, 'input_tokens': 458441, 'output_tokens': 374056, 'total_tokens': 832497}
+[11-25 06:04:32] heartbeat done=9/28 calls=9 in_flight=19 elapsed=840s usage={'calls': 9, 'input_tokens': 738956, 'output_tokens': 530249, 'total_tokens': 1269205}
+[11-25 06:04:34] progress 10/28 pian11_安居策修 ok usage={'calls': 10, 'input_tokens': 1000159, 'output_tokens': 635642, 'total_tokens': 1635801} stat={'ok': 10, 'skip': 0, 'fail': 0, 'fixed': 1328, 'orphan': 1, 'missing': 0, 'done': 10, 'total': 28}
+[11-25 06:05:32] heartbeat done=12/28 calls=12 in_flight=16 elapsed=900s usage={'calls': 12, 'input_tokens': 1451356, 'output_tokens': 795882, 'total_tokens': 2247238}
+[11-25 06:06:32] heartbeat done=13/28 calls=13 in_flight=15 elapsed=960s usage={'calls': 13, 'input_tokens': 1468106, 'output_tokens': 821833, 'total_tokens': 2289939}
+[11-25 06:07:32] heartbeat done=14/28 calls=14 in_flight=14 elapsed=1020s usage={'calls': 14, 'input_tokens': 1487027, 'output_tokens': 914331, 'total_tokens': 2401358}
+[11-25 06:08:32] heartbeat done=17/28 calls=17 in_flight=11 elapsed=1080s usage={'calls': 17, 'input_tokens': 1653267, 'output_tokens': 1063975, 'total_tokens': 2717242}
+[11-25 06:09:32] heartbeat done=17/28 calls=17 in_flight=11 elapsed=1140s usage={'calls': 17, 'input_tokens': 1653267, 'output_tokens': 1063975, 'total_tokens': 2717242}
+[11-25 06:10:32] heartbeat done=18/28 calls=18 in_flight=10 elapsed=1200s usage={'calls': 18, 'input_tokens': 1664024, 'output_tokens': 1080586, 'total_tokens': 2744610}
+[11-25 06:11:32] heartbeat done=19/28 calls=19 in_flight=9 elapsed=1260s usage={'calls': 19, 'input_tokens': 1677683, 'output_tokens': 1135036, 'total_tokens': 2812719}
+[11-25 06:12:32] heartbeat done=19/28 calls=19 in_flight=9 elapsed=1320s usage={'calls': 19, 'input_tokens': 1677683, 'output_tokens': 1135036, 'total_tokens': 2812719}
+[11-25 06:12:34] progress 20/28 pian02_集僧通局 ok usage={'calls': 20, 'input_tokens': 1753943, 'output_tokens': 1190027, 'total_tokens': 2943970} stat={'ok': 20, 'skip': 0, 'fail': 0, 'fixed': 2070, 'orphan': 2, 'missing': 0, 'done': 20, 'total': 28}
+[11-25 06:13:32] heartbeat done=22/28 calls=22 in_flight=6 elapsed=1380s usage={'calls': 22, 'input_tokens': 1776970, 'output_tokens': 1305639, 'total_tokens': 3082609}
+[11-25 06:14:32] heartbeat done=24/28 calls=24 in_flight=4 elapsed=1440s usage={'calls': 24, 'input_tokens': 1915071, 'output_tokens': 1430616, 'total_tokens': 3345687}
+[11-25 06:15:32] heartbeat done=24/28 calls=24 in_flight=4 elapsed=1500s usage={'calls': 24, 'input_tokens': 1915071, 'output_tokens': 1430616, 'total_tokens': 3345687}
+[11-25 06:16:32] heartbeat done=26/28 calls=26 in_flight=2 elapsed=1560s usage={'calls': 26, 'input_tokens': 3396674, 'output_tokens': 1585145, 'total_tokens': 4981819}
+[11-25 06:17:32] heartbeat done=26/28 calls=26 in_flight=2 elapsed=1620s usage={'calls': 26, 'input_tokens': 3396674, 'output_tokens': 1585145, 'total_tokens': 4981819}
+[11-25 06:18:32] heartbeat done=26/28 calls=26 in_flight=2 elapsed=1680s usage={'calls': 26, 'input_tokens': 3396674, 'output_tokens': 1585145, 'total_tokens': 4981819}
+[11-25 06:19:32] heartbeat done=27/28 calls=27 in_flight=1 elapsed=1740s usage={'calls': 27, 'input_tokens': 3407346, 'output_tokens': 1674574, 'total_tokens': 5081920}
+[11-25 06:19:37] DONE done=28/28 usage={'calls': 28, 'input_tokens': 3603764, 'output_tokens': 1736538, 'total_tokens': 5340302} stat={'ok': 28, 'skip': 0, 'fail': 0, 'fixed': 2470, 'orphan': 30, 'missing': 0, 'done': 28, 'total': 28}
+[11-25 06:20:11] start align: files=37 workers=10 socket=1800s deadline=0s idle=0s
+[11-25 06:20:11] progress 10/37 pian12_自恣宗要 skip usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0} stat={'ok': 0, 'skip': 10, 'fail': 0, 'fixed': 0, 'orphan': 0, 'missing': 0, 'done': 10, 'total': 37}
+[11-25 06:20:11] progress 20/37 pian27_諸雜要行 skip usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0} stat={'ok': 0, 'skip': 20, 'fail': 0, 'fixed': 0, 'orphan': 0, 'missing': 0, 'done': 20, 'total': 37}
+[11-25 06:21:11] heartbeat done=28/37 calls=0 in_flight=9 elapsed=60s usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0}
+[11-25 06:22:11] heartbeat done=28/37 calls=0 in_flight=9 elapsed=120s usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0}
+[11-25 06:23:11] heartbeat done=28/37 calls=0 in_flight=9 elapsed=180s usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0}
+[11-25 06:24:11] heartbeat done=28/37 calls=0 in_flight=9 elapsed=240s usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0}
+[11-25 06:25:00] progress 30/37 pian00_序_part02 ok usage={'calls': 2, 'input_tokens': 52160, 'output_tokens': 72197, 'total_tokens': 124357} stat={'ok': 2, 'skip': 28, 'fail': 0, 'fixed': 341, 'orphan': 19, 'missing': 0, 'done': 30, 'total': 37}
+[11-25 06:25:11] heartbeat done=30/37 calls=2 in_flight=7 elapsed=300s usage={'calls': 2, 'input_tokens': 52160, 'output_tokens': 72197, 'total_tokens': 124357}
+[11-25 06:26:11] heartbeat done=30/37 calls=2 in_flight=7 elapsed=360s usage={'calls': 2, 'input_tokens': 52160, 'output_tokens': 72197, 'total_tokens': 124357}
+[11-25 06:27:11] heartbeat done=32/37 calls=4 in_flight=5 elapsed=420s usage={'calls': 4, 'input_tokens': 130875, 'output_tokens': 177499, 'total_tokens': 308374}
+[11-25 06:28:11] heartbeat done=32/37 calls=4 in_flight=5 elapsed=480s usage={'calls': 4, 'input_tokens': 130875, 'output_tokens': 177499, 'total_tokens': 308374}
+[11-25 06:29:11] heartbeat done=32/37 calls=4 in_flight=5 elapsed=540s usage={'calls': 4, 'input_tokens': 130875, 'output_tokens': 177499, 'total_tokens': 308374}
+[11-25 06:30:11] heartbeat done=33/37 calls=5 in_flight=4 elapsed=600s usage={'calls': 5, 'input_tokens': 181502, 'output_tokens': 233869, 'total_tokens': 415371}
+[11-25 06:31:11] heartbeat done=33/37 calls=5 in_flight=4 elapsed=660s usage={'calls': 5, 'input_tokens': 181502, 'output_tokens': 233869, 'total_tokens': 415371}
+[11-25 06:32:11] heartbeat done=34/37 calls=6 in_flight=3 elapsed=720s usage={'calls': 6, 'input_tokens': 360441, 'output_tokens': 329086, 'total_tokens': 689527}
+[11-25 06:33:11] heartbeat done=35/37 calls=7 in_flight=2 elapsed=780s usage={'calls': 7, 'input_tokens': 608737, 'output_tokens': 419437, 'total_tokens': 1028174}
+[11-25 06:34:11] heartbeat done=35/37 calls=7 in_flight=2 elapsed=840s usage={'calls': 7, 'input_tokens': 608737, 'output_tokens': 419437, 'total_tokens': 1028174}
+[11-25 06:35:11] heartbeat done=35/37 calls=7 in_flight=2 elapsed=900s usage={'calls': 7, 'input_tokens': 608737, 'output_tokens': 419437, 'total_tokens': 1028174}
+[11-25 06:36:11] heartbeat done=35/37 calls=7 in_flight=2 elapsed=960s usage={'calls': 7, 'input_tokens': 608737, 'output_tokens': 419437, 'total_tokens': 1028174}
+[11-25 06:37:11] heartbeat done=36/37 calls=8 in_flight=1 elapsed=1020s usage={'calls': 8, 'input_tokens': 1147567, 'output_tokens': 542479, 'total_tokens': 1690046}
+[11-25 06:37:56] DONE done=37/37 usage={'calls': 9, 'input_tokens': 1389139, 'output_tokens': 663223, 'total_tokens': 2052362} stat={'ok': 9, 'skip': 28, 'fail': 0, 'fixed': 1698, 'orphan': 42, 'missing': 0, 'done': 37, 'total': 37}
+[11-25 06:43:11] start align: files=37 workers=10 socket=1800s deadline=0s idle=0s
+[11-25 06:43:11] progress 10/37 pian07_僧網大綱 skip usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0} stat={'ok': 0, 'skip': 10, 'fail': 0, 'fixed': 0, 'orphan': 0, 'missing': 0, 'done': 10, 'total': 37}
+[11-25 06:43:11] progress 20/37 pian05_通辨羯磨 skip usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0} stat={'ok': 0, 'skip': 20, 'fail': 0, 'fixed': 0, 'orphan': 0, 'missing': 0, 'done': 20, 'total': 37}
+[11-25 06:43:11] progress 30/37 pian26_瞻病送終 skip usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0} stat={'ok': 0, 'skip': 30, 'fail': 0, 'fixed': 0, 'orphan': 0, 'missing': 0, 'done': 30, 'total': 37}
+[11-25 06:43:29] start align: files=37 workers=10 socket=1800s deadline=0s idle=0s
+[11-25 06:43:29] progress 10/37 pian08_受戒緣集 skip usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0} stat={'ok': 0, 'skip': 10, 'fail': 0, 'fixed': 0, 'orphan': 0, 'missing': 0, 'done': 10, 'total': 37}
+[11-25 06:43:29] progress 20/37 pian22_僧像致敬 skip usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0} stat={'ok': 0, 'skip': 20, 'fail': 0, 'fixed': 0, 'orphan': 0, 'missing': 0, 'done': 20, 'total': 37}
+[11-25 06:43:29] progress 30/37 pian26_瞻病送終 skip usage={'calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0} stat={'ok': 0, 'skip': 30, 'fail': 0, 'fixed': 0, 'orphan': 0, 'missing': 0, 'done': 30, 'total': 37}

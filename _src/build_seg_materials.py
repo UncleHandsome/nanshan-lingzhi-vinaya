@@ -23,7 +23,7 @@ import site_hebian as SH
 
 B = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTDIR = os.path.join(B, '細配材料_20261125')
-SEGMAP = os.path.join(B, '對位結果_20261125', 'seg_groups.json')
+SEGMAP = os.path.join(B, '定稿', '對位結果_20261125', 'seg_groups.json')
 TARGET_HAN = 12000  # 每窗大約漢字數
 
 
@@ -50,7 +50,7 @@ def main():
     hraw, bounds = SH.volume_bounds()
     chao, titles = SH.build_chao(SH.load_jsonl('xingshichao'), hraw, bounds)
     ji, _ = SH.build_ji(SH.load_jsonl('zhichi'))
-    idx = json.load(io.open(os.path.join(B, '對位結果_20261125', 'pairs_v2_index.json'),
+    idx = json.load(io.open(os.path.join(B, '定稿', '對位結果_20261125', 'pairs_v2_index.json'),
                             encoding='utf-8'))
     c2j = idx['chao2ji']
     ji2c = idx['ji2chao']

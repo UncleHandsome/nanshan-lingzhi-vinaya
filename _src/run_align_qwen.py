@@ -23,7 +23,7 @@ import run_3k_review as R
 
 B = R.B
 MAT = os.path.join(B, '對位材料_20261125')
-OUT = os.path.join(B, '對位結果_20261125')
+OUT = os.path.join(B, '定稿', '對位結果_20261125')
 RAW = os.path.join(OUT, '回')
 PROG = os.path.join(OUT, 'progress.jsonl')
 USAGE_F = os.path.join(OUT, 'usage.json')
@@ -174,6 +174,9 @@ def main():
     wins = load_windows()
     files = [p for p in glob.glob(os.path.join(MAT, '*.md'))
              if os.path.basename(p) != 'README.md' and os.path.basename(p)[:-3] in wins]
+    excl = [x for x in os.environ.get('ALIGN_EXCLUDE', '').split(',') if x]
+    if excl:
+        files = [p for p in files if not any(x in os.path.basename(p) for x in excl)]
     files.sort(key=lambda p: -os.path.getsize(p))
     if os.environ.get('ALIGN_SMALL', '0') == '1':
         files.sort(key=lambda p: os.path.getsize(p))

@@ -16,7 +16,7 @@ import re
 import collections
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
-RES = os.path.join(B, '對位結果_20261125')
+RES = os.path.join(B, '定稿', '對位結果_20261125')
 MAT = os.path.join(B, '對位材料_20261125')
 OUT_JSONL = os.path.join(RES, 'pairs_v2.jsonl')
 OUT_IDX = os.path.join(RES, 'pairs_v2_index.json')

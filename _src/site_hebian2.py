@@ -22,8 +22,8 @@ B = SH.B
 SITE = SH.SITE
 OUT = SH.OUT
 HB = SH.HB
-PAIRS = os.path.join(B, '對位結果_20261125', 'pairs_v2_index.json')
-SEGMAP_PATH = os.path.join(B, '對位結果_20261125', 'seg_groups.json')
+PAIRS = os.path.join(B, '定稿', '對位結果_20261125', 'pairs_v2_index.json')
+SEGMAP_PATH = os.path.join(B, '定稿', '對位結果_20261125', 'seg_groups.json')
 
 
 def main():

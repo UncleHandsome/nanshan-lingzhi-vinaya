@@ -319,6 +319,7 @@ def build_volume(book, title, series, vol, rows, two, do_pdf=True):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--book', default='')
+    ap.add_argument('--vol', default='', help='只重建指定卷（如 卷上）')
     ap.add_argument('--layout', choices=('single', 'double'), default='')
     ap.add_argument('--no-pdf', action='store_true')
     a = ap.parse_args()
@@ -330,6 +331,8 @@ def main():
         for r in rows:
             vols.setdefault(r.get('vol') or '卷首', []).append(r)
         for vol, rs in vols.items():
+            if a.vol and vol != a.vol:
+                continue
             for two in (False, True):
                 if a.layout == 'single' and two: continue
                 if a.layout == 'double' and not two: continue

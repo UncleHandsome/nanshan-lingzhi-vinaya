@@ -1287,3 +1287,59 @@ body {
 /* 合編：記段只退一層（取消 .pair.j 本身的內縮，只留 tie 的層次） */
 .pair.j.tie { margin-left: 0 !important; padding-left: .9em !important; border-left: 3px solid var(--ji-border) !important; }
 .pair.j.tie::before { left: -1.05em; }
+
+/* ── 首頁 hero（v58）：標題／搜尋／入口集中成一張卡 ─────────── */
+body.page-home .ui-dl-inline { display: none !important; }
+.homehero {
+  margin: .2rem 0 1.5rem; padding: 1.25rem 1.35rem 1.1rem;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--panel) 100%);
+  box-shadow: 0 1px 0 rgba(40, 30, 15, .04);
+}
+.homehero h1 {
+  margin: 0 0 .4rem; padding: 0; border: 0;
+  font-size: 2rem; line-height: 1.25; letter-spacing: .05em;
+}
+.homehero .hh-sep { color: var(--accent2); margin: 0 .12em; }
+.homehero-sub {
+  margin: 0 0 1.05rem; max-width: 60em;
+  color: var(--fg2); font-size: 15px; line-height: 1.8;
+}
+.homehero .homefind { margin: 0; max-width: 46rem; gap: .6rem; }
+.homehero .homefind input[type=search] {
+  flex: 1 1 auto; min-width: 0; min-height: 2.6rem;
+  padding: .5rem 1rem; font: inherit; font-size: 15px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); color: var(--fg);
+}
+.homehero .homefind input[type=search]:focus {
+  outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent;
+}
+.homehero .homefind button {
+  flex: 0 0 auto; min-height: 2.6rem; padding: .5rem 1.35rem;
+  font: inherit; font-size: 14px; font-weight: 700;
+  border: 1px solid var(--accent); border-radius: 999px;
+  background: var(--accent); color: #fff; cursor: pointer;
+}
+.homehero .homefind button:hover { background: var(--accent2); border-color: var(--accent2); }
+.homehero-hint { margin: .6rem 0 0; color: var(--fg2); font-size: 12.5px; line-height: 1.7; }
+.homehero-hint code { background: var(--code); padding: .05rem .32rem; border-radius: 3px; }
+.homehero-links { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+.hero-btn {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .35rem .85rem; font-size: 13px; line-height: 1.6;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); color: var(--fg2); text-decoration: none;
+}
+.hero-btn:hover { border-color: var(--accent2); color: var(--accent); text-decoration: none; }
+.hero-btn.primary {
+  border-color: var(--accent); background: var(--accent);
+  color: #fff; font-weight: 700;
+}
+.hero-btn.primary:hover { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+@media (max-width: 700px) {
+  .homehero { padding: 1rem .9rem .9rem; }
+  .homehero h1 { font-size: 1.55rem; }
+  .homehero .homefind { flex-direction: column; }
+  .homehero .homefind button { width: 100%; min-height: 2.4rem; }
+}

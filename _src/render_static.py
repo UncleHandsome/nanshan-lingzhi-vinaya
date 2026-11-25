@@ -63,15 +63,22 @@ def main_body(path):
 # ── 目錄 ────────────────────────────────────────────────────
 def build_index(nav):
     parts = [
-        '<h1>南山律典・白話對照</h1>',
-        '<form class="homefind" action="search.html" method="get" role="search">'
-        '<input type="search" name="q" placeholder="搜尋全站：羯磨、波羅夷、安居…" aria-label="全文搜尋">'
-        '<button type="submit">全文搜尋</button></form>',
-        '<p class="hint">站內全文：<code>Ctrl/⌘ K</code>；瀏覽器尋找仍用 <code>Ctrl/⌘ F</code>。</p>',
-        '<p class="intro">道宣律師三大部與相關鈔疏的白話對照本，逐段原文與白話並列；'
+        '<section class="homehero">',
+        '<h1>南山律典<span class="hh-sep">・</span>白話對照</h1>',
+        '<p class="homehero-sub">道宣律師三大部與相關鈔疏的白話對照本，逐段原文與白話並列；'
         '原文採 CBETA 電子佛典（大正藏／卍續藏）。</p>',
-        '<p class="intro"><a href="appendix.html">附錄：名相與度量衡</a>　·　'
-        '<a href="untranslated.html">未譯段落清單</a></p>',
+        '<form class="homefind" action="search.html" method="get" role="search">'
+        '<input type="search" name="q" placeholder="搜尋全站：羯磨、波羅夷、安居…" '
+        'aria-label="全文搜尋">'
+        '<button type="submit">全文搜尋</button></form>',
+        '<p class="homehero-hint">站內全文：<code>Ctrl/⌘ K</code>；瀏覽器尋找仍用 '
+        '<code>Ctrl/⌘ F</code>。</p>',
+        '<div class="homehero-links">'
+        '<a class="hero-btn primary" href="download.html">⬇ 下載 Word／PDF</a>'
+        '<a class="hero-btn" href="appendix.html">附錄：名相與度量衡</a>'
+        '<a class="hero-btn" href="untranslated.html">未譯段落清單</a>'
+        '</div>',
+        '</section>',
     ]
     by_out = {}
     for b in nav.get('books', []):

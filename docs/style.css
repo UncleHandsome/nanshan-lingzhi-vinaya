@@ -1440,3 +1440,48 @@ body.page-home .ui-dl-inline { display: none !important; }
   color: var(--fg2); font-size: 12px; text-decoration: none;
 }
 .navhometree .navvolwhole:hover { background: var(--surface-3); color: var(--accent); }
+
+/* ── 首頁 hero v61：緊湊版（上下收窄、搜尋與入口同一排） ───── */
+.homehero {
+  margin: .1rem 0 1rem; padding: .72rem .95rem .68rem;
+}
+.homehero .homehero-head {
+  display: flex; align-items: baseline; flex-wrap: wrap;
+  gap: 0 .95rem; margin: 0 0 .5rem;
+}
+.homehero h1 {
+  margin: 0; padding: 0; border: 0;
+  font-size: 1.5rem; line-height: 1.22; letter-spacing: .04em;
+}
+.homehero-sub {
+  margin: 0; flex: 1 1 22rem; min-width: 0;
+  font-size: 13px; line-height: 1.6; color: var(--fg2);
+}
+.homehero-bar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .42rem;
+}
+.homehero .homefind {
+  margin: 0; flex: 1 1 20rem; max-width: none; gap: .45rem;
+}
+.homehero .homefind input[type=search] {
+  min-height: 2.1rem; padding: .3rem .9rem; font-size: 14px;
+}
+.homehero .homefind button {
+  min-height: 2.1rem; padding: .3rem 1.05rem; font-size: 13.5px;
+}
+.homehero .hero-btn { padding: .26rem .68rem; font-size: 12.5px; line-height: 1.5; }
+.homehero-hint {
+  flex: 0 0 auto; color: var(--fg2);
+  font-size: 11.5px; line-height: 1.4; white-space: nowrap;
+}
+.homehero-hint code { background: var(--code); padding: .03rem .28rem; border-radius: 3px; }
+@media (max-width: 760px) {
+  .homehero { padding: .6rem .75rem .55rem; }
+  .homehero h1 { font-size: 1.3rem; }
+  .homehero .homehero-head { margin-bottom: .4rem; gap: .1rem .6rem; }
+  .homehero-sub { font-size: 12px; line-height: 1.5; }
+  .homehero .homefind { flex-direction: row; flex-wrap: nowrap; }
+  .homehero .homefind input[type=search] { flex: 1 1 auto; min-width: 0; }
+  .homehero .homefind button { flex: 0 0 auto; width: auto; padding: .3rem .8rem; }
+  .homehero-hint { white-space: normal; font-size: 11px; }
+}

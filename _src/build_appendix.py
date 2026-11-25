@@ -108,8 +108,7 @@ def build_html(blocks):
              ('nicao', '四分比丘尼鈔'), ('yichao', '四分律拾毗尼義鈔')]
     nav = ['<nav><h1><a href="index.html">南山律典・白話對照</a></h1>',
            '<div class="grp"><b>全書</b><a href="index.html">目錄</a>'
-           '<a href="search.html">全文搜尋</a><a href="appendix.html">附錄</a>'
-           '<a href="untranslated.html">未譯清單</a></div>',
+           '<a href="search.html">全文搜尋</a><a href="appendix.html">附錄</a></div>',
            '<div class="grp"><b>書目</b><div class="tree" id="navtree" data-root="">'
            '<noscript><a href="index.html">目錄</a></noscript></div></div></nav>']
     nav = ''.join(nav)

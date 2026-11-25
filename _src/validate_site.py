@@ -5,7 +5,7 @@
 --------
 * `docs/<book>/<卷>.html`：卷目錄頁（h1＋byline＋`h2#p-toc 本卷篇目`＋篇連結；0 pair）。
 * `docs/<book>/<卷>__p<N>.html`：篇頁（h1＋1 個 h2.sec＋pairs；pager 為全書篇序）。
-* `docs/` 根目錄 5 個靜態頁：index／search／appendix／untranslated／download。
+* `docs/` 根目錄 4 個靜態頁：index／search／appendix／download。
 
 檢查（不得放水）
 ----------------
@@ -61,7 +61,7 @@ BOOKS = {
 }
 
 STATIC_PAGES = ['index.html', 'search.html', 'appendix.html',
-                'untranslated.html', 'download.html']
+                'download.html']
 # 一篇一頁改版前後都必須成立的兩個全站總數（不得退步）
 EXPECT_PAIRS = 29937
 EXPECT_SEARCH = 29913

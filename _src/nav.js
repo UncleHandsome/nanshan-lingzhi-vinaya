@@ -2,7 +2,8 @@
    閱讀模式（原文／白話／雙欄）、複製本段連結、桌面預設展開側欄、
    收合後左緣 hover／focus 露出、窄螢幕自動抽屜。
    v62：nav.json 的 secs = [anchor, label, 篇頁 stem]；側欄點篇直接進篇頁，
-   「全卷」進卷目錄頁，當前篇用 aria-current="page" 高亮。 */
+   「全卷」進卷目錄頁，當前篇用 aria-current="page" 高亮。
+   v63：左緣 hover 展開（peek）時，側欄標頭出現「📌 固定」，一鍵固定目錄。 */
 (function () {
   'use strict';
 
@@ -31,6 +32,7 @@
   var closeBtn = document.getElementById('navclose');
   var scrim = document.getElementById('navscrim');
   var edge = document.getElementById('edgepeek');
+  var pinBtn = document.getElementById('navpin');
 
   function safePath() {
     try { return decodeURIComponent(location.pathname); }
@@ -830,6 +832,11 @@
       setPinned(false, true);
       if (toggle) toggle.focus();
     }
+  });
+  // v63：peek 時側欄標頭的「📌 固定」；按了就固定並記住（不必回左上角按 ☰）
+  if (pinBtn) pinBtn.addEventListener('click', function () {
+    setPinned(true, true);
+    if (toggle) toggle.focus();
   });
 
   // 左緣 peek：hover／focus 就露出側欄，不必先找按鈕

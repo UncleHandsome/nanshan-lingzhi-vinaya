@@ -4,7 +4,6 @@
 涵蓋：
 * docs/index.html        目錄（由 nav.json 產生書卡，書名與 h1／nav 同源）
 * docs/search.html       全文搜尋（合編預設不載入、錯誤 role=alert）
-* docs/untranslated.html 未譯清單（由實際頁面統計，校勘另列）
 * docs/appendix.html     附錄（只重包頁殼，表格補 caption／scope）
 * docs/style.css、nav.js、search.js 由 _src 複製
 
@@ -76,7 +75,6 @@ def build_index(nav):
         '<button type="submit">全文搜尋</button></form>',
         '<a class="hero-btn primary" href="download.html">⬇ 下載 Word／PDF</a>',
         '<a class="hero-btn" href="appendix.html">附錄</a>',
-        '<a class="hero-btn" href="untranslated.html">未譯清單</a>',
         '<span class="homehero-hint">站內全文 <code>Ctrl/⌘ K</code>；瀏覽器尋找 '
         '<code>Ctrl/⌘ F</code></span>',
         '</div>',
@@ -112,8 +110,7 @@ def build_search(nav):
             '<p class="byline">站內全文：<code>Ctrl/⌘ K</code>；瀏覽器尋找仍用 '
             '<code>Ctrl/⌘ F</code>。可用 ↑↓ 選擇結果、Enter 開啟。</p>'
             '<p class="hint searchnav">全站：<a href="index.html">目錄</a> · '
-            '<a href="appendix.html">附錄</a> · '
-            '<a href="untranslated.html">未譯清單</a></p>'
+            '<a href="appendix.html">附錄</a></p>'
             '<div class="searchbar">'
             '<input id="q" type="search" placeholder="輸入關鍵字，例如：羯磨、波羅夷、安居" '
             'autocomplete="off" autofocus aria-label="全文搜尋">'
@@ -130,94 +127,6 @@ def build_search(nav):
                    book_short='全文搜尋', book_label='全站全文搜尋',
                    body_class='page-search',
                    description='全站全文搜尋：經文原文與白話逐段比對。')
-
-
-# ── 未譯清單 ────────────────────────────────────────────────
-def nav_page_stems(vol):
-    """nav 卷條目 → 頁面 stem 清單（一篇一頁：secs[2] 是篇頁）。"""
-    secs = vol.get('secs') or []
-    stems = [s[2] for s in secs
-             if isinstance(s, (list, tuple)) and len(s) > 2 and s[2]]
-    if stems and len(stems) == len(secs):
-        return stems
-    return [vol.get('v')] if vol.get('v') else []
-
-
-def vol_pages(out, vol):
-    """要統計的頁面：卷頁還是完整單頁（有 pair）就用卷頁；
-    已是卷目錄頁（切頁器跑過）才展開成篇頁。兩種狀態都可重跑。"""
-    v = vol.get('v')
-    if not v:
-        return []
-    p = os.path.join(SITE, out or '', v + '.html')
-    if os.path.exists(p) and rd(p).count('<div class="pair'):
-        return [v]
-    return nav_page_stems(vol) or [v]
-
-
-def page_label(vol, stem):
-    v = vol.get('v') or ''
-    if stem == v:
-        return v
-    for s in vol.get('secs') or []:
-        if isinstance(s, (list, tuple)) and len(s) > 2 and s[2] == stem:
-            return '%s・%s' % (v, s[1])
-    return stem
-
-
-def scan_pages(nav):
-    total_pairs = missing = 0
-    missing_pages = []
-    for b in nav.get('books', []):
-        out = b.get('out')
-        for v in b.get('vols', []):
-            for stem in vol_pages(out, v):
-                p = os.path.join(SITE, out or '', stem + '.html')
-                if not os.path.exists(p):
-                    continue
-                t = rd(p)
-                n = t.count('<div class="pair')
-                m = len(re.findall(r'class="pair[^"]*\bmissing\b', t))
-                total_pairs += n
-                missing += m
-                if m:
-                    missing_pages.append((out, stem, page_label(v, stem), m))
-    return total_pairs, missing, missing_pages
-
-
-def build_untranslated(nav):
-    total_pairs, missing, missing_pages = scan_pages(nav)
-    # 資持記卷末校勘：定稿 4182 筆 − 上站 4157 段 = 25 筆（依 AGENTS 0.5 不譯、不上站）
-    zrows = sum(1 for x in io.open(os.path.join(B, '定稿', 'zhichi.jsonl'), encoding='utf-8')
-                if x.strip())
-    zpairs = 0
-    zb = next(b for b in nav['books'] if b.get('out') == 'zhichi')
-    for v in zb['vols']:
-        for stem in vol_pages('zhichi', v):
-            p = os.path.join(SITE, 'zhichi', stem + '.html')
-            if os.path.exists(p):
-                zpairs += rd(p).count('<div class="pair')
-    skipped = max(0, zrows - zpairs)
-    parts = ['<h1>未譯段落清單</h1>',
-             '<p class="byline">全書逐段比對「原文／白話」的結果，數字由實際頁面統計</p>',
-             '<div class="intro"><p>目前未譯段落：<b>%d</b> 段（頁面上 <code>.pair.missing</code> 共 %d 段）。</p>'
-             % (missing, missing),
-             '<p>上站段落總數：<b>%d</b> 段；每一段原文都已附白話。</p>' % total_pairs]
-    if missing_pages:
-        parts.append('<p>有未譯段的頁面：</p><ul>')
-        for out, stem, label, m in missing_pages:
-            parts.append('<li><a href="%s/%s.html">%s　%s</a>：%d 段</li>'
-                         % (out, stem, html.escape(TITLES.get(out, out)),
-                            html.escape(label), m))
-        parts.append('</ul>')
-    parts.append('<p>另有資持記卷末校勘 <b>%d</b> 筆（定稿 %d 筆 − 上站 %d 段），'
-                 '依規則不譯、不上站，不是「未譯」：key %d–%d。</p>'
-                 % (skipped, zrows, zpairs, 4182 - skipped + 1, 4182))
-    parts.append('<p>空譯段落不會再被靜默丟棄：生成器會輸出「（本段尚未白話）」並計入上表。</p>')
-    parts.append('</div>')
-    return SA.page('未譯段落清單', ''.join(parts),
-                   book_short='未譯清單', book_label='未譯段落清單',
-                   description='未譯段落統計：由頁面實際資料計算。')
 
 
 # ── 附錄 ────────────────────────────────────────────────────
@@ -280,8 +189,6 @@ def main():
     wr(os.path.join(SITE, 'search.html'), build_search(nav))
     print('search.html')
     copy_assets()
-    wr(os.path.join(SITE, 'untranslated.html'), build_untranslated(nav))
-    print('untranslated.html')
     wr(os.path.join(SITE, 'appendix.html'), build_appendix())
     print('appendix.html')
 

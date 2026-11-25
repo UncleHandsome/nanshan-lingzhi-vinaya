@@ -13,7 +13,7 @@
 """
 import html
 
-ASSET_VERSION = '62'
+ASSET_VERSION = '63'
 
 BOOK_OPTIONS = [
     ('行事鈔', 'xingshichao/卷上.html'),
@@ -145,9 +145,11 @@ def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
                 prev_label=None, next_label=None):
     """全站共用頂部列（單列）：固定骨架
 
-    ☰ 目錄｜⌂ 首頁｜書目切換｜分卷導覽｜目前位置｜……｜閱讀工具｜搜尋｜下載
+    ☰ 目錄｜⌂ 首頁｜書目切換｜南山律典｜分卷導覽｜目前位置｜……｜
+    閱讀工具｜下載｜搜尋框＋搜尋鈕
 
-    幾何固定：書目切換在首頁鈕之後；搜尋、下載固定在右緣（閱讀工具在它們
+    幾何固定：書目切換在首頁鈕之後；品牌名固定在書目切換與分卷導覽之間
+    （v63：不隨分卷寬度跳動）；下載、搜尋框固定在右緣（閱讀工具在它們
     左側，寬度由 crumb 吸收），首頁／搜尋頁／內文頁位置一致。
     書目切換在首頁／搜尋頁顯示「選書…」，選了直接進該書第一卷。
     """
@@ -167,17 +169,21 @@ def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
                + title_attr + '>' + ''.join(opts) + '</select></div>')
 
     vol = volnav_html(prev_url, next_url, prev_label, next_label, current_label)
-    crumb = ['<a class="tb-home" href="' + prefix + 'index.html">南山律典</a>']
-    # 有分卷導覽時，目前卷已經顯示在分卷區，crumb 不再重複；只留「南山律典」，
-    # 內文頁再由 ui.js 在後面接「目前篇名」。
+    # v63：品牌名固定在「書目切換」之後、「分卷導覽」之前。
+    # 分卷導覽寬度隨頁面變動，品牌若放在 crumb 內會左右跳。
+    brand = ('<a class="tb-brand" href="' + prefix + 'index.html" '
+             'title="南山律典：回首頁">南山律典</a>')
+    crumb = []
+    # 有分卷導覽時，目前卷已經顯示在分卷區；沒有分卷時（首頁／搜尋／下載等）
+    # 顯示目前位置。內文頁的「目前篇名」由 ui.js 接在 crumb 後面。
     if current_label and not vol:
-        crumb.append('<span class="tb-sep" aria-hidden="true">›</span>')
         crumb.append('<span class="tb-where">' + e(current_label) + '</span>')
 
     search = (
         '<form class="tb-searchform" action="' + prefix + 'search.html" method="get" role="search">'
         '<input id="tbq" name="q" type="search" placeholder="搜尋…" autocomplete="off" '
         'aria-label="全站全文搜尋" title="輸入關鍵字後按 Enter（Ctrl/⌘ K）">'
+        '<button class="tb-searchgo" type="submit" title="送出搜尋">搜尋</button>'
         '</form>'
         '<a class="tb-btn tb-searchbtn" href="' + prefix + 'search.html" '
         'aria-label="全文搜尋" title="全文搜尋（Ctrl/⌘ K）">搜尋</a>'
@@ -191,6 +197,7 @@ def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
         '<a class="tb-btn tb-gohome" href="' + prefix + 'index.html" aria-label="回到首頁" title="回到首頁">'
         '<span class="tb-homeicon" aria-hidden="true">⌂</span><span class="tb-homelabel">首頁</span></a>'
         + booksel
+        + brand
         + vol
         + '<div class="tb-crumb">' + ''.join(crumb) + '</div>'
         '<div class="tb-right">'
@@ -204,7 +211,8 @@ def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
         '<a class="skip-link" href="#main">跳至正文</a>'
         + bars
         + '<button id="edgepeek" class="edgepeek" type="button" aria-controls="sidebar" '
-        'aria-label="顯示目錄" title="顯示目錄：滑鼠移到左緣，或按 [／Alt+M">'
+        'aria-label="顯示目錄" title="顯示目錄：滑鼠移到左緣，或按 [／Alt+M；'
+        '展開後可按側欄「📌 固定」">'
         '<span class="sr-only">顯示目錄</span></button>'
         '<div class="navscrim" id="navscrim" hidden></div>'
     )
@@ -222,6 +230,8 @@ def nav_parts(prefix='', prev_url=None, next_url=None,
     parts = [
         '<nav id="sidebar" aria-label="全書目錄">',
         '<div class="navhead"><p class="brand"><a href="' + prefix + 'index.html">南山律典・白話對照</a></p>'
+        '<button id="navpin" class="navpin" type="button" aria-label="固定目錄" '
+        'title="固定目錄：不再自動收起">📌 固定</button>'
         '<button id="navclose" class="iconbtn" type="button" aria-label="關閉目錄">×</button>'
         '<button id="navcollapse" class="navcollapse" type="button" aria-label="收合目錄">⟨</button></div>',
         '<div id="navtree" data-root="' + prefix + '" '

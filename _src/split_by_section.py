@@ -29,7 +29,7 @@
     python -X utf8 _src/render_canonical_cb.py --apply     # 行事鈔/戒疏/業疏/尼鈔/義鈔
     python -X utf8 _src/render_zhichi.py                   # 資持記（先產 .new）
     python -X utf8 _src/render_zhichi.py --nav --apply     # 套用 .new
-    python -X utf8 _src/render_static.py                   # 首頁/搜尋/附錄/未譯＋共用資源
+    python -X utf8 _src/render_static.py                   # 首頁/搜尋/附錄＋共用資源
     python -X utf8 _src/build_download_page.py
     python -X utf8 _src/site_hebian2.py                    # 合編
     python -X utf8 _src/split_by_section.py                # ← 本程式：切篇＋更新 nav.json

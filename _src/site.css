@@ -1569,17 +1569,28 @@ body.page-home .ui-dl-inline { display: none !important; }
 body.page-home .content { display: flex; flex-direction: column; }
 body.page-home .content > .sitefoot { margin-top: auto; }
 
-/* ── 首頁書卡 v67：左右兩欄（v65 排列），上下放寬用滿版面 ── */
-.home-grid { gap: 1.35rem; margin: 1.1rem 0 1.2rem; }
-.home-col { gap: 1.35rem; }
-.home-grid .card { padding: 1.9rem 1.6rem 1.95rem; border-radius: 9px; }
-.home-grid .card h2 { font-size: 1.26rem; line-height: 1.4; }
-.home-grid .card .cardmeta { font-size: 12px; }
-.home-grid .card .grp { margin-top: 1.05rem; gap: .42rem; }
-.home-grid .card .grp a { padding: .28rem .75rem; font-size: 14px; border-radius: 6px; }
-@media (max-width: 900px) {
-  .home-grid .card { padding: .85rem .9rem .9rem; }
-  .home-grid .card h2 { font-size: 1.05rem; }
-  .home-grid .card .grp { margin-top: .55rem; gap: .32rem; }
-  .home-grid .card .grp a { font-size: 12.5px; padding: .14rem .52rem; }
+/* ── 首頁書卡 v68：左右兩欄、隨視窗高度自適應（整頁一屏、不用捲動） ── */
+@media (min-width: 1101px) {
+  body.page-home .wrap { min-height: calc(100vh - var(--chrome-h)); }
+  body.page-home main {
+    display: flex; flex-direction: column;
+    padding-bottom: 1rem;
+  }
+  body.page-home .content > .sitefoot { padding-bottom: 1rem; }
+  .home-grid { flex: 0 1 auto; gap: clamp(.5rem, 1.1vh, 1rem); margin: .7rem 0 .6rem; }
+  .home-col { gap: clamp(.5rem, 1.1vh, 1rem); }
+  .home-grid .card {
+    padding: clamp(.55rem, 1.3vh, 1.15rem) clamp(.85rem, 1.1vw, 1.35rem);
+    border-radius: 8px;
+  }
+  .home-grid .card h2 { font-size: clamp(1.02rem, 1.4vh, 1.16rem); }
+  .home-grid .card .cardmeta { font-size: clamp(10.5px, 1.2vh, 12px); }
+  .home-grid .card .grp { margin-top: clamp(.3rem, .85vh, .7rem); gap: clamp(.22rem, .6vh, .38rem); }
+  .home-grid .card .grp a {
+    font-size: clamp(11.5px, 1.5vh, 13.5px);
+    padding: clamp(.08rem, .26vh, .2rem) clamp(.45rem, .7vw, .68rem);
+  }
+}
+@media (max-width: 1100px) {
+  .home-grid .card { padding: .72rem .82rem .76rem; }
 }

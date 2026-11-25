@@ -222,7 +222,7 @@ def build_appendix():
 
 # ── 共用資源 ────────────────────────────────────────────────
 def copy_assets():
-    for name in ('site.css', 'nav.js', 'search.js'):
+    for name in ('site.css', 'nav.js', 'search.js', 'ui.js'):
         dst = 'style.css' if name == 'site.css' else name
         shutil.copyfile(os.path.join(SRC, name), os.path.join(SITE, dst))
         print('copied %s -> %s' % (name, dst))

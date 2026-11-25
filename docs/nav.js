@@ -442,7 +442,7 @@
         last = top;
         window.scrollTo(0, top);
       }
-      if (++tries < 12) setTimeout(settle, tries < 6 ? 50 : 120);
+      if (++tries < 24) setTimeout(settle, tries < 6 ? 50 : 150);
     })();
   }
 
@@ -821,7 +821,15 @@
   });
 
   window.addEventListener('hashchange', function () { setTimeout(jumpToHash, 0); });
-  window.addEventListener('load', function () { setTimeout(jumpToHash, 0); });
+  // 長頁（合編可達 30 萬 px）載入初期版面可能還在變動：load 後再校正，
+  // 900ms 後若使用者還沒自己捲動，再補一次，避免落在錯的段落。
+  window.addEventListener('load', function () {
+    setTimeout(jumpToHash, 0);
+    setTimeout(function () { if (!userMoved) jumpToHash(); }, 900);
+  });
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted && location.hash) setTimeout(jumpToHash, 0);
+  });
 
   // 回頂端
   var top = document.getElementById('toTop');

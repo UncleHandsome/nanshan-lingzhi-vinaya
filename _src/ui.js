@@ -211,36 +211,10 @@
   }
   window.addEventListener('scroll', onScroll, { passive: true });
 
-  // ── 段落錨點 § ─────────────────────────────────────────
-  var mark = null;
-  function initMarks() {
-    mark = null; if (false) mark = document.createElement('a');
-    mark.className = 'ui-anchor';
-    mark.textContent = '§';
-    mark.title = '複製本段連結';
-    mark.href = '#';
-    document.body.appendChild(mark);
-    document.addEventListener('mouseover', function (ev) {
-      var p = ev.target.closest ? ev.target.closest('.pair[id]') : null;
-      if (!p || !p.id) { mark.classList.remove('show'); return; }
-      var r = p.getBoundingClientRect();
-      // 放在文字欄左側的留白，避免壓到經文；空間不足（窄螢幕）就不顯示
-      var gutter = r.left - 30;
-      if (gutter < 6) { mark.classList.remove('show'); return; }
-      mark.style.top = Math.max(4, r.top + window.scrollY + 3) + 'px';
-      mark.style.left = (gutter + window.scrollX) + 'px';
-      mark.setAttribute('data-copy-url', location.origin + location.pathname + '#' + p.id);
-      mark.setAttribute('title', '複製本段連結');
-      mark.classList.add('show');
-    });
-    document.addEventListener('mouseout', function (ev) {
-      var p = ev.target.closest ? ev.target.closest('.pair[id]') : null;
-      if (p) mark.classList.remove('show');
-    });
-    mark.addEventListener('mouseenter', function () { mark.classList.add('show'); });
-  }
+  // ── 段落錨點 § 已移除（浮動標記點不到、且會壓到版面）────────
+  // 複製連結改由頂部列的「複製」按鈕（nav.js 綁定）提供。
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { init(); initMarks(); });
-  } else { init(); initMarks(); }
+    document.addEventListener('DOMContentLoaded', init);
+  } else { init(); }
 })();

@@ -659,7 +659,7 @@ body.par main::after { content: ""; display: block; clear: both; }
 .pair .o {
   background: var(--src-bg); border-left: 3px solid var(--src-border);
   padding: .45rem .8rem; color: var(--src-fg);
-  font-size: 17px; line-height: 1.95; border-radius: 0 4px 4px 0;
+  font-size: calc(var(--fs) - 1px); line-height: 1.95; border-radius: 0 4px 4px 0;
   text-align: justify;
 }
 .pair .o.ji { background: var(--ji-bg); border-left-color: var(--ji-border); color: var(--ji-fg); }
@@ -671,14 +671,14 @@ body.par main::after { content: ""; display: block; clear: both; }
 .pair .o2 {
   background: var(--ji-bg); border-left: 3px solid var(--ji-border);
   padding: .45rem .8rem; color: var(--ji-fg);
-  font-size: 17px; line-height: 1.95; text-align: justify;
+  font-size: calc(var(--fs) - 1px); line-height: 1.95; text-align: justify;
   font-family: "DFKai-SB", serif;
 }
-.pair .t { margin: .45rem 0 0; font-size: 17px; line-height: 1.95; text-align: justify; color: var(--fg); background: transparent; }
+.pair .t { margin: .45rem 0 0; font-size: calc(var(--fs) - 1px); line-height: 1.95; text-align: justify; color: var(--fg); background: transparent; }
 /* 空譯段（P1-10）：如實顯示，不靜默丟段 */
 .pair.missing .t { color: var(--fg2); font-style: italic; }
 h2.sec {
-  font-size: 19px; margin: 2.2rem 0 .8rem; padding: .35rem 0;
+  font-size: calc(var(--fs) + 1px); margin: 2.2rem 0 .8rem; padding: .35rem 0;
   border-bottom: 2px solid var(--line); color: var(--fg);
   text-align: center;
 }

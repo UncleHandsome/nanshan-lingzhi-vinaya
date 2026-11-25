@@ -23,6 +23,7 @@ SITE = SH.SITE
 OUT = SH.OUT
 HB = SH.HB
 PAIRS = os.path.join(B, '對位結果_20261125', 'pairs_v2_index.json')
+SEGMAP_PATH = os.path.join(B, '對位結果_20261125', 'seg_groups.json')
 
 
 def main():
@@ -60,6 +61,47 @@ def main():
 
     # 實際存在於合編頁面的鈔段 key（篇題列會被 build_chao 排除）
     chao_unit_keys = {str(u['key']) for u in chao}
+
+    # ── 句段級對位 ──────────────────────────────────────────────
+    # 一個鈔段（定稿單位）依 segments 拆成數個句段 pair；
+    # 記段預設只「掛在整個鈔段之後」，若 seg_groups.json 有指定，
+    # 則改為掛在它所解釋的那一句段之下。
+    segmap = {}
+    if os.path.exists(SEGMAP_PATH):
+        segmap = {k: v for k, v in json.load(io.open(SEGMAP_PATH, encoding='utf-8')).items()
+                  if not k.startswith('_')}
+
+    key_pos = {}
+    key_last_seq = {}
+    for u in chao:
+        k = str(u['key'])
+        key_pos.setdefault(k, u['pos'])
+        key_last_seq[k] = max(key_last_seq.get(k, 0), u['seq'])
+
+    # 每個記段的落點：(鈔 key, 句段序號 1 起；None = 整段最後；'tail' = 鈔文後延伸)
+    ji_target = {}
+    for i, u in enumerate(ji):
+        k = str(u['key'])
+        targets = [t for t in (ji2c.get(k) or []) if t in chao_unit_keys]
+        if not targets:
+            continue
+        t = min(targets, key=lambda x: key_pos.get(x, 1 << 30))
+        ji_target[i] = (t, None)
+    for ckey, spec in segmap.items():
+        for s, jkeys in (spec.get('groups') or {}).items():
+            for jk in jkeys:
+                for jidx in ji_by_key.get(str(jk), []):
+                    if ji_target.get(jidx, (None,))[0] == ckey:
+                        ji_target[jidx] = (ckey, int(s))
+        for jk in ((spec.get('tail') or {}).get('keys') or []):
+            for jidx in ji_by_key.get(str(jk), []):
+                if ji_target.get(jidx, (None,))[0] == ckey:
+                    ji_target[jidx] = (ckey, 'tail')
+    target_ji = collections.defaultdict(list)
+    for jidx, tgt in ji_target.items():
+        target_ji[tgt].append(jidx)
+    for v in target_ji.values():
+        v.sort()
 
     # orphan 記段：沒有鈔段對到，或對到的鈔段不在頁面上（如篇題列）
     orphan_by_vol = collections.defaultdict(list)
@@ -113,8 +155,14 @@ def main():
                     toc.append(['p%d' % ch, label])
                     body.append('<h2 class="sec" id="p%d">%s</h2>' % (ch, SH.esc(label)))
                     stats['sections'] += 1
-            jkeys = c2j.get(str(u['key'])) or []
-            todo = [j for jk in jkeys for j in ji_by_key.get(jk, []) if j not in emitted_ji]
+            k = str(u['key'])
+            spec = segmap.get(k)
+            # 這一句段之下要掛的記段
+            group = target_ji.get((k, u['seq'] + 1), []) if spec else []
+            is_last = u['seq'] >= key_last_seq.get(k, 0)
+            # 沒有句段級指定的記段，一律接在整個鈔段最後
+            rest = target_ji.get((k, None), []) if is_last else []
+            todo = [j for j in group + rest if j not in emitted_ji]
             emit_chao(uidx, many=len(todo) > 1)
             for jidx in todo:
                 emit_ji(jidx, tie=True)
@@ -122,6 +170,19 @@ def main():
                 stats['pairs'] += 1
                 if len(todo) > 1:
                     stats['multi'] += 1
+            if is_last and spec:
+                tail = spec.get('tail') or {}
+                tkeys = [j for jk in (tail.get('keys') or [])
+                         for j in ji_by_key.get(str(jk), [])]
+                tkeys = [j for j in tkeys if j not in emitted_ji]
+                if tkeys:
+                    if tail.get('note'):
+                        body.append('<p class="hint">%s</p>' % SH.esc(tail['note']))
+                    for jidx in tkeys:
+                        emit_ji(jidx, tie=True)
+                    stats['pairs'] += 1
+                    if len(tkeys) > 1:
+                        stats['multi'] += 1
 
         # 本卷 orphan 補在卷末
         for jidx in sorted(orphan_by_vol.get(vol, []), key=lambda x: ji_order[x]):

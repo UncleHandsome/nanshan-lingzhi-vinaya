@@ -1251,3 +1251,17 @@ body {
   .tb-right { gap: .25rem; }
   .tb-readtools button, .tb-seg button { padding: .16rem .3rem !important; }
 }
+
+/* ── 書目切換固定寬度，避免跳動 ─────────────────────────── */
+.tb-crumb { flex: 1 1 auto; }
+.tb-crumb .tb-bookselect,
+#tb-bookpick {
+  flex: 0 0 auto;
+  width: 10.5em; max-width: 10.5em;
+  text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
+}
+.tb-crumb .tb-home { flex: 0 0 auto; }
+.tb-crumb .tb-sep { flex: 0 0 auto; }
+@media (max-width: 900px) {
+  .tb-crumb .tb-bookselect, #tb-bookpick { width: 7.5em; max-width: 7.5em; }
+}

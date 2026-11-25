@@ -222,9 +222,9 @@ def main():
     if left:
         print('WARN 未輸出記段 %d：%s' % (len(left), left[:10]))
 
-    import build_search_index as BSI
-    BSI.build(site=SITE, only=['hebian'], quiet=True)
-
+    # 先更新 nav.json（合編卷條目＝剛重繪的完整卷頁，secs 暫不帶篇頁 stem），
+    # 再重建合編搜尋索引：book_volumes() 才不會拿上一次切篇留下的舊篇頁來索引。
+    # 之後 split_by_section.py 會把 secs 補上篇頁 stem，最後全站索引再重建一次。
     np = os.path.join(SITE, 'nav.json')
     nav = json.load(io.open(np, encoding='utf-8'))
     for b in nav.get('books', []):
@@ -235,6 +235,10 @@ def main():
     tmp = np + '.tmp'
     io.open(tmp, 'w', encoding='utf-8').write(json.dumps(nav, ensure_ascii=False, indent=1) + '\n')
     os.replace(tmp, np)
+
+    import build_search_index as BSI
+    BSI.build(site=SITE, only=['hebian'], quiet=True)
+
     print(json.dumps(stats, ensure_ascii=False))
     return stats
 

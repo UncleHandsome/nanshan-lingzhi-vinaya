@@ -1,6 +1,8 @@
-/* 全站導覽 v11：全站頂部列、書 → 卷 → 篇三層鑽取、所在篇（scroll 推導）、
+/* 全站導覽 v12（一篇一頁）：全站頂部列、書 → 卷 → 篇三層鑽取、所在篇（scroll 推導）、
    閱讀模式（原文／白話／雙欄）、複製本段連結、桌面預設展開側欄、
-   收合後左緣 hover／focus 露出、窄螢幕自動抽屜。 */
+   收合後左緣 hover／focus 露出、窄螢幕自動抽屜。
+   v62：nav.json 的 secs = [anchor, label, 篇頁 stem]；側欄點篇直接進篇頁，
+   「全卷」進卷目錄頁，當前篇用 aria-current="page" 高亮。 */
 (function () {
   'use strict';
 
@@ -9,8 +11,9 @@
 
   var nav = document.getElementById('sidebar') || box.closest('nav');
   var root = box.getAttribute('data-root') || '';
-  var version = box.getAttribute('data-nav-version') || '11';
+  var version = box.getAttribute('data-nav-version') || '12';
   var path = safePath();
+  var curStem = pageStem();
   var isMobileQuery = window.matchMedia ? window.matchMedia('(max-width: 1100px)') : null;
   var BOOK_KEY = 'dsh-nav-book-v3';
   var SCROLL_KEY = 'dsh-nav-scroll-v3:' + path;
@@ -32,6 +35,19 @@
   function safePath() {
     try { return decodeURIComponent(location.pathname); }
     catch (e) { return location.pathname; }
+  }
+
+  // 目前頁面 stem：卷目錄頁是「卷上」，篇頁是「卷上__p3」。
+  function pageStem() {
+    var m = /\/([^\/]+)\.html$/.exec(safePath());
+    return m ? m[1] : '';
+  }
+
+  // 側欄／首頁樹的篇連結：新版 nav 的 sec[2] 是篇頁 stem；
+  // 舊格式（只有兩欄）才退回卷頁 + 錨點，方便尚未重建的頁面。
+  function secHref(bookOut, volName, sec) {
+    if (sec && sec[2]) return root + bookOut + '/' + sec[2] + '.html';
+    return root + bookOut + '/' + volName + '.html#' + (sec ? sec[0] : '');
   }
 
   function readStr(key) {
@@ -123,7 +139,7 @@
           '<ul class="secs">';
         secs.forEach(function (s) {
           var p = secParts(s[1]);
-          html += '<li><a href="' + root + b.out + '/' + v.v + '.html#' + esc(s[0]) +
+          html += '<li><a href="' + secHref(b.out, v.v, s) +
             '" title="' + esc(s[1]) + '">' +
             (p.num ? '<span class="secnum">' + esc(p.num) + '</span>' : '<span class="secdots">·</span>') +
             '<span class="secname">' + esc(p.name) + '</span></a></li>';
@@ -164,22 +180,25 @@
     writeStr(BOOK_KEY, b.out);
 
     var html = '<div class="navvols">';
-    var curVolName = '';
     (b.vols || []).forEach(function (v) {
-      var isCurPage = path.indexOf('/' + b.out + '/' + v.v + '.html') >= 0;
-      if (isCurPage) curVolName = v.v;
-      var open = isCurPage || openVol === v.v;
+      var isCurVolPage = curStem === v.v;
+      var curSecInVol = false;
+      (v.secs || []).forEach(function (s) {
+        if (s[2] && s[2] === curStem) curSecInVol = true;
+      });
+      var open = isCurVolPage || curSecInVol || openVol === v.v;
       var n = (v.secs || []).length;
-      html += '<details class="vol' + (isCurPage ? ' curpage' : '') + '"' + (open ? ' open' : '') +
-        ' data-v="' + esc(v.v) + '">' +
+      html += '<details class="vol' + (isCurVolPage ? ' curpage' : '') + '"' +
+        (open ? ' open' : '') + ' data-v="' + esc(v.v) + '">' +
         '<summary><span class="vname">' + esc(v.v) + '</span>' +
         '<span class="vcount">' + (n ? n + ' 篇' : '全卷') + '</span></summary><ul>' +
-        '<li class="wholevol"><a href="' + root + b.out + '/' + v.v + '.html">全卷</a></li>';
+        '<li class="wholevol"><a href="' + root + b.out + '/' + v.v + '.html">全卷（卷目錄）</a></li>';
       (v.secs || []).forEach(function (s) {
-        var here = isCurPage && location.hash === '#' + s[0];
-        html += '<li><a href="' + root + b.out + '/' + v.v + '.html#' + s[0] +
+        var here = !!(s[2] && s[2] === curStem) ||
+          (!s[2] && isCurVolPage && location.hash === '#' + s[0]);
+        html += '<li><a href="' + secHref(b.out, v.v, s) +
           '" title="' + esc(s[1]) + '"' +
-          (here ? ' class="cursec" aria-current="location"' : '') + '>' + esc(s[1]) + '</a></li>';
+          (here ? ' class="cursec" aria-current="page"' : '') + '>' + esc(s[1]) + '</a></li>';
       });
       html += '</ul></details>';
     });
@@ -262,6 +281,7 @@
       return h.getBoundingClientRect().top + window.pageYOffset;
     });
     secLinks = {};
+    // 一篇一頁後篇連結不再帶 #pN；保留舊格式頁面的同頁錨點對應。
     [].slice.call(box.querySelectorAll('a[href*="#p"]')).forEach(function (a) {
       var u;
       try { u = new URL(a.href, location.href); } catch (e) { return; }
@@ -304,7 +324,9 @@
     }
     // 在第一節之前（頁首 h1／byline 區）也先指向第一節，避免「目前位置」空白
     if (!cur && heads.length) cur = secLinks[heads[0].id] || null;
-    if (setCurrent(cur) && cur) revealLink(cur);
+    // 篇頁只有一節、側欄連結也不帶錨點：保留 render() 靜態標好的 aria-current
+    if (!cur) return;
+    if (setCurrent(cur)) revealLink(cur);
   }
 
   function onScrollSpy() {

@@ -13,7 +13,7 @@
 """
 import html
 
-ASSET_VERSION = '61'
+ASSET_VERSION = '62'
 
 BOOK_OPTIONS = [
     ('行事鈔', 'xingshichao/卷上.html'),
@@ -67,10 +67,14 @@ def uid(prefix, key, suffix=''):
     return '%s%s%s' % (prefix, s, ('-' + str(suffix)) if suffix not in ('', None) else '')
 
 
-def pager_html(prev_url, next_url, prev_label, next_label, index_url):
-    """卷末導覽：`<nav>` landmark，首末卷允許單邊。"""
+def pager_html(prev_url, next_url, prev_label, next_label, index_url,
+               aria_label='卷導覽'):
+    """卷末／篇末導覽：`<nav>` landmark，首末卷（篇）允許單邊。
+
+    卷目錄頁用預設「卷導覽」；篇頁用「篇導覽」（whole-book 篇序 prev/next）。
+    """
     e = html.escape
-    parts = ['<nav class="pager" aria-label="卷導覽">']
+    parts = ['<nav class="pager" aria-label="' + e(aria_label) + '">']
     if prev_url:
         parts.append('<a class="pgprev" rel="prev" href="' + prev_url + '">← '
                      + e(prev_label or '上一卷') + '</a>')

@@ -178,6 +178,8 @@
       nowEl.setAttribute('aria-live', 'polite');
       crumb.appendChild(nowEl);
     }
+    // 篇頁只有一節：頂部列一開始就顯示篇名（卷目錄頁／首頁則留空）
+    if (nowEl && secs.length === 1) nowEl.textContent = secs[0].textContent.trim();
     addDownloadCta();
     buildToc();
     onScroll();
@@ -203,6 +205,7 @@
           var r = secs[i].getBoundingClientRect();
           if (r.top <= base) cur = secs[i].textContent; else break;
         }
+        if (!cur && secs.length === 1) cur = secs[0].textContent.trim();
         if (nowEl.textContent !== cur) nowEl.textContent = cur;
       }
     });

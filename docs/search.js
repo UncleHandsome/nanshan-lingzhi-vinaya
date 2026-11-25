@@ -39,7 +39,8 @@
   }
 
   /* 索引 anchor 由 build_search_index.py 依實際頁面產生：
-     pair-N（六書，第 N 個 pair）或頁面原有 id（合編 sN、篇名 pN）。
+     pair-N（第 N 個 pair）或頁面原有 id（u…、合編 sN、篇名 pN）。
+     一篇一頁後 v 是篇頁 stem（卷上__p3），vv 是卷顯示名。
      帶上 ?q=，著陸後 nav.js 才能在該段內標出關鍵字。 */
   function hitHref(x, q) {
     var url = x.bid + '/' + x.v + '.html';
@@ -74,8 +75,13 @@
     return (start > 0 ? '…' : '') + highlight(t.slice(start, end), terms) + (end < t.length ? '…' : '');
   }
 
+  // 索引條目 v 是篇頁 stem（URL 用），vv 是卷顯示名（比對／顯示用）
+  function entryVol(entry) {
+    return entry.vv || entry.v;
+  }
+
   function score(entry, terms, phrase) {
-    var o = norm(entry.o), t = norm(entry.t), v = norm(entry.v);
+    var o = norm(entry.o), t = norm(entry.t), v = norm(entryVol(entry));
     var s = 0;
     if (o.indexOf(phrase) === 0) s += 12;
     if (o.indexOf(phrase) >= 0) s += 7;
@@ -91,7 +97,7 @@
   }
 
   function matches(entry, terms) {
-    var hay = norm(entry.o) + '\n' + norm(entry.t) + '\n' + norm(entry.v);
+    var hay = norm(entry.o) + '\n' + norm(entry.t) + '\n' + norm(entryVol(entry));
     for (var i = 0; i < terms.length; i++) {
       if (hay.indexOf(terms[i]) < 0) return false;
     }
@@ -190,7 +196,9 @@
         (vol.secs || []).forEach(function (sec) {
           if (out.length >= 8) return;
           if (norm(sec[1]).indexOf(needle) >= 0) {
-            out.push({ bid: book.out, v: vol.v, i: sec[0], title: sec[1], kind: '篇' });
+            // 一篇一頁：sec[2] 是篇頁 stem，直接開篇頁（no #pN）
+            out.push({ bid: book.out, v: (sec[2] || vol.v),
+                       i: (sec[2] ? '' : sec[0]), title: sec[1], kind: '篇' });
           }
         });
       });
@@ -251,9 +259,9 @@
           if (norm(x.o).indexOf(terms[ti]) >= 0) { field = '原文命中'; break; }
           if (norm(x.t).indexOf(terms[ti]) >= 0) { field = '白話命中'; break; }
         }
-        a.innerHTML = '<div class="meta">' + esc(x.v) +
+        a.innerHTML = '<div class="meta">' + esc(x.vv || x.v) +
           (x.s ? '　·　' + esc(x.s) : '') +
-          (x.n ? '　·　本卷第 ' + esc(x.n) + ' 段' : '') +
+          (x.n ? '　·　本篇第 ' + esc(x.n) + ' 段' : '') +
           (field ? '　·　' + field : '') +
           '　<span>跳到該段 →</span></div>' +
           '<div class="o">' + snippet(x.o, terms, 110) + '</div>' +

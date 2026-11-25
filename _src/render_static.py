@@ -133,22 +133,55 @@ def build_search(nav):
 
 
 # ── 未譯清單 ────────────────────────────────────────────────
+def nav_page_stems(vol):
+    """nav 卷條目 → 頁面 stem 清單（一篇一頁：secs[2] 是篇頁）。"""
+    secs = vol.get('secs') or []
+    stems = [s[2] for s in secs
+             if isinstance(s, (list, tuple)) and len(s) > 2 and s[2]]
+    if stems and len(stems) == len(secs):
+        return stems
+    return [vol.get('v')] if vol.get('v') else []
+
+
+def vol_pages(out, vol):
+    """要統計的頁面：卷頁還是完整單頁（有 pair）就用卷頁；
+    已是卷目錄頁（切頁器跑過）才展開成篇頁。兩種狀態都可重跑。"""
+    v = vol.get('v')
+    if not v:
+        return []
+    p = os.path.join(SITE, out or '', v + '.html')
+    if os.path.exists(p) and rd(p).count('<div class="pair'):
+        return [v]
+    return nav_page_stems(vol) or [v]
+
+
+def page_label(vol, stem):
+    v = vol.get('v') or ''
+    if stem == v:
+        return v
+    for s in vol.get('secs') or []:
+        if isinstance(s, (list, tuple)) and len(s) > 2 and s[2] == stem:
+            return '%s・%s' % (v, s[1])
+    return stem
+
+
 def scan_pages(nav):
     total_pairs = missing = 0
     missing_pages = []
     for b in nav.get('books', []):
         out = b.get('out')
         for v in b.get('vols', []):
-            p = os.path.join(SITE, out or '', (v.get('v') or '') + '.html')
-            if not os.path.exists(p):
-                continue
-            t = rd(p)
-            n = t.count('<div class="pair')
-            m = len(re.findall(r'class="pair[^"]*\bmissing\b', t))
-            total_pairs += n
-            missing += m
-            if m:
-                missing_pages.append((out, v.get('v'), m))
+            for stem in vol_pages(out, v):
+                p = os.path.join(SITE, out or '', stem + '.html')
+                if not os.path.exists(p):
+                    continue
+                t = rd(p)
+                n = t.count('<div class="pair')
+                m = len(re.findall(r'class="pair[^"]*\bmissing\b', t))
+                total_pairs += n
+                missing += m
+                if m:
+                    missing_pages.append((out, stem, page_label(v, stem), m))
     return total_pairs, missing, missing_pages
 
 
@@ -158,10 +191,12 @@ def build_untranslated(nav):
     zrows = sum(1 for x in io.open(os.path.join(B, '定稿', 'zhichi.jsonl'), encoding='utf-8')
                 if x.strip())
     zpairs = 0
-    for v in [x.get('v') for x in next(b for b in nav['books'] if b.get('out') == 'zhichi')['vols']]:
-        p = os.path.join(SITE, 'zhichi', v + '.html')
-        if os.path.exists(p):
-            zpairs += rd(p).count('<div class="pair')
+    zb = next(b for b in nav['books'] if b.get('out') == 'zhichi')
+    for v in zb['vols']:
+        for stem in vol_pages('zhichi', v):
+            p = os.path.join(SITE, 'zhichi', stem + '.html')
+            if os.path.exists(p):
+                zpairs += rd(p).count('<div class="pair')
     skipped = max(0, zrows - zpairs)
     parts = ['<h1>未譯段落清單</h1>',
              '<p class="byline">全書逐段比對「原文／白話」的結果，數字由實際頁面統計</p>',
@@ -170,9 +205,10 @@ def build_untranslated(nav):
              '<p>上站段落總數：<b>%d</b> 段；每一段原文都已附白話。</p>' % total_pairs]
     if missing_pages:
         parts.append('<p>有未譯段的頁面：</p><ul>')
-        for out, v, m in missing_pages:
+        for out, stem, label, m in missing_pages:
             parts.append('<li><a href="%s/%s.html">%s　%s</a>：%d 段</li>'
-                         % (out, v, html.escape(TITLES.get(out, out)), html.escape(v), m))
+                         % (out, stem, html.escape(TITLES.get(out, out)),
+                            html.escape(label), m))
         parts.append('</ul>')
     parts.append('<p>另有資持記卷末校勘 <b>%d</b> 筆（定稿 %d 筆 − 上站 %d 段），'
                  '依規則不譯、不上站，不是「未譯」：key %d–%d。</p>'

@@ -597,6 +597,29 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 2.5rem 0; }
 .byline { color: var(--fg2); font-size: 13px; margin: 0 0 1.4rem; }
 .intro { color: var(--fg2); font-size: 14px; margin: 0 0 1.4rem; }
 
+/* ── 卷目錄頁（一篇一頁）：本卷篇目 ── */
+.voltoc {
+  list-style: none; margin: 1rem auto 2.2rem; padding: 0;
+  max-width: 50em;
+}
+.voltoc li { margin: 0; padding: 0; border-bottom: 1px solid var(--line); }
+.voltoc li:first-child { border-top: 1px solid var(--line); }
+.voltoc li a {
+  display: flex; align-items: baseline; gap: 1rem;
+  padding: .72rem .6rem; text-decoration: none;
+  border-radius: 4px;
+}
+.voltoc li a:hover,
+.voltoc li a:focus-visible { background: var(--surface-3); text-decoration: none; }
+.voltoc .tn { color: var(--accent); font-size: 15px; line-height: 1.6; }
+.voltoc .n {
+  margin-left: auto; flex: 0 0 auto;
+  color: var(--fg2); font-size: 12.5px; font-variant-numeric: tabular-nums;
+}
+@media (max-width: 700px) {
+  .voltoc .tn { font-size: 14px; }
+}
+
 /* ── 表格與專題頁 ── */
 table {
   border-collapse: collapse; width: 100%; margin: 1.1rem 0;

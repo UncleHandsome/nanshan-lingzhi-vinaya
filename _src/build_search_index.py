@@ -7,7 +7,11 @@
 後來是由 render_canonical_cb.py 依 `定稿/*.jsonl` 重建；兩邊來源不同，索引裡的
 錨點（sN）在頁面上根本不存在，段落文字也和頁面所見不一致。
 
-本模組改以 `docs/<book>/<vol>.html` 為唯一來源，索引條目和頁面 pair 一一對應。
+本模組改以 `docs/<book>/*.html` 為唯一來源，索引條目和頁面 pair 一一對應。
+
+一篇一頁（v62）後，nav.json 的卷條目 `secs = [[id, label, "<卷>__p<N>"], …]`；
+`book_volumes()` 將每個卷展開成實際的篇頁（索引條目 `v` 是篇頁 stem，
+`vv` 是卷顯示名，供搜尋結果顯示）；卷目錄頁沒有 pair，不產生條目。
 
 錨點規則
 --------
@@ -112,49 +116,67 @@ def _load_nav(site):
         return None
 
 
+def _nav_pages(vol, site, book):
+    """nav.json 的卷條目 → [(頁面 stem, 卷顯示名)]。
+
+    一篇一頁（v62）後，nav 的 secs 是 `[anchor_id, label, "<卷>__p<N>"]`：
+    有頁面 stem 就展開成篇頁（卷目錄頁本身不再有 pair，不必索引）；
+    舊格式（secs 只有兩欄）或篇頁檔案不存在時，退回索引整卷頁。
+    """
+    v = vol.get('v')
+    if not v:
+        return []
+    secs = vol.get('secs') or []
+    stems = []
+    if secs and all(isinstance(s, (list, tuple)) and len(s) > 2 and s[2]
+                    for s in secs):
+        stems = [s[2] for s in secs]
+    elif vol.get('pages'):
+        stems = list(vol['pages'])
+    if stems and all(os.path.exists(os.path.join(site, book, s + '.html'))
+                     for s in stems):
+        return [(s, v) for s in stems]
+    if os.path.exists(os.path.join(site, book, v + '.html')):
+        return [(v, v)]
+    return []
+
+
 def book_volumes(site=SITE):
-    """回傳 [(book, title, [vol...])]，卷序以 nav.json 為準。"""
+    """回傳 [(book, title, [(page_stem, vol_label), ...])]，順序以 nav.json 為準。"""
     nav = _load_nav(site)
     books = []
-    seen = set()
     if nav:
         for b in nav.get('books', []):
             out = b.get('out')
             if not out:
                 continue
-            vols = [v.get('v') for v in b.get('vols', []) if v.get('v')]
-            books.append((out, BOOK_TITLES.get(out) or b.get('title') or out, vols))
-            seen.add(out)
-    d = os.path.join(site, 'hebian')
+            pages = []
+            for vol in b.get('vols', []):
+                pages.extend(_nav_pages(vol, site, out))
+            if pages:
+                books.append((out, BOOK_TITLES.get(out) or b.get('title') or out, pages))
+    if books:
+        return books
+    # nav.json 不可用：退而掃目錄（卷目錄頁無 pair 自然略過，篇頁照樣索引）
     for out in BOOK_ORDER:
-        if out in seen:
-            continue
         dirp = os.path.join(site, out)
         if not os.path.isdir(dirp):
             continue
-        vols = sorted(f[:-5] for f in os.listdir(dirp) if f.endswith('.html'))
-        books.append((out, BOOK_TITLES.get(out, out), vols))
-        seen.add(out)
-    # 補上 nav.json 有列、但目錄裡多出來的卷
-    for i, (out, title, vols) in enumerate(books):
-        dirp = os.path.join(site, out)
-        if not os.path.isdir(dirp):
-            continue
-        have = set(vols)
-        extra = sorted(f[:-5] for f in os.listdir(dirp)
-                       if f.endswith('.html') and f[:-5] not in have)
-        if extra:
-            books[i] = (out, title, vols + extra)
+        pages = [(f[:-5], '') for f in sorted(os.listdir(dirp)) if f.endswith('.html')]
+        if pages:
+            books.append((out, BOOK_TITLES.get(out, out), pages))
     return books
 
 
-def build_book(site, book, vols):
+def build_book(site, book, pages):
+    """pages = [(page_stem, vol_label)]；每篇頁一個條目。"""
     entries = []
-    n_pairs = n_id = n_ord = n_skip = 0
-    for v in vols:
+    n_pages = n_pairs = n_id = n_ord = n_skip = 0
+    for v, vol_label in pages:
         p = os.path.join(site, book, v + '.html')
         if not os.path.exists(p):
             continue
+        n_pages += 1
         t = io.open(p, encoding='utf-8').read()
         for pr in pairs_of_page(t):
             n_pairs += 1
@@ -167,10 +189,10 @@ def build_book(site, book, vols):
             else:
                 anchor = 'pair-%d' % pr['ordinal']
                 n_ord += 1
-            entries.append(dict(v=v, o=pr['o'], t=pr['t'], i=anchor, n=pr['ordinal'] + 1,
-                                s=pr.get('s') or ''))
+            entries.append(dict(v=v, vv=vol_label, o=pr['o'], t=pr['t'], i=anchor,
+                                n=pr['ordinal'] + 1, s=pr.get('s') or ''))
     return dict(title=None, entries=entries), dict(
-        book=book, pairs=n_pairs, entries=len(entries), id_anchor=n_id,
+        book=book, pages=n_pages, pairs=n_pairs, entries=len(entries), id_anchor=n_id,
         ord_anchor=n_ord, skipped=n_skip)
 
 
@@ -192,16 +214,16 @@ def build(site=SITE, only=None, quiet=False):
     os.makedirs(os.path.join(site, 'search'), exist_ok=True)
     manifest = []
     stats = []
-    for book, title, vols in books:
-        data, st = build_book(site, book, vols)
+    for book, title, pages in books:
+        data, st = build_book(site, book, pages)
         data['title'] = title
         write_json_js(os.path.join(site, 'search', book + '.js'),
                       'window.SIDX=window.SIDX||{};window.SIDX["%s"]=' % book, data)
         manifest.append(dict(id=book, title=title, file='search/' + book + '.js'))
         stats.append(st)
         if not quiet:
-            print('%-12s 卷 %2d  pair %5d  索引 %5d（id %d／pair-N %d，跳過無原文 %d）'
-                  % (book, len(vols), st['pairs'], st['entries'],
+            print('%-12s 頁 %3d  pair %5d  索引 %5d（id %d／pair-N %d，跳過無原文 %d）'
+                  % (book, st['pages'], st['pairs'], st['entries'],
                      st['id_anchor'], st['ord_anchor'], st['skipped']))
     # manifest 只覆蓋本次建到的書；全量重建時即全部
     mp = os.path.join(site, 'search', 'manifest.js')
@@ -243,7 +265,7 @@ def verify(site=SITE, books=None):
     """檢查所有索引條目：頁面存在、錨點可解析、段落文字與頁面一致、n 正確。"""
     issues = []
     counts = dict(entries=0, anchor_id=0, anchor_ord=0, anchor_bad=0,
-                  text_ok=0, text_bad=0, pages=0)
+                  text_ok=0, text_bad=0, pages=0, page_set=set())
     cache = {}
     for b in load_manifest(site):
         if books and b['id'] not in books:
@@ -259,6 +281,7 @@ def verify(site=SITE, books=None):
                     cache[key] = None
                 else:
                     counts['pages'] += 1
+                    counts['page_set'].add(key)
                     cache[key] = pairs_of_page(io.open(p, encoding='utf-8').read())
             pairs = cache[key]
             if pairs is None:

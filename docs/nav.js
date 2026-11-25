@@ -87,32 +87,46 @@
   // 首頁與非書頁沒有「目前卷」：側欄只列書目，不顯示空的卷／篇 TOC。
   // 首頁／搜尋頁側欄：書 → 卷 → 篇 三層樹。
   // 點書名、卷名都只展開，不跳頁；點到最後一層（篇）才進入內文。
+  // 篇名拆成「篇號 + 名稱」；合編的「標宗顯德篇」去掉尾字「篇」。
+  function secParts(label) {
+    var m = /^第\s*(\d+)\s*篇[\u3000\s]*(.*)$/.exec(label || '');
+    if (m) return {num: m[1], name: m[2] || label};
+    m = /^(.+?)篇$/.exec(label || '');
+    if (m) return {num: '', name: m[1]};
+    return {num: '', name: label || ''};
+  }
+
   function renderHome() {
     var HOME_ORDER = {xingshichao: 0, zhichi: 1, hebian: 2, jieshu: 3, yeshu: 4, nicao: 5, yichao: 6};
     var books = (DATA.books || []).slice().sort(function (a, b) {
       return (HOME_ORDER[a.out] == null ? 99 : HOME_ORDER[a.out]) -
              (HOME_ORDER[b.out] == null ? 99 : HOME_ORDER[b.out]);
     });
-    var html = '<p class="navgrouplabel">書目（點書名展開）</p><div class="navhometree">';
+    var html = '<p class="navgrouplabel">書目</p><div class="navhometree">';
     books.forEach(function (b) {
       var vols = b.vols || [];
       if (!vols.length) return;
       html += '<details class="navbookhome" data-book="' + esc(b.out) + '">' +
         '<summary><span class="bk">' + esc(b.title) + '</span>' +
-        '<span class="bcount">' + vols.length + ' 卷</span></summary><ul>';
+        '<span class="bcount">' + vols.length + ' 卷</span></summary>' +
+        '<ul class="vols">';
       vols.forEach(function (v) {
         var secs = v.secs || [];
         if (!secs.length) {
-          html += '<li><a class="navvolwhole" href="' + root + b.out + '/' + v.v + '.html">' +
-            esc(v.v) + '</a></li>';
+          html += '<li class="volitem"><a class="navvolwhole" href="' + root + b.out +
+            '/' + v.v + '.html">' + esc(v.v) + '</a></li>';
           return;
         }
-        html += '<li><details class="navvol"><summary>' +
+        html += '<li class="volitem"><details class="navvol"><summary>' +
           '<span class="vname">' + esc(v.v) + '</span>' +
-          '<span class="vcount">' + secs.length + ' 篇</span></summary><ul>';
+          '<span class="vcount">' + secs.length + ' 篇</span></summary>' +
+          '<ul class="secs">';
         secs.forEach(function (s) {
-          html += '<li><a href="' + root + b.out + '/' + v.v + '.html#' +
-            esc(s[0]) + '">' + esc(s[1]) + '</a></li>';
+          var p = secParts(s[1]);
+          html += '<li><a href="' + root + b.out + '/' + v.v + '.html#' + esc(s[0]) +
+            '" title="' + esc(s[1]) + '">' +
+            (p.num ? '<span class="secnum">' + esc(p.num) + '</span>' : '<span class="secdots">·</span>') +
+            '<span class="secname">' + esc(p.name) + '</span></a></li>';
         });
         html += '</ul></details></li>';
       });

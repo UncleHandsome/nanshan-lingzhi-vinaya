@@ -13,7 +13,7 @@
 """
 import html
 
-ASSET_VERSION = '55'
+ASSET_VERSION = '56'
 
 BOOK_OPTIONS = [
     ('行事鈔', 'xingshichao/卷上.html'),
@@ -96,7 +96,6 @@ def tools_html():
         '<button type="button" data-fs="reset" title="重設字級">100%</button>'
         '<button type="button" data-fs="inc" title="放大字級">A＋</button>'
         '</span>'
-        '<button type="button" class="ui-toolstoggle" title="顯示／隱藏閱讀工具">▾</button>'
         '<span class="tb-seg tb-labelseg" role="group" aria-label="隱藏段別">'
         '<button type="button" data-hide-label="j" aria-pressed="false" title="隱藏記文">記文</button>'
         '<button type="button" data-hide-label="z" aria-pressed="false" title="隱藏註文">註文</button>'
@@ -136,26 +135,38 @@ def volnav_html(prev_url=None, next_url=None, prev_label=None,
 def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
                 tools=False, prev_url=None, next_url=None,
                 prev_label=None, next_label=None):
-    """全站共用頂部列：☰ 目錄／分卷／書名・卷／全域搜尋／常駐閱讀工具。
+    """全站共用頂部列。固定兩層骨架：
 
-    全域搜尋：≥1200px 顯示 compact 輸入框（Enter 送 search.html），窄螢幕退回「搜尋」按鈕。
-    分卷與閱讀工具都直接顯示，沒有下拉面板。
+    第一列（所有頁面，幾何固定）：
+      ☰ 目錄｜⌂ 首頁｜書目切換｜分卷導覽｜目前位置｜……｜搜尋｜下載
+    第二列（只有內文頁）：閱讀工具（顯示模式／並排／複製／字級／段別）。
+
+    首頁、搜尋頁、內文頁的「書目切換／搜尋／下載」位置完全一致；
+    分卷與目前位置是唯一會依頁面增減的區塊，吃掉中間彈性空間。
+    書目切換在首頁／搜尋頁顯示「選書…」，選了直接進該書第一卷。
     """
     e = html.escape
-    crumb = ['<a class="tb-home" href="' + prefix + 'index.html">南山律典</a>']
-    if book_short:
-        title_attr = (' title="%s"' % e(book_label)) if book_label else ''
-        crumb.append('<span class="tb-sep tb-sep-home" aria-hidden="true">›</span>')
-        opts = ''.join('<option value="%s"%s>%s</option>'
-                       % (prefix + href, ' selected' if short == book_short else '', short)
-                       for short, href in BOOK_OPTIONS)
-        crumb.append('<select id="tb-bookpick" class="tb-bookselect" aria-label="切換書目"'
-                     + title_attr + '>' + opts + '</select>')
-    if current_label:
-        if book_short:
-            crumb.append('<span class="tb-sep" aria-hidden="true">・</span>')
-        crumb.append('<span class="tb-where">' + e(current_label) + '</span>')
+    shorts = dict(BOOK_OPTIONS)
+    real = book_short in shorts
+    opts = []
+    if not real:
+        opts.append('<option value="" selected>選書…</option>')
+    for short, href in BOOK_OPTIONS:
+        opts.append('<option value="%s"%s>%s</option>'
+                    % (prefix + href,
+                       ' selected' if real and short == book_short else '', short))
+    title_attr = (' title="%s"' % e(book_label)) if book_label else ''
+    booksel = ('<div class="tb-bookslot">'
+               '<select id="tb-bookpick" class="tb-bookselect" aria-label="切換書目"'
+               + title_attr + '>' + ''.join(opts) + '</select></div>')
 
+    vol = volnav_html(prev_url, next_url, prev_label, next_label, current_label)
+    crumb = ['<a class="tb-home" href="' + prefix + 'index.html">南山律典</a>']
+    # 有分卷導覽時，目前卷已經顯示在分卷區，crumb 不再重複；只留「南山律典」，
+    # 內文頁再由 ui.js 在後面接「目前篇名」。
+    if current_label and not vol:
+        crumb.append('<span class="tb-sep" aria-hidden="true">›</span>')
+        crumb.append('<span class="tb-where">' + e(current_label) + '</span>')
 
     search = (
         '<form class="tb-searchform" action="' + prefix + 'search.html" method="get" role="search">'
@@ -166,22 +177,27 @@ def topbar_html(prefix='', current_label=None, book_label=None, book_short=None,
         'aria-label="全文搜尋" title="全文搜尋（Ctrl/⌘ K）">搜尋</a>'
     )
 
-    return (
-        '<a class="skip-link" href="#main">跳至正文</a>'
+    bars = (
         '<header class="topbar">'
         '<button id="navtoggle" class="tb-btn tb-menu" type="button" aria-controls="sidebar" '
         'aria-expanded="true" aria-label="開合目錄" title="開合目錄（[ 或 Alt+M）">'
         '<span class="tb-ico" aria-hidden="true">☰</span><span class="tb-menulabel">目錄</span></button>'
         '<a class="tb-btn tb-gohome" href="' + prefix + 'index.html" aria-label="回到首頁" title="回到首頁">'
         '<span class="tb-homeicon" aria-hidden="true">⌂</span><span class="tb-homelabel">首頁</span></a>'
-        + volnav_html(prev_url, next_url, prev_label, next_label, current_label)
+        + booksel
+        + vol
         + '<div class="tb-crumb">' + ''.join(crumb) + '</div>'
-        '<div class="tb-right">'
-        '<a class="tb-btn tb-dl" href="' + prefix + 'download.html" '
-        'title="下載 Word／PDF 對照本" aria-label="下載 Word 與 PDF">下載</a>'
-        + search + (tools_html() if tools else '') + '</div>'
-        + '</header>'
-        '<button id="edgepeek" class="edgepeek" type="button" aria-controls="sidebar" '
+        '<div class="tb-right">' + search
+        + '<a class="tb-btn tb-dl" href="' + prefix + 'download.html" '
+        'title="下載 Word／PDF 對照本" aria-label="下載 Word 與 PDF">下載</a></div>'
+        '</header>'
+    )
+    if tools:
+        bars += '<div class="toolsbar" id="toolsbar">' + tools_html() + '</div>'
+    return (
+        '<a class="skip-link" href="#main">跳至正文</a>'
+        + bars
+        + '<button id="edgepeek" class="edgepeek" type="button" aria-controls="sidebar" '
         'aria-label="顯示目錄" title="顯示目錄：滑鼠移到左緣，或按 [／Alt+M">'
         '<span class="sr-only">顯示目錄</span></button>'
         '<div class="navscrim" id="navscrim" hidden></div>'
@@ -242,7 +258,8 @@ def page(title, body, prefix='', prev_url=None, next_url=None,
     classes = [c for c in (body_class, 'page-reader' if tools else '') if c]
     bc = (' class="%s"' % e(' '.join(classes))) if classes else ''
     return (
-        '<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">'
+        '<!doctype html><html lang="zh-Hant"' + (' class="has-tools"' if tools else '') + '>'
+        '<head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
         '<title>' + e(title) + '｜南山律典・白話對照</title>'
         + desc +

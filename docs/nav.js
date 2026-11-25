@@ -296,11 +296,16 @@
   });
 
   function topGap() {
-    var bar = document.querySelector('.topbar');
-    if (!bar) return 14;
-    var cs = window.getComputedStyle(bar);
-    if (cs.display === 'none') return 14;
-    return bar.getBoundingClientRect().height + 12;
+    // 頂部列＋（內文頁的）閱讀工具列，兩層加起來才是內容真正的上緣
+    var h = 0;
+    ['.topbar', '.toolsbar'].forEach(function (sel) {
+      var bar = document.querySelector(sel);
+      if (!bar) return;
+      var cs = window.getComputedStyle(bar);
+      if (cs.display === 'none') return;
+      h += bar.getBoundingClientRect().height;
+    });
+    return h > 0 ? h + 12 : 14;
   }
 
   // 搜尋索引的錨點有三種：

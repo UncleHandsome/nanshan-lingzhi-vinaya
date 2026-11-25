@@ -32,13 +32,6 @@
   applyFS(getFS());
 
   document.addEventListener('click', function (ev) {
-    var tt = ev.target.closest ? ev.target.closest('.ui-toolstoggle') : null;
-    if (tt) {
-      document.body.classList.toggle('ui-tools-collapsed');
-      tt.textContent = document.body.classList.contains('ui-tools-collapsed') ? '▸' : '▾';
-      ev.preventDefault();
-      return;
-    }
     var t = ev.target.closest ? ev.target.closest('[data-fs]') : null;
     if (t) {
       var pct = getFS();
@@ -200,10 +193,17 @@
       var y = window.scrollY || document.documentElement.scrollTop || 0;
       updateBar();
       if (nowEl) {
+        // 「目前篇名」判定的門檻＝頂部列＋工具列實際高度
+        var base = 45;
+        var bar = document.querySelector('.topbar');
+        if (bar) base = bar.getBoundingClientRect().height;
+        var tbar = document.querySelector('.toolsbar');
+        if (tbar) base += tbar.getBoundingClientRect().height;
+        base += 30;
         var cur = '';
         for (var i = 0; i < secs.length; i++) {
           var r = secs[i].getBoundingClientRect();
-          if (r.top <= 120) cur = secs[i].textContent; else break;
+          if (r.top <= base) cur = secs[i].textContent; else break;
         }
         if (nowEl.textContent !== cur) nowEl.textContent = cur;
       }

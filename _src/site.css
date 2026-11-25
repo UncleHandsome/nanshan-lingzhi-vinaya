@@ -1193,3 +1193,26 @@ body {
     display: inline-block; margin-left: .2rem;
   }
 }
+
+/* ── 下載入口強化 ───────────────────────────────────────── */
+.tb-searchform input { width: 8.5em !important; }
+@media (min-width: 1200px) { .tb-searchform input { width: 10em !important; } }
+.tb-dl {
+  background: var(--accent) !important; color: #fff !important; font-weight: 700;
+  border: 1px solid var(--accent) !important; border-radius: 5px;
+  padding: 0 .55rem !important; line-height: 1.5;
+}
+.tb-dl:hover { background: var(--accent2) !important; border-color: var(--accent2) !important; }
+
+/* 頁面右上角的大下載鈕（跟著內容） */
+.ui-dl-inline {
+  float: right; margin: .2rem 0 .8rem 1rem;
+  display: inline-block; padding: .38rem .8rem; border-radius: 6px;
+  background: var(--surface-3); border: 1px solid var(--accent2);
+  color: var(--accent); font-weight: 700; font-size: 13px; text-decoration: none;
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif; white-space: nowrap;
+}
+.ui-dl-inline:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+@media (max-width: 700px) {
+  .ui-dl-inline { float: none; display: block; text-align: center; margin: .4rem 0 .8rem; }
+}

@@ -160,6 +160,20 @@
     else if (k === 't' && toc) { toc.classList.toggle('open'); ev.preventDefault(); }
   });
 
+
+  // ── 頁面右上角的大下載鈕 ───────────────────────────────
+  function addDownloadCta() {
+    if (/download\.html?$/.test(location.pathname)) return;
+    var h1 = document.querySelector('main h1');
+    if (!h1) return;
+    var a = document.createElement('a');
+    a.className = 'ui-dl-inline';
+    a.href = 'download.html';
+    a.textContent = '⬇ 下載 Word／PDF';
+    a.title = '下載六書白話對照本（Word／PDF）';
+    h1.parentNode.insertBefore(a, h1);
+  }
+
   // ── 目前篇名 + 回到頂端 ────────────────────────────────
   var secs = [], nowEl = null, topBtn = null;
   function init() {
@@ -181,6 +195,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
     document.body.appendChild(topBtn);
+    addDownloadCta();
     buildToc();
     onScroll();
     updateBar();

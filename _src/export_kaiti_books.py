@@ -8,6 +8,7 @@ import argparse
 import io
 import json
 import os
+import shutil
 import subprocess
 import sys
 import uuid
@@ -21,6 +22,22 @@ from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
+
+
+def build_stamp():
+    """回傳 (commit 短碼, 產生時間字串)。
+
+    `BOOKS_STAMP` 環境變數可指定 commit（區域修補單卷時，讓頁尾仍記同一版定稿）。
+    """
+    import subprocess, time
+    h = (os.environ.get('BOOKS_STAMP') or '').strip()
+    if not h:
+        try:
+            h = subprocess.run(['git', 'rev-parse', '--short', 'HEAD'], cwd=B,
+                               capture_output=True, text=True).stdout.strip()
+        except Exception:
+            pass
+    return (h or 'nogit'), time.strftime('%Y-%m-%d %H:%M')
 SOFFICE = r'C:\Program Files\LibreOffice\program\soffice.exe'
 FONT = 'DFKai-SB'  # 標楷體
 BODY_PT = 14
@@ -122,12 +139,24 @@ def clean(s):
 
 
 def header_footer(section, title, vol):
+    # 解除與前一 section 的連結，並清空既有內容，避免頁首頁尾重複疊加
+    try:
+        section.header.is_linked_to_previous = False
+        section.footer.is_linked_to_previous = False
+    except Exception:
+        pass
     hp = section.header.paragraphs[0]
+    for r in list(hp.runs):
+        r._element.getparent().remove(r._element)
     hp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     set_run(hp.add_run('%s　%s' % (title, vol)), 8.5, False, GREY)
     bottom_border(hp)
     fp = section.footer.paragraphs[0]
     fp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    for r in list(fp.runs):
+        r._element.getparent().remove(r._element)
+    _h, _ts = build_stamp()
+    set_run(fp.add_run('定稿 %s　' % _h), 8, False, GREY)
     page_number(fp)
 
 
@@ -145,7 +174,43 @@ def add_title(doc, title, series, vol=''):
     p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     set_run(p.add_run(series + '　唐·道宣律師　撰／述'), 10.5, False, GREY)
     p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    set_run(p.add_run('標楷體 14pt‧緊湊排版‧2026-11-24'), 9.5, False, GREY)
+    _h, _ts = build_stamp()
+    set_run(p.add_run('標楷體 14pt‧緊湊排版‧定稿 commit %s‧%s' % (_h, _ts)), 9.5, False, GREY)
+
+
+def _clear_part(part):
+    """清空 header/footer：只留第一個段落並刪掉所有內容。"""
+    ps = part.paragraphs
+    for extra in list(ps)[1:]:
+        extra._element.getparent().remove(extra._element)
+    p0 = part.paragraphs[0]
+    for r in list(p0.runs):
+        r._element.getparent().remove(r._element)
+    for child in list(p0._element):
+        if child.tag.endswith('}pPr'):
+            continue
+        p0._element.remove(child)
+
+
+def rewrite_headers(doc, title, vol):
+    """統一重寫所有 section 的頁首頁尾，確保不重複。"""
+    _h, _ts = build_stamp()
+    for section in doc.sections:
+        try:
+            section.header.is_linked_to_previous = False
+            section.footer.is_linked_to_previous = False
+        except Exception:
+            pass
+        _clear_part(section.header)
+        hp = section.header.paragraphs[0]
+        hp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        set_run(hp.add_run('%s　%s' % (title, vol)), 8.5, False, GREY)
+        bottom_border(hp)
+        _clear_part(section.footer)
+        fp = section.footer.paragraphs[0]
+        fp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        set_run(fp.add_run('定稿 %s　' % _h), 8, False, GREY)
+        page_number(fp)
 
 
 def build_volume(book, title, series, vol, rows, two, do_pdf=True):
@@ -211,18 +276,34 @@ def build_volume(book, title, series, vol, rows, two, do_pdf=True):
     safe_vol = vol.replace('/', '_').replace('\\', '_')
     base = '%s_%s_白話對照本_%s' % (title, safe_vol, layout)
     docx = os.path.join(ddir, base + '.docx')
+    rewrite_headers(doc, title, vol)
     doc.save(docx)
     prof = 'file:///C:/Temp/lo_kaiti_' + uuid.uuid4().hex[:8]
     if not do_pdf:
         return docx, None, 'docx-only'
+    # 先轉到暫存目錄再搬進目標目錄：OneDrive 目錄偶爾會讓 LibreOffice
+    # 直接寫入失敗（Io Abort 27），轉到 C:\Temp 後複製可避開。
+    tmpdir = os.path.join(os.environ.get('TEMP', r'C:\Temp'),
+                          'lo_pdf_' + uuid.uuid4().hex[:8])
+    os.makedirs(tmpdir, exist_ok=True)
     cmd = [SOFFICE, '--headless', '--norestore', '-env:UserInstallation=' + prof,
-           '--convert-to', 'pdf', '--outdir', pdir, docx]
+           '--convert-to', 'pdf', '--outdir', tmpdir, docx]
     try:
         subprocess.run(cmd, capture_output=True, timeout=1200)
     except subprocess.TimeoutExpired:
+        shutil.rmtree(tmpdir, ignore_errors=True)
         return docx, None, 'timeout'
     pdf = os.path.join(pdir, base + '.pdf')
-    return docx, (pdf if os.path.exists(pdf) else None), 'ok'
+    src = os.path.join(tmpdir, base + '.pdf')
+    moved = False
+    if os.path.exists(src):
+        try:
+            shutil.move(src, pdf)
+            moved = True
+        except Exception:
+            moved = False
+    shutil.rmtree(tmpdir, ignore_errors=True)
+    return docx, (pdf if moved else None), ('ok' if moved else 'pdf-fail')
 
 
 def main():

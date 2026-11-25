@@ -10,3 +10,6 @@ __pycache__/
 校閱_20K/
 校閱_40K/
 校閱_80K/
+
+# GitHub token（本機用，不入版控）
+.gh_token

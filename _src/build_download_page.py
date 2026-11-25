@@ -50,6 +50,26 @@ def vol_of(fn):
     return m.group(1) if m else ''
 
 
+SLUG2BOOK = {'xingshichao': '行事鈔', 'jieshu': '戒本疏', 'yeshu': '業疏',
+             'nicao': '尼鈔', 'yichao': '義鈔', 'zhichi': '資持記'}
+SLUG2VOL = {'shang': '卷上', 'zhong': '卷中', 'xia': '卷下', 'shou': '卷首',
+            '01': '卷一', '02': '卷二', '03': '卷三', '04': '卷四',
+            '05': '卷五', '06': '卷六'}
+
+
+def split_asset(asset, fallback_name=''):
+    """xingshichao-shang-single.pdf → ('行事鈔','卷上')"""
+    parts = (asset or '').rsplit('.', 1)[0].split('-')
+    bk = SLUG2BOOK.get(parts[0]) if parts else None
+    vol = SLUG2VOL.get(parts[1]) if len(parts) > 1 else None
+    if not bk or not vol:
+        f = fallback_name
+        bk = bk or book_of(f)
+        vol = vol or vol_of(f)
+    return bk, vol
+
+
+
 def load_manifest():
     p = os.path.join(DOCS, 'download_manifest.json')
     if os.path.exists(p):
@@ -131,7 +151,8 @@ def build_from_manifest(man):
     rows = {}
     for f in man.get('files', []):
         fn = f['name']
-        rows.setdefault((book_of(fn), vol_of(fn)), {})[(f['layout'], f['kind'].upper())] = (fn, f['size'], f['url'])
+        bk, vol = split_asset(f.get('asset', ''), fn)
+        rows.setdefault((bk, vol), {})[(f['layout'], f['kind'].upper())] = (fn, f['size'], f['url'])
 
     def volkey(v):
         order = {'卷首': 0}

@@ -1226,3 +1226,28 @@ body {
   .tb-crumb { flex: 1 1 auto; }
   .tb-where { max-width: none; }
 }
+
+/* ── 工具列一致化：右側固定、中段吸收伸縮 ──────────────── */
+.topbar {
+  display: flex; align-items: center;
+  column-gap: .35rem;
+}
+.tb-crumb { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+.tb-crumb > * { flex: 0 0 auto; }
+.tb-crumb .tb-where { flex: 1 1 auto; min-width: 0; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; }
+.tb-right {
+  margin-left: auto; flex: 0 0 auto;
+  display: flex; align-items: center; gap: .35rem;
+}
+.tb-right .tb-searchform { flex: 0 0 auto; }
+.tb-right .tb-dl { flex: 0 0 auto; order: 0; }
+.tb-right .tb-searchform { order: 1; }
+.tb-right .toolpanel { order: 2; flex: 0 0 auto; }
+/* 閱讀工具分組固定順序，避免各頁寬度跳動 */
+.tb-readtools { display: flex; align-items: center; gap: .2rem; }
+.tb-readtools .tb-seg { display: inline-flex; }
+@media (max-width: 1100px) {
+  .tb-right { gap: .25rem; }
+  .tb-readtools button, .tb-seg button { padding: .16rem .3rem !important; }
+}

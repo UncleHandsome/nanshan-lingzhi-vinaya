@@ -50,7 +50,21 @@ def vol_of(fn):
     return m.group(1) if m else ''
 
 
+def load_manifest():
+    p = os.path.join(DOCS, 'download_manifest.json')
+    if os.path.exists(p):
+        return json.load(io.open(p, encoding='utf-8'))
+    return None
+
+
 def main():
+    man = load_manifest()
+    if man:
+        build_from_manifest(man)
+        return
+    print('尚無 download_manifest.json：請先跑 make_release.py 上傳到 Releases，'
+          '本頁暫不產生（避免把 148 MB 檔案塞進 repo）。')
+    return
     os.makedirs(DL, exist_ok=True)
     rows = {}   # (book, vol) -> {('單欄','DOCX'): filename, ...}
     copied = 0
@@ -111,6 +125,60 @@ def main():
                    description='六書白話對照本 Word 與 PDF 下載（單欄／雙欄）。')
     io.open(os.path.join(DOCS, 'download.html'), 'w', encoding='utf-8', newline='\n').write(html)
     print('複製 %d 檔，共 %s → docs/download/ 及 download.html' % (copied, fmt_size(tot)))
+
+
+def build_from_manifest(man):
+    rows = {}
+    for f in man.get('files', []):
+        fn = f['name']
+        rows.setdefault((book_of(fn), vol_of(fn)), {})[(f['layout'], f['kind'].upper())] = (fn, f['size'], f['url'])
+
+    def volkey(v):
+        order = {'卷首': 0}
+        m = re.search(r'卷([一二三四五六七八九十])', v)
+        return (order.get(v, 1), m.group(1) if m else v)
+
+    groups = {}
+    for (bk, vol), m in rows.items():
+        groups.setdefault(bk, {})[vol] = m
+
+    L = ['<h1>下載・六書白話對照本</h1>',
+         '<p class="byline">標楷體 14pt、緊湊排版。單欄適合手機與平板，雙欄適合列印與對讀。'
+         'DOCX 可自行編輯；PDF 為排版完成版。</p>',
+         '<p class="dl-note">檔案存放於 GitHub Releases，不佔用網站流量。'
+         '版本：<b>%s</b>　定稿 commit <code>%s</code>　產生 %s　'
+         '<a href="%s" target="_blank" rel="noopener">在 GitHub 檢視此版本</a></p>'
+         % (man.get('tag', ''), man.get('commit', ''), man.get('generated', ''),
+            man.get('release_url', '#'))]
+
+    for bk in BOOK_ORDER:
+        if bk not in groups:
+            continue
+        L.append('<h2 class="sec" id="%s">%s</h2>' % (bk, BOOK_LABEL.get(bk, bk)))
+        L.append('<table class="dl-table"><thead><tr>'
+                 '<th>卷</th><th>單欄 DOCX</th><th>單欄 PDF</th><th>雙欄 DOCX</th><th>雙欄 PDF</th>'
+                 '</tr></thead><tbody>')
+        for vol, m in sorted(groups[bk].items(), key=lambda kv: volkey(kv[0])):
+            cells = []
+            for key in [('單欄', 'DOCX'), ('單欄', 'PDF'), ('雙欄', 'DOCX'), ('雙欄', 'PDF')]:
+                item = m.get(key)
+                if item:
+                    fn, sz, url = item
+                    cells.append('<a class="dl" href="%s">%s</a>' % (url, fmt_size(sz)))
+                else:
+                    cells.append('—')
+            L.append('<tr><td class="dl-vol">%s</td>%s</tr>'
+                     % (vol or '全書', ''.join('<td>%s</td>' % c for c in cells)))
+        L.append('</tbody></table>')
+
+    tot = sum(f['size'] for f in man.get('files', []))
+    L.append('<p class="dl-note">共 %d 個檔案、%s。下載位置為 GitHub Releases 資產。</p>'
+             % (len(man.get('files', [])), fmt_size(tot)))
+    html = SA.page('下載・六書白話對照本｜南山律典', '\n'.join(L), prefix='',
+                   book_label='下載', book_short='下載',
+                   description='六書白話對照本 Word 與 PDF 下載（單欄／雙欄）。')
+    io.open(os.path.join(DOCS, 'download.html'), 'w', encoding='utf-8', newline='\n').write(html)
+    print('由 manifest 產生下載頁：%s，%d 檔' % (man.get('tag'), len(man.get('files', []))))
 
 
 def fmt_size(n):

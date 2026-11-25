@@ -134,9 +134,13 @@
       var p = ev.target.closest ? ev.target.closest('.pair[id]') : null;
       if (!p || !p.id) { mark.classList.remove('show'); return; }
       var r = p.getBoundingClientRect();
-      mark.style.top = Math.max(4, r.top + window.scrollY + 4) + 'px';
-      mark.style.left = Math.max(4, r.right + window.scrollX - 22) + 'px';
+      // 放在文字欄左側的留白，避免壓到經文；空間不足（窄螢幕）就不顯示
+      var gutter = r.left - 30;
+      if (gutter < 6) { mark.classList.remove('show'); return; }
+      mark.style.top = Math.max(4, r.top + window.scrollY + 3) + 'px';
+      mark.style.left = (gutter + window.scrollX) + 'px';
       mark.setAttribute('data-copy-url', location.origin + location.pathname + '#' + p.id);
+      mark.setAttribute('title', '複製本段連結');
       mark.classList.add('show');
     });
     document.addEventListener('mouseout', function (ev) {

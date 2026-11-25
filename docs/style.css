@@ -1098,7 +1098,7 @@ body {
 /* 段落錨點 § */
 .ui-anchor {
   position: absolute; z-index: 55; display: none;
-  padding: .1rem .35rem; border-radius: 4px;
+  padding: .05rem .2rem; border-radius: 4px; font-size: 11px;
   background: var(--surface-3); border: 1px solid var(--line);
   color: var(--fg2); font-size: 12px; text-decoration: none;
 }

@@ -175,7 +175,7 @@
   }
 
   // ── 目前篇名 + 回到頂端 ────────────────────────────────
-  var secs = [], nowEl = null, topBtn = null;
+  var secs = [], nowEl = null;
   function init() {
     secs = Array.prototype.slice.call(document.querySelectorAll('h2.sec'));
     var crumb = document.querySelector('.tb-crumb');
@@ -185,16 +185,6 @@
       nowEl.setAttribute('aria-live', 'polite');
       crumb.appendChild(nowEl);
     }
-    topBtn = document.createElement('button');
-    topBtn.type = 'button';
-    topBtn.className = 'ui-totop';
-    topBtn.title = '回到頂端';
-    topBtn.setAttribute('aria-label', '回到頂端');
-    topBtn.textContent = '↑';
-    topBtn.addEventListener('click', function () {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-    document.body.appendChild(topBtn);
     addDownloadCta();
     buildToc();
     onScroll();
@@ -208,7 +198,6 @@
     requestAnimationFrame(function () {
       tick = false;
       var y = window.scrollY || document.documentElement.scrollTop || 0;
-      if (topBtn) topBtn.classList.toggle('show', y > 700);
       updateBar();
       if (nowEl) {
         var cur = '';

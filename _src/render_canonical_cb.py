@@ -202,6 +202,11 @@ def main():
             per_vol_marks = {}
             for v, a, b in intervals:
                 per_vol_marks[v] = [(p, t) for p, t in sec_marks if a <= p < b]
+            # 業疏 卷三 無篇題，實際是第3篇諸戒受法的續卷（否則整卷只能標成「卷首」）
+            if book == 'yeshu':
+                for v, a, b in intervals:
+                    if v == '卷三' and not per_vol_marks[v]:
+                        per_vol_marks[v] = [(a, '3 諸戒受法篇')]
 
         rows = [json.loads(x) for x in io.open(os.path.join(C, book + '.jsonl'), encoding='utf-8')
                 if x.strip()]

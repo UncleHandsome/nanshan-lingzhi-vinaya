@@ -164,6 +164,10 @@ def build_from_manifest(man):
         rows.setdefault((bk, vol), {})[(f['layout'], f['kind'].upper())] = (fn, f['size'], f['url'])
 
     def volkey(v):
+        mhb = re.search(r'卷([上中下])之([一二三四])', v)
+        if mhb:
+            return (0, {'上': 0, '中': 1, '下': 2}[mhb.group(1)],
+                    {'一': 1, '二': 2, '三': 3, '四': 4}[mhb.group(2)])
         order = {'卷首': 0}
         m = re.search(r'卷([一二三四五六七八九十])', v)
         j = re.search(r'之([一二三四])', v)
@@ -219,7 +223,8 @@ def build_from_manifest(man):
         L.append('<div class="dl-head"><h2>%s</h2><span class="dl-meta">共 %d 卷</span></div>'
                  % (BOOK_LABEL['合編'], len(hb)))
         L.append('<div class="dl-hbcols">')
-        for chunk in (hb[:len(hb) // 2 + len(hb) % 2], hb[len(hb) // 2 + len(hb) % 2:]):
+        step = (len(hb) + 2) // 3
+        for chunk in (hb[:step], hb[step:step * 2], hb[step * 2:]):
             L.append('<table class="dl-table"><thead><tr><th>卷</th>'
                      '<th>單欄 DOCX／PDF</th><th>雙欄 DOCX／PDF</th></tr></thead><tbody>')
             for vol, m in chunk:

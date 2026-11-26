@@ -636,17 +636,17 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 2.5rem 0; }
 .voltoc li { margin: 0; padding: 0; }
 .voltoc li a {
   display: flex; align-items: baseline; justify-content: space-between; gap: .6rem;
-  padding: .5rem .68rem; text-decoration: none;
+  padding: .58rem .75rem; text-decoration: none;
   border: 1px solid var(--line); border-radius: 6px; background: var(--surface);
 }
 .voltoc li a:hover,
 .voltoc li a:focus-visible {
   background: var(--surface-3); border-color: var(--accent); text-decoration: none;
 }
-.voltoc .tn { color: var(--accent); font-size: 14.5px; line-height: 1.5; }
+.voltoc .tn { color: var(--accent); font-size: 16px; line-height: 1.55; }
 .voltoc .n {
   flex: 0 0 auto; color: var(--fg2);
-  font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap;
+  font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 /* 卷目錄頁：不要 100vh 造成多餘捲動 */
 body:has(.voltoc) .wrap { min-height: calc(100vh - var(--chrome-h)); }
@@ -656,8 +656,9 @@ main:has(> .voltoc) .byline { margin: 0 0 .45rem; }
 main:has(> .voltoc) h2.sec { margin: .35rem 0 .4rem; }
 @media (max-width: 700px) {
   .voltoc { grid-template-columns: 1fr 1fr; gap: .35rem; }
-  .voltoc .tn { font-size: 13.5px; }
-  .voltoc li a { padding: .45rem .55rem; }
+  .voltoc .tn { font-size: 14.5px; }
+  .voltoc .n { font-size: 12px; }
+  .voltoc li a { padding: .5rem .6rem; }
 }
 @media (max-width: 420px) {
   .voltoc { grid-template-columns: 1fr; }

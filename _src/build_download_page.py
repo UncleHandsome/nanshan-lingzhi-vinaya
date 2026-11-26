@@ -209,9 +209,9 @@ def build_from_manifest(man):
             L.append('<tr><td class="dl-vol">%s</td>%s</tr>' % (vol or '全書', cells(m)))
         L.append('</tbody></table></section>')
 
-    # 指定排法：左欄 行事鈔／戒疏／業疏／尼鈔／義鈔；右欄 資持記／合編本
-    left = ['行事鈔', '戒本疏', '業疏', '尼鈔', '義鈔']
-    right = ['資持記', '合編']
+    # 排法跟首頁一致：左欄 行事鈔系列（行事鈔／資持記／合編）；右欄 其他（戒疏／業疏／尼鈔／義鈔）
+    left = ['行事鈔', '資持記', '合編']
+    right = ['戒本疏', '業疏', '尼鈔', '義鈔']
     extra = [bk for bk in BOOK_ORDER if bk in groups and bk not in left + right]
     left += extra
     L.append('<div class="dl-cols">')

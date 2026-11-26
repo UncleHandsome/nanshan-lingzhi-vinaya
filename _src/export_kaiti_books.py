@@ -248,10 +248,18 @@ def _cell_para(cell, first):
     return p
 
 
+def no_row_split(row):
+    """避免 Word 表格列跨頁拆開（雙欄一列＝一對原文／白話）。"""
+    from docx.oxml import OxmlElement
+    trPr = row._tr.get_or_add_trPr()
+    el = OxmlElement('w:cantSplit')
+    trPr.append(el)
+
+
 def _build_pairs_two_col(doc, rows):
     """雙欄版：左原文、右白話，逐段一列（和網站「並排」一致）。
 
-    每篇（chunk）一張無框線表格，欄寬 原文 8cm／白話 10cm（A4 內文寬 18cm），
+    每篇（chunk）一張無框線表格，欄寬 原文 7.2cm／白話 10.8cm（2:3；A4 內文寬 18cm），
     段與段之間用淡底線分隔；每列左格放原文（含段別），右格放白話。
     """
     groups = OrderedDict()
@@ -276,12 +284,13 @@ def _build_pairs_two_col(doc, rows):
             set_run(p.add_run(ch), 11, True, RGBColor(0x6B, 0x5B, 0x4A))
         tbl = doc.add_table(rows=0, cols=2)
         tbl.autofit = False
-        for i, w in enumerate((8.0, 10.0)):
+        for i, w in enumerate((7.2, 10.8)):
             tbl.columns[i].width = Cm(w)
         for r in rs:
             row = tbl.add_row()
+            no_row_split(row)
             left, right = row.cells[0], row.cells[1]
-            left.width = Cm(8.0); right.width = Cm(10.0)
+            left.width = Cm(7.2); right.width = Cm(10.8)
             first_l = first_r = True
             for lab, src, tr in parts(r):
                 src = clean(src); tr = clean(tr)

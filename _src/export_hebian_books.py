@@ -134,6 +134,7 @@ def _flush_two_col(doc, pairs):
         tbl.columns[i].width = Cm(w)
     for label, src, tr in pairs:
         row = tbl.add_row()
+        EK.no_row_split(row)
         left, right = row.cells[0], row.cells[1]
         left.width = Cm(7.2); right.width = Cm(10.8)
         first_l = first_r = True

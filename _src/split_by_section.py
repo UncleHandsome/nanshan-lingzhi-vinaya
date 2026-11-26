@@ -205,10 +205,14 @@ def volume_articles_full(vol, t):
     if any(a['pairs'] <= 0 for a in articles):
         raise SystemExit('%s 有 0 段的篇：%s'
                          % (vol, [(a['stem'], a['pairs']) for a in articles]))
-    nsec = len([a for a in articles if a['kind'] == 'sec'])
+    nsec = len([a for a in articles if a['kind'] == 'sec' and a['label'] != '卷首'])
+    k = 0
     for i, art in enumerate(articles):
-        art['pos_label'] = ('卷首' if art['kind'] == 'shou'
-                            else '本卷 第 %d／%d 篇' % (art['ordinal'], nsec))
+        if art['kind'] == 'shou' or art['label'] == '卷首':
+            art['pos_label'] = '卷首'
+        else:
+            k += 1
+            art['pos_label'] = '本卷 第 %d／%d 篇' % (k, nsec)
         art['byline'] = (base_byline + '｜' + art['pos_label']
                          + '｜共 %d 段' % art['pairs'])
         art['title'] = h1_text + '\u3000' + art['label']
@@ -258,13 +262,11 @@ def volume_articles_toc(book, vol, t):
     articles.sort(key=lambda a: (0 if a['id'] == 'p0' else 1,
                                  int(a['id'][1:]) if re.match(r'^p\d+$', a['id'])
                                  else 10 ** 9))
-    nsec = len([a for a in articles if a['kind'] == 'sec'])
+    nsec = len([a for a in articles if a['kind'] == 'sec' and a['label'] != '卷首'])
     sec_i = 0
     for i, art in enumerate(articles):
-        if art['kind'] == 'shou':
+        if art['kind'] == 'shou' or art['label'] == '卷首':
             art['pos_label'] = '卷首'
-            if art['id'] != 'p0':
-                raise SystemExit('%s 卷首篇 id 應為 p0' % vol)
         else:
             sec_i += 1
             art['pos_label'] = '本卷 第 %d／%d 篇' % (sec_i, nsec)

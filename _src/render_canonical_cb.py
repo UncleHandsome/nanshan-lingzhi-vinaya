@@ -196,8 +196,12 @@ def main():
             for v, a, b in intervals:
                 per_vol_marks[v] = [(p, t) for p, t in sec_marks if a <= p < b]
         else:
-            per_vol_marks = None
             sec_marks = build_section_marks(book, raw, hpos, body_start)
+            # 每卷只認該卷範圍內的篇門：卷首（第一個篇門之前）一律歸「卷首」，
+            # 避免卷首署名／目次被算成上一卷最後一篇的（續）篇。
+            per_vol_marks = {}
+            for v, a, b in intervals:
+                per_vol_marks[v] = [(p, t) for p, t in sec_marks if a <= p < b]
 
         rows = [json.loads(x) for x in io.open(os.path.join(C, book + '.jsonl'), encoding='utf-8')
                 if x.strip()]
@@ -211,19 +215,12 @@ def main():
         for v, a, b in intervals:
             sel = [r for r in rows if r['raw_start'] < b and r['raw_end'] > a]
             vol_rows[v] = sel
-            if per_vol_marks is not None:
-                local = per_vol_marks[v]
-                chunks = []
-                for r in sel:
-                    ck = chunk_of(r['raw_start'], local, '卷首')
-                    if not chunks or chunks[-1] != ck:
-                        chunks.append(ck)
-            else:
-                chunks = []
-                for r in sel:
-                    ck = chunk_of(r['raw_start'], sec_marks, '卷首')
-                    if not chunks or chunks[-1] != ck:
-                        chunks.append(ck)
+            local = per_vol_marks[v]
+            chunks = []
+            for r in sel:
+                ck = chunk_of(r['raw_start'], local, '卷首')
+                if not chunks or chunks[-1] != ck:
+                    chunks.append(ck)
             vol_chunks[v] = chunks
             for ck in set(chunks):
                 chunk_counts[ck] = chunk_counts.get(ck, 0) + 1
@@ -274,8 +271,7 @@ def main():
             last_ck = None
             sec_no = 0
             for r in sel:
-                ck = chunk_of(r['raw_start'], per_vol_marks[v], '卷首') \
-                    if per_vol_marks is not None else chunk_of(r['raw_start'], sec_marks, '卷首')
+                ck = chunk_of(r['raw_start'], per_vol_marks[v], '卷首')
                 if ck != last_ck:
                     # 戒疏：卷題前的書名／作者頁不另立「卷首」節，維持每卷 4–6 節
                     if not (book == 'jieshu' and ck == '卷首'):

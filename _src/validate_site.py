@@ -61,7 +61,7 @@ BOOKS = {
 }
 
 STATIC_PAGES = ['index.html', 'search.html', 'appendix.html',
-                'download.html']
+                'download.html', 'prompt.html']
 # 一篇一頁改版前後都必須成立的兩個全站總數（不得退步）
 EXPECT_PAIRS = 29937
 EXPECT_SEARCH = 29913

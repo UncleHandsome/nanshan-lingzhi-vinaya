@@ -1687,3 +1687,25 @@ body.page-download .dl-note { font-size: 13px; line-height: 1.55; }
 .dl-table a.dl .dl-k { font-size: 11px; color: var(--fg2); letter-spacing: .02em; }
 .dl-table a.dl .dl-s { font-size: 14px; font-variant-numeric: tabular-nums; }
 .dl-table a.dl:hover { border-color: var(--accent); color: var(--accent); background: var(--surface-3); text-decoration: none; }
+
+/* ── 首頁 v75：搜尋框減半；提示詞按鈕 ── */
+.homehero .homefind { flex: 0 1 21rem; flex-wrap: nowrap; }
+.homehero .homefind input[type=search] { width: auto; flex: 1 1 0; min-width: 0; }
+@media (max-width: 760px) { .homehero .homefind { flex: 0 1 100%; } }
+
+/* ── 提示詞頁 v75 ── */
+body.page-prompt main { max-width: 62rem; }
+body.page-prompt .prompt-actions { display: flex; align-items: center; gap: .8rem; margin: .7rem 0 .65rem; }
+body.page-prompt .copy-btn {
+  padding: .5rem 1.05rem; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--accent);
+  font: inherit; font-size: 14px; line-height: 1.4;
+}
+body.page-prompt .copy-btn:hover { background: var(--surface-3); border-color: var(--accent); }
+body.page-prompt .copy-msg { font-size: 13px; color: var(--fg2); }
+body.page-prompt .prompt-box {
+  white-space: pre-wrap; overflow-wrap: break-word; word-break: break-word;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 1rem 1.15rem; margin: 0 0 .8rem;
+  font-family: inherit; font-size: 14.5px; line-height: 1.8; color: var(--fg);
+}

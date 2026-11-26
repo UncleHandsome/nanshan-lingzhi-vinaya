@@ -75,6 +75,7 @@ def build_index(nav):
         '<button type="submit">全文搜尋</button></form>',
         '<a class="hero-btn primary" href="download.html">⬇ 下載 Word／PDF</a>',
         '<a class="hero-btn" href="appendix.html">附錄</a>',
+        '<a class="hero-btn" href="prompt.html">校閱提示詞</a>',
         '<span class="homehero-hint">站內全文 <code>Ctrl/⌘ K</code>；瀏覽器尋找 '
         '<code>Ctrl/⌘ F</code></span>',
         '</div>',
@@ -193,6 +194,8 @@ def main():
     copy_assets()
     wr(os.path.join(SITE, 'appendix.html'), build_appendix())
     print('appendix.html')
+    import render_prompt_page
+    render_prompt_page.build()
 
 
 if __name__ == '__main__':

@@ -79,6 +79,13 @@ missing = [k for k in ORDER if k not in replies]
 print('回覆段數', len(replies), '| 缺:', missing)
 
 
+LBL = re.compile(r'^\s*(?:【(?:疏文|記文|鈔文|律文|註文|序文)】\s*)+')
+
+
+def strip_lbl(s):
+    return LBL.sub('', s or '').strip()
+
+
 def han(x):
     return len(re.findall(r'[\u4e00-\u9fff]', x or ''))
 
@@ -176,11 +183,11 @@ for i, key in enumerate(ORDER, 1):
     set_run(p.add_run(), '卷上・第2篇 集僧通局　狀態：%s　原文 %d 字' %
             (status_cn.get(status, status), han(o['src'])), HEI, 11, color=GRAY)
 
-    body(doc, '原文', BROWN, '【鈔文】\n' + o['src'], 14)
-    body(doc, '白話（原譯）', BLUE, '【鈔文】\n' + o['tr'], 14)
+    body(doc, '原文', BROWN, '【鈔文】\n' + strip_lbl(o['src']), 14)
+    body(doc, '白話（原譯）', BLUE, '【鈔文】\n' + strip_lbl(o['tr']), 14)
     body(doc, '（一）考據初檢', GREEN, r['review'], 14)
     body(doc, '（二）語言與定稿覆核', GREEN, r['lang'], 14)
-    body(doc, '（三）修正後完整白話', GREEN, final, 14)
+    body(doc, '（三）修正後完整白話', GREEN, strip_lbl(final), 14)
     doc.add_page_break()
 
 footer(doc)

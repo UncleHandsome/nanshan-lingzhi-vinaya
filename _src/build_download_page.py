@@ -177,17 +177,19 @@ def build_from_manifest(man):
     for (bk, vol), m in rows.items():
         groups.setdefault(bk, {})[vol] = m
 
-    def link(m, layout, kind):
+    def chip(m, layout, kind):
         item = m.get((layout, kind))
         if not item:
             return '<span class="dl-na">—</span>'
         fn, sz, url = item
-        return '<a class="dl" href="%s" title="%s">%s</a>' % (url, fn, fmt_size(sz))
+        return ('<a class="dl" href="%s" title="%s"><span class="dl-k">%s</span>'
+                '<span class="dl-s">%s</span></a>'
+                % (url, fn, kind, fmt_size(sz)))
 
     def cells(m):
-        return ('<td>%s ／ %s</td><td>%s ／ %s</td>'
-                % (link(m, '單欄', 'DOCX'), link(m, '單欄', 'PDF'),
-                   link(m, '雙欄', 'DOCX'), link(m, '雙欄', 'PDF')))
+        return ('<td class="dl-cell">%s%s</td><td class="dl-cell">%s%s</td>'
+                % (chip(m, '單欄', 'DOCX'), chip(m, '單欄', 'PDF'),
+                   chip(m, '雙欄', 'DOCX'), chip(m, '雙欄', 'PDF')))
 
     L = ['<h1>下載・白話對照本</h1>',
          '<p class="dl-note">六書與句級合編本，標楷體 14pt。單欄適合手機與平板，雙欄適合列印與對讀；'
@@ -202,7 +204,7 @@ def build_from_manifest(man):
         L.append('<div class="dl-head"><h2>%s</h2><span class="dl-meta">共 %d 卷</span></div>'
                  % (BOOK_LABEL.get(bk, bk), len(vols)))
         L.append('<table class="dl-table"><thead><tr><th>卷</th>'
-                 '<th>單欄 DOCX／PDF</th><th>雙欄 DOCX／PDF</th></tr></thead><tbody>')
+                 '<th>單欄</th><th>雙欄</th></tr></thead><tbody>')
         for vol, m in vols:
             L.append('<tr><td class="dl-vol">%s</td>%s</tr>' % (vol or '全書', cells(m)))
         L.append('</tbody></table></section>')
@@ -223,10 +225,10 @@ def build_from_manifest(man):
         L.append('<div class="dl-head"><h2>%s</h2><span class="dl-meta">共 %d 卷</span></div>'
                  % (BOOK_LABEL['合編'], len(hb)))
         L.append('<div class="dl-hbcols">')
-        step = (len(hb) + 2) // 3
-        for chunk in (hb[:step], hb[step:step * 2], hb[step * 2:]):
+        half = (len(hb) + 1) // 2
+        for chunk in (hb[:half], hb[half:]):
             L.append('<table class="dl-table"><thead><tr><th>卷</th>'
-                     '<th>單欄 DOCX／PDF</th><th>雙欄 DOCX／PDF</th></tr></thead><tbody>')
+                     '<th>單欄</th><th>雙欄</th></tr></thead><tbody>')
             for vol, m in chunk:
                 L.append('<tr><td class="dl-vol">%s</td>%s</tr>' % (vol or '全書', cells(m)))
             L.append('</tbody></table>')

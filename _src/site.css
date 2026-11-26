@@ -1663,7 +1663,27 @@ body.page-download .dl-note { margin: .12rem 0 .45rem; font-size: 12.5px; line-h
 .dl-table a:hover { background: var(--surface-3); color: var(--accent); text-decoration: none; }
 .dl-na { color: var(--fg2); }
 .dl-wide { margin-top: .35rem; }
-.dl-hbcols { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 0 .9rem; }
+.dl-hbcols { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 0 1.1rem; }
 @media (max-width: 980px) { .dl-cols { grid-template-columns: 1fr; } .dl-hbcols { grid-template-columns: 1fr; } }
 body.page-download .wrap { min-height: calc(100vh - var(--chrome-h)); }
 body.page-download .sitefoot { margin-top: .5rem; }
+
+/* ── 下載頁 v74：字放大、單欄/雙欄 chip 填滿儲存格 ── */
+body.page-download h1 { font-size: 1.75rem; }
+body.page-download .dl-note { font-size: 13px; line-height: 1.55; }
+.dl-head h2 { font-size: 1.12rem; }
+.dl-meta { font-size: 12.5px; }
+.dl-table { font-size: 14px; }
+.dl-table th { font-size: 13px; padding: .2rem .2rem .28rem; }
+.dl-table td { padding: .16rem .22rem; }
+.dl-table th:first-child, .dl-table td:first-child { width: 4.8em; }
+.dl-table td.dl-cell { padding: .14rem .16rem; white-space: nowrap; text-align: center; }
+.dl-table a.dl {
+  display: inline-flex; align-items: baseline; gap: .28rem;
+  padding: .1em .45em; margin: 0 .1rem;
+  border: 1px solid var(--line); border-radius: 6px;
+  background: var(--bg); font-size: 14px; border-bottom: 1px solid var(--line);
+}
+.dl-table a.dl .dl-k { font-size: 11px; color: var(--fg2); letter-spacing: .02em; }
+.dl-table a.dl .dl-s { font-size: 14px; font-variant-numeric: tabular-nums; }
+.dl-table a.dl:hover { border-color: var(--accent); color: var(--accent); background: var(--surface-3); text-decoration: none; }

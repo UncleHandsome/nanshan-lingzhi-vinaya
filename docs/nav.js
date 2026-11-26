@@ -640,6 +640,52 @@
     }
   }
 
+  // v71：頂部列「上篇／下篇」——以 nav.json 的全書篇序為準（跨卷串接）
+  function setupChapterNav(attempt) {
+    var crumb = document.querySelector('.tb-crumb');
+    if (!crumb || crumb.querySelector('.tb-pian')) return;
+    var now = crumb.querySelector('.tb-now');
+    if (!now) {
+      if ((attempt || 0) < 20) setTimeout(function () { setupChapterNav((attempt || 0) + 1); }, 60);
+      return;
+    }
+    var b = bookByOut(bookOfPath());
+    if (!b || !b.vols) return;
+    var list = [];
+    for (var i = 0; i < b.vols.length; i++) {
+      var secs = b.vols[i].secs || [];
+      for (var j = 0; j < secs.length; j++) {
+        if (secs[j] && secs[j][2]) list.push({ stem: secs[j][2], label: secs[j][1] || '' });
+      }
+    }
+    var at = -1;
+    for (var k = 0; k < list.length; k++) { if (list[k].stem === curStem) { at = k; break; } }
+    if (at < 0) return;
+    function mk(item, dir) {
+      var a = document.createElement('a');
+      a.className = 'tb-pian ' + (dir < 0 ? 'tb-pian-prev' : 'tb-pian-next');
+      a.href = root + b.out + '/' + item.stem + '.html';
+      a.title = (dir < 0 ? '上篇：' : '下篇：') + item.label;
+      a.setAttribute('aria-label', a.title);
+      var arr = document.createElement('span');
+      arr.className = 'arr';
+      arr.setAttribute('aria-hidden', 'true');
+      arr.textContent = dir < 0 ? '‹' : '›';
+      var lbl = document.createElement('span');
+      lbl.className = 'lbl';
+      lbl.textContent = dir < 0 ? '上篇' : '下篇';
+      a.appendChild(arr);
+      a.appendChild(lbl);
+      return a;
+    }
+    if (at > 0) crumb.insertBefore(mk(list[at - 1], -1), now);
+    if (at < list.length - 1) {
+      var nx = mk(list[at + 1], 1);
+      if (now.nextSibling) crumb.insertBefore(nx, now.nextSibling);
+      else crumb.appendChild(nx);
+    }
+  }
+
   // ── 載入 ─────────────────────────────────────────────────
   function loadTree() {
     box.innerHTML = '<div class="navloading" role="status">目錄載入中…</div>';
@@ -649,6 +695,7 @@
         DATA = data;
         curBook = bookOfPath() || readStr(BOOK_KEY);
         render();
+        setupChapterNav(0);
         var restored = restoreScroll();
         spy();
         if (!restored) revealCurrent();

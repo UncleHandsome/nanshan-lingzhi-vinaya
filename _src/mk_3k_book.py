@@ -51,7 +51,8 @@ def main():
     out = os.path.join(B, a.out)
     os.makedirs(out, exist_ok=True)
     for f in os.listdir(out):
-        if f.endswith('.md'):
+        # 保留資料夾說明檔，其餘舊材料清掉
+        if f.endswith('.md') and f != 'README.md':
             os.remove(os.path.join(out, f))
 
     items = []

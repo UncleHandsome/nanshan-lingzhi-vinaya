@@ -26,7 +26,7 @@ def han(s):
     return len(HAN.findall(s or ''))
 
 
-LBL_RE = re.compile(r'^\\s*(?:【(?:疏文|記文|鈔文|律文|註文|序文)】\\s*)+')
+LBL_RE = re.compile(r'^\s*(?:【(?:疏文|記文|鈔文|律文|註文|序文)】\s*)+')
 
 
 def block(book_label, key, s):

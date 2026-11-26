@@ -1,96 +1,96 @@
 {
- "tag": "books-20261126-4c92361",
- "commit": "4c92361",
- "generated": "2026-11-26 05:41",
- "release_url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/tag/books-20261126-4c92361",
+ "tag": "books-20261126-94cd8d7",
+ "commit": "94cd8d7",
+ "generated": "2026-11-26 08:59",
+ "release_url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/tag/books-20261126-94cd8d7",
  "files": [
   {
    "name": "四分律刪繁補闕行事鈔_卷上_白話對照本_單欄.docx",
    "asset": "xingshichao-shang-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 357107,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/xingshichao-shang-single.docx"
+   "size": 356389,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/xingshichao-shang-single.docx"
   },
   {
    "name": "四分律刪繁補闕行事鈔_卷下_白話對照本_單欄.docx",
    "asset": "xingshichao-xia-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 397281,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/xingshichao-xia-single.docx"
+   "size": 397243,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/xingshichao-xia-single.docx"
   },
   {
    "name": "四分律刪繁補闕行事鈔_卷中_白話對照本_單欄.docx",
    "asset": "xingshichao-zhong-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 431865,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/xingshichao-zhong-single.docx"
+   "size": 431460,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/xingshichao-zhong-single.docx"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷一_白話對照本_單欄.docx",
    "asset": "yeshu-01-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 399153,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-01-single.docx"
+   "size": 398820,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-01-single.docx"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷三_白話對照本_單欄.docx",
    "asset": "yeshu-03-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 457483,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-03-single.docx"
+   "size": 457163,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-03-single.docx"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷二_白話對照本_單欄.docx",
    "asset": "yeshu-02-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 369988,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-02-single.docx"
+   "size": 369551,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-02-single.docx"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷四_白話對照本_單欄.docx",
    "asset": "yeshu-04-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 360788,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-04-single.docx"
+   "size": 360575,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-04-single.docx"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷一_白話對照本_單欄.docx",
    "asset": "jieshu-01-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 484077,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-01-single.docx"
+   "size": 483448,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-01-single.docx"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷三_白話對照本_單欄.docx",
    "asset": "jieshu-03-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 553160,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-03-single.docx"
+   "size": 553051,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-03-single.docx"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷二_白話對照本_單欄.docx",
    "asset": "jieshu-02-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 531638,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-02-single.docx"
+   "size": 531751,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-02-single.docx"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷四_白話對照本_單欄.docx",
    "asset": "jieshu-04-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 571008,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-04-single.docx"
+   "size": 570877,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-04-single.docx"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷首_白話對照本_單欄.docx",
@@ -98,551 +98,551 @@
    "kind": "docx",
    "layout": "單欄",
    "size": 43600,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-shou-single.docx"
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-shou-single.docx"
   },
   {
    "name": "四分律拾毗尼義鈔_卷上_白話對照本_單欄.docx",
    "asset": "yichao-shang-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 171164,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yichao-shang-single.docx"
+   "size": 170954,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yichao-shang-single.docx"
   },
   {
    "name": "四分律拾毗尼義鈔_卷中_白話對照本_單欄.docx",
    "asset": "yichao-zhong-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 194069,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yichao-zhong-single.docx"
+   "size": 194066,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yichao-zhong-single.docx"
   },
   {
    "name": "四分律行事鈔資持記_卷上_白話對照本_單欄.docx",
    "asset": "zhichi-shang-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 776265,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/zhichi-shang-single.docx"
+   "size": 776402,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/zhichi-shang-single.docx"
   },
   {
    "name": "四分律行事鈔資持記_卷下_白話對照本_單欄.docx",
    "asset": "zhichi-xia-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 546149,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/zhichi-xia-single.docx"
+   "size": 546184,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/zhichi-xia-single.docx"
   },
   {
    "name": "四分律行事鈔資持記_卷中_白話對照本_單欄.docx",
    "asset": "zhichi-zhong-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 828208,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/zhichi-zhong-single.docx"
+   "size": 828262,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/zhichi-zhong-single.docx"
   },
   {
    "name": "四分比丘尼鈔_卷上_白話對照本_單欄.docx",
    "asset": "nicao-shang-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 159339,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/nicao-shang-single.docx"
+   "size": 159179,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/nicao-shang-single.docx"
   },
   {
    "name": "四分比丘尼鈔_卷下_白話對照本_單欄.docx",
    "asset": "nicao-xia-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 172612,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/nicao-xia-single.docx"
+   "size": 172610,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/nicao-xia-single.docx"
   },
   {
    "name": "四分比丘尼鈔_卷中_白話對照本_單欄.docx",
    "asset": "nicao-zhong-single.docx",
    "kind": "docx",
    "layout": "單欄",
-   "size": 174210,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/nicao-zhong-single.docx"
+   "size": 174206,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/nicao-zhong-single.docx"
   },
   {
    "name": "四分律刪繁補闕行事鈔_卷上_白話對照本_單欄.pdf",
    "asset": "xingshichao-shang-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 1956097,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/xingshichao-shang-single.pdf"
+   "size": 1976463,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/xingshichao-shang-single.pdf"
   },
   {
    "name": "四分律刪繁補闕行事鈔_卷下_白話對照本_單欄.pdf",
    "asset": "xingshichao-xia-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 2257631,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/xingshichao-xia-single.pdf"
+   "size": 2257110,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/xingshichao-xia-single.pdf"
   },
   {
    "name": "四分律刪繁補闕行事鈔_卷中_白話對照本_單欄.pdf",
    "asset": "xingshichao-zhong-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 2384026,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/xingshichao-zhong-single.pdf"
+   "size": 2384864,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/xingshichao-zhong-single.pdf"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷一_白話對照本_單欄.pdf",
    "asset": "yeshu-01-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 2015228,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-01-single.pdf"
+   "size": 2062037,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-01-single.pdf"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷三_白話對照本_單欄.pdf",
    "asset": "yeshu-03-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 2316759,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-03-single.pdf"
+   "size": 2316411,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-03-single.pdf"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷二_白話對照本_單欄.pdf",
    "asset": "yeshu-02-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 1991622,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-02-single.pdf"
+   "size": 1990495,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-02-single.pdf"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷四_白話對照本_單欄.pdf",
    "asset": "yeshu-04-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 1940385,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-04-single.pdf"
+   "size": 1940736,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-04-single.pdf"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷一_白話對照本_單欄.pdf",
    "asset": "jieshu-01-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 2551061,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-01-single.pdf"
+   "size": 2561515,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-01-single.pdf"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷三_白話對照本_單欄.pdf",
    "asset": "jieshu-03-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 2809881,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-03-single.pdf"
+   "size": 2809666,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-03-single.pdf"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷二_白話對照本_單欄.pdf",
    "asset": "jieshu-02-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 2666751,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-02-single.pdf"
+   "size": 2667414,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-02-single.pdf"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷四_白話對照本_單欄.pdf",
    "asset": "jieshu-04-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 2962659,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-04-single.pdf"
+   "size": 2963656,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-04-single.pdf"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷首_白話對照本_單欄.pdf",
    "asset": "jieshu-shou-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 327821,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-shou-single.pdf"
+   "size": 327632,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-shou-single.pdf"
   },
   {
    "name": "四分律拾毗尼義鈔_卷上_白話對照本_單欄.pdf",
    "asset": "yichao-shang-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 1085418,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yichao-shang-single.pdf"
+   "size": 1105317,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yichao-shang-single.pdf"
   },
   {
    "name": "四分律拾毗尼義鈔_卷中_白話對照本_單欄.pdf",
    "asset": "yichao-zhong-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 1155016,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yichao-zhong-single.pdf"
+   "size": 1154954,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yichao-zhong-single.pdf"
   },
   {
    "name": "四分律行事鈔資持記_卷上_白話對照本_單欄.pdf",
    "asset": "zhichi-shang-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 3714859,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/zhichi-shang-single.pdf"
+   "size": 3715160,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/zhichi-shang-single.pdf"
   },
   {
    "name": "四分律行事鈔資持記_卷下_白話對照本_單欄.pdf",
    "asset": "zhichi-xia-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 2881816,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/zhichi-xia-single.pdf"
+   "size": 2880784,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/zhichi-xia-single.pdf"
   },
   {
    "name": "四分律行事鈔資持記_卷中_白話對照本_單欄.pdf",
    "asset": "zhichi-zhong-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 3945390,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/zhichi-zhong-single.pdf"
+   "size": 3943064,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/zhichi-zhong-single.pdf"
   },
   {
    "name": "四分比丘尼鈔_卷上_白話對照本_單欄.pdf",
    "asset": "nicao-shang-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 1111986,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/nicao-shang-single.pdf"
+   "size": 1126996,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/nicao-shang-single.pdf"
   },
   {
    "name": "四分比丘尼鈔_卷下_白話對照本_單欄.pdf",
    "asset": "nicao-xia-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 1250802,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/nicao-xia-single.pdf"
+   "size": 1250606,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/nicao-xia-single.pdf"
   },
   {
    "name": "四分比丘尼鈔_卷中_白話對照本_單欄.pdf",
    "asset": "nicao-zhong-single.pdf",
    "kind": "pdf",
    "layout": "單欄",
-   "size": 1244847,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/nicao-zhong-single.pdf"
+   "size": 1244628,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/nicao-zhong-single.pdf"
   },
   {
    "name": "四分律刪繁補闕行事鈔_卷上_白話對照本_雙欄.docx",
    "asset": "xingshichao-shang-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 357119,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/xingshichao-shang-double.docx"
+   "size": 363522,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/xingshichao-shang-double.docx"
   },
   {
    "name": "四分律刪繁補闕行事鈔_卷下_白話對照本_雙欄.docx",
    "asset": "xingshichao-xia-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 397293,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/xingshichao-xia-double.docx"
+   "size": 404811,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/xingshichao-xia-double.docx"
   },
   {
    "name": "四分律刪繁補闕行事鈔_卷中_白話對照本_雙欄.docx",
    "asset": "xingshichao-zhong-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 431878,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/xingshichao-zhong-double.docx"
+   "size": 439274,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/xingshichao-zhong-double.docx"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷一_白話對照本_雙欄.docx",
    "asset": "yeshu-01-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 399162,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-01-double.docx"
+   "size": 406960,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-01-double.docx"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷三_白話對照本_雙欄.docx",
    "asset": "yeshu-03-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 457493,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-03-double.docx"
+   "size": 466088,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-03-double.docx"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷二_白話對照本_雙欄.docx",
    "asset": "yeshu-02-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 370002,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-02-double.docx"
+   "size": 376771,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-02-double.docx"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷四_白話對照本_雙欄.docx",
    "asset": "yeshu-04-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 360800,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-04-double.docx"
+   "size": 368318,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-04-double.docx"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷一_白話對照本_雙欄.docx",
    "asset": "jieshu-01-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 484085,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-01-double.docx"
+   "size": 495321,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-01-double.docx"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷三_白話對照本_雙欄.docx",
    "asset": "jieshu-03-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 553170,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-03-double.docx"
+   "size": 568029,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-03-double.docx"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷二_白話對照本_雙欄.docx",
    "asset": "jieshu-02-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 531645,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-02-double.docx"
+   "size": 544959,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-02-double.docx"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷四_白話對照本_雙欄.docx",
    "asset": "jieshu-04-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 571018,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-04-double.docx"
+   "size": 589334,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-04-double.docx"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷首_白話對照本_雙欄.docx",
    "asset": "jieshu-shou-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 43614,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-shou-double.docx"
+   "size": 43825,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-shou-double.docx"
   },
   {
    "name": "四分律拾毗尼義鈔_卷上_白話對照本_雙欄.docx",
    "asset": "yichao-shang-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 171175,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yichao-shang-double.docx"
+   "size": 172753,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yichao-shang-double.docx"
   },
   {
    "name": "四分律拾毗尼義鈔_卷中_白話對照本_雙欄.docx",
    "asset": "yichao-zhong-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 194082,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yichao-zhong-double.docx"
+   "size": 196638,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yichao-zhong-double.docx"
   },
   {
    "name": "四分律行事鈔資持記_卷上_白話對照本_雙欄.docx",
    "asset": "zhichi-shang-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 776281,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/zhichi-shang-double.docx"
+   "size": 797988,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/zhichi-shang-double.docx"
   },
   {
    "name": "四分律行事鈔資持記_卷下_白話對照本_雙欄.docx",
    "asset": "zhichi-xia-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 546162,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/zhichi-xia-double.docx"
+   "size": 560164,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/zhichi-xia-double.docx"
   },
   {
    "name": "四分律行事鈔資持記_卷中_白話對照本_雙欄.docx",
    "asset": "zhichi-zhong-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 828223,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/zhichi-zhong-double.docx"
+   "size": 851232,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/zhichi-zhong-double.docx"
   },
   {
    "name": "四分比丘尼鈔_卷上_白話對照本_雙欄.docx",
    "asset": "nicao-shang-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 159352,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/nicao-shang-double.docx"
+   "size": 162687,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/nicao-shang-double.docx"
   },
   {
    "name": "四分比丘尼鈔_卷下_白話對照本_雙欄.docx",
    "asset": "nicao-xia-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 172624,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/nicao-xia-double.docx"
+   "size": 175203,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/nicao-xia-double.docx"
   },
   {
    "name": "四分比丘尼鈔_卷中_白話對照本_雙欄.docx",
    "asset": "nicao-zhong-double.docx",
    "kind": "docx",
    "layout": "雙欄",
-   "size": 174221,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/nicao-zhong-double.docx"
+   "size": 176551,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/nicao-zhong-double.docx"
   },
   {
    "name": "四分律刪繁補闕行事鈔_卷上_白話對照本_雙欄.pdf",
    "asset": "xingshichao-shang-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 2166594,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/xingshichao-shang-double.pdf"
+   "size": 2184949,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/xingshichao-shang-double.pdf"
   },
   {
    "name": "四分律刪繁補闕行事鈔_卷下_白話對照本_雙欄.pdf",
    "asset": "xingshichao-xia-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 2497052,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/xingshichao-xia-double.pdf"
+   "size": 2482339,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/xingshichao-xia-double.pdf"
   },
   {
    "name": "四分律刪繁補闕行事鈔_卷中_白話對照本_雙欄.pdf",
    "asset": "xingshichao-zhong-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 2656338,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/xingshichao-zhong-double.pdf"
+   "size": 2642144,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/xingshichao-zhong-double.pdf"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷一_白話對照本_雙欄.pdf",
    "asset": "yeshu-01-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 2272177,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-01-double.pdf"
+   "size": 2287601,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-01-double.pdf"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷三_白話對照本_雙欄.pdf",
    "asset": "yeshu-03-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 2614598,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-03-double.pdf"
+   "size": 2599174,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-03-double.pdf"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷二_白話對照本_雙欄.pdf",
    "asset": "yeshu-02-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 2222658,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-02-double.pdf"
+   "size": 2207690,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-02-double.pdf"
   },
   {
    "name": "四分律刪補隨機羯磨疏_卷四_白話對照本_雙欄.pdf",
    "asset": "yeshu-04-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 2162846,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yeshu-04-double.pdf"
+   "size": 2145377,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yeshu-04-double.pdf"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷一_白話對照本_雙欄.pdf",
    "asset": "jieshu-01-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 2847558,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-01-double.pdf"
+   "size": 2852232,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-01-double.pdf"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷三_白話對照本_雙欄.pdf",
    "asset": "jieshu-03-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 3167573,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-03-double.pdf"
+   "size": 3143778,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-03-double.pdf"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷二_白話對照本_雙欄.pdf",
    "asset": "jieshu-02-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 3006711,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-02-double.pdf"
+   "size": 2983017,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-02-double.pdf"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷四_白話對照本_雙欄.pdf",
    "asset": "jieshu-04-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 3348855,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-04-double.pdf"
+   "size": 3320486,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-04-double.pdf"
   },
   {
    "name": "四分律含注戒本疏行宗記_卷首_白話對照本_雙欄.pdf",
    "asset": "jieshu-shou-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 330382,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/jieshu-shou-double.pdf"
+   "size": 330124,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/jieshu-shou-double.pdf"
   },
   {
    "name": "四分律拾毗尼義鈔_卷上_白話對照本_雙欄.pdf",
    "asset": "yichao-shang-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 1180711,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yichao-shang-double.pdf"
+   "size": 1195715,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yichao-shang-double.pdf"
   },
   {
    "name": "四分律拾毗尼義鈔_卷中_白話對照本_雙欄.pdf",
    "asset": "yichao-zhong-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 1258615,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/yichao-zhong-double.pdf"
+   "size": 1257852,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/yichao-zhong-double.pdf"
   },
   {
    "name": "四分律行事鈔資持記_卷上_白話對照本_雙欄.pdf",
    "asset": "zhichi-shang-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 4145636,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/zhichi-shang-double.pdf"
+   "size": 4172489,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/zhichi-shang-double.pdf"
   },
   {
    "name": "四分律行事鈔資持記_卷下_白話對照本_雙欄.pdf",
    "asset": "zhichi-xia-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 3170655,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/zhichi-xia-double.pdf"
+   "size": 3185738,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/zhichi-xia-double.pdf"
   },
   {
    "name": "四分律行事鈔資持記_卷中_白話對照本_雙欄.pdf",
    "asset": "zhichi-zhong-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 4408609,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/zhichi-zhong-double.pdf"
+   "size": 4449487,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/zhichi-zhong-double.pdf"
   },
   {
    "name": "四分比丘尼鈔_卷上_白話對照本_雙欄.pdf",
    "asset": "nicao-shang-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 1203243,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/nicao-shang-double.pdf"
+   "size": 1214153,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/nicao-shang-double.pdf"
   },
   {
    "name": "四分比丘尼鈔_卷下_白話對照本_雙欄.pdf",
    "asset": "nicao-xia-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 1350769,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/nicao-xia-double.pdf"
+   "size": 1340334,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/nicao-xia-double.pdf"
   },
   {
    "name": "四分比丘尼鈔_卷中_白話對照本_雙欄.pdf",
    "asset": "nicao-zhong-double.pdf",
    "kind": "pdf",
    "layout": "雙欄",
-   "size": 1335125,
-   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-4c92361/nicao-zhong-double.pdf"
+   "size": 1333218,
+   "url": "https://github.com/UncleHandsome/nanshan-lingzhi-vinaya/releases/download/books-20261126-94cd8d7/nicao-zhong-double.pdf"
   }
  ]
 }

@@ -138,7 +138,7 @@ PDF 以「標楷體」排印，A4 版面，頁眉為書名、頁腳為頁碼；*
 - 資料夾：[重審_行事鈔_3K_20261126](重審_行事鈔_3K_20261126)（**776 檔**、3,042 個 key）
 - 提示詞：[_src/review_prompt_universal.md](_src/review_prompt_universal.md)（含 JSONL 錨點，供自動收錄）
 - 產生程式：[_src/mk_3k_book.py](_src/mk_3k_book.py)
-- 用法：一次送一份 .md 給 AI；回覆依 JSONL 錨點格式，收回後可自動 ingest。
+- 用法：一次送一份 .md 給 AI；**資料夾內 [README](重審_行事鈔_3K_20261126/README.md) 是給 AI 的處理說明**（逐檔流程、三節輸出、JSONL 規則、key 對應、回覆命名與自檢）。
 
 ---
 

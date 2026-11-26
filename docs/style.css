@@ -1742,3 +1742,21 @@ body.page-download a.dl-big {
 body.page-download a.dl-big:hover { background: var(--surface-3); border-color: var(--accent); text-decoration: none; }
 body.page-download a.dl-big .dl-k { font-size: 14.5px; font-weight: 600; color: var(--accent); }
 body.page-download a.dl-big .dl-s { font-size: 12.5px; color: var(--fg2); font-variant-numeric: tabular-nums; }
+
+/* ── 下載頁 v80：ZIP 移到標題列（全部在頁標題旁、各書在書卡標題旁） ── */
+body.page-download .dl-title-row {
+  display: flex; align-items: center; gap: .85rem; flex-wrap: wrap;
+  margin: 0 0 .1rem;
+}
+body.page-download .dl-title-row h1 { margin: 0; }
+body.page-download .dl-zip {
+  display: inline-flex; align-items: baseline; gap: .38rem;
+  padding: .22rem .62rem; border: 1px solid var(--line); border-radius: 7px;
+  background: var(--surface); text-decoration: none; white-space: nowrap;
+}
+body.page-download .dl-zip:hover { background: var(--surface-3); border-color: var(--accent); text-decoration: none; }
+body.page-download .dl-zip .dl-k { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: .02em; }
+body.page-download .dl-zip .dl-s { font-size: 12px; color: var(--fg2); font-variant-numeric: tabular-nums; }
+body.page-download .dl-head { justify-content: flex-start; }
+body.page-download .dl-head .dl-meta { margin-left: auto; }
+body.page-download .dl-head .dl-zip { flex: 0 0 auto; }

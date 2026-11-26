@@ -159,6 +159,8 @@ def main():
 def build_from_manifest(man):
     rows = {}
     for f in man.get('files', []):
+        if f.get('kind') == 'zip':
+            continue
         fn = f['name']
         bk, vol = split_asset(f.get('asset', ''), fn)
         rows.setdefault((bk, vol), {})[(f['layout'], f['kind'].upper())] = (fn, f['size'], f['url'])
@@ -191,7 +193,23 @@ def build_from_manifest(man):
                 % (chip(m, '單欄', 'DOCX'), chip(m, '單欄', 'PDF'),
                    chip(m, '雙欄', 'DOCX'), chip(m, '雙欄', 'PDF')))
 
-    L = ['<h1>下載・白話對照本</h1>',
+    # ZIP 打包：一併放進大標題與各書卡標題列
+    zips = {}
+    for f in man.get('files', []):
+        if f.get('kind') == 'zip':
+            label = f['name'].replace('白話對照本_', '').replace('.zip', '')
+            zips[label] = (f['url'], f['size'])
+
+    def zip_chip(label, extra=''):
+        item = zips.get(label)
+        if not item:
+            return ''
+        url, sz = item
+        return ('<a class="dl-zip%s" href="%s" title="%s ZIP"><span class="dl-k">ZIP</span>'
+                '<span class="dl-s">%s</span></a>' % (extra, url, label, fmt_size(sz)))
+
+    L = ['<div class="dl-title-row"><h1>下載・白話對照本</h1>'
+         + zip_chip('全部', ' dl-zip-all') + '</div>',
          '<p class="dl-note">六書與句級合編本，標楷體 14pt。單欄適合手機與平板，雙欄適合列印與對讀；'
          'DOCX 可自行編輯，PDF 為排版完成版。檔案存放於 GitHub Releases。<br>'
          '版本：<b>%s</b>　定稿 commit <code>%s</code>　產生 %s　'
@@ -199,28 +217,12 @@ def build_from_manifest(man):
          % (man.get('tag', ''), man.get('commit', ''), man.get('generated', ''),
             man.get('release_url', '#'))]
 
-    # 打包下載（ZIP）
-    bundles = [f for f in man.get('files', []) if f.get('kind') == 'zip']
-    if bundles:
-        border = ['全部', '單欄', '雙欄', '行事鈔', '戒疏', '業疏', '尼鈔', '義鈔', '資持記', '合編本']
-
-        def blabel(f):
-            return f['name'].replace('白話對照本_', '').replace('.zip', '')
-
-        bundles.sort(key=lambda f: border.index(blabel(f)) if blabel(f) in border else 99)
-        L.append('<h2 class="sec" id="bundles">打包下載（ZIP）</h2>')
-        L.append('<div class="dl-bundles">')
-        for f in bundles:
-            L.append('<a class="dl-big" href="%s"><span class="dl-k">%s</span>'
-                     '<span class="dl-s">%s</span></a>'
-                     % (f['url'], blabel(f), fmt_size(f['size'])))
-        L.append('</div>')
-        L.append('<p class="dl-note">「全部」含六書與合編本全部 128 檔；「單本」含該書單欄＋雙欄 DOCX／PDF。</p>')
-
+    # ZIP 打包：一併放進大標題與各書卡標題列
     def card(bk, vols):
         L.append('<section class="dl-book">')
-        L.append('<div class="dl-head"><h2>%s</h2><span class="dl-meta">共 %d 卷</span></div>'
-                 % (BOOK_LABEL.get(bk, bk), len(vols)))
+        zlab = '合編本' if bk == '合編' else ('戒疏' if bk == '戒本疏' else bk)
+        L.append('<div class="dl-head"><h2>%s</h2><span class="dl-meta">共 %d 卷</span>%s</div>'
+                 % (BOOK_LABEL.get(bk, bk), len(vols), zip_chip(zlab)))
         L.append('<table class="dl-table"><thead><tr><th>卷</th>'
                  '<th>單欄</th><th>雙欄</th></tr></thead><tbody>')
         for vol, m in vols:
@@ -245,7 +247,7 @@ def build_from_manifest(man):
     docs_files = [f for f in man.get('files', []) if f.get('kind') != 'zip']
     tot = sum(f['size'] for f in docs_files)
     L.append('<p class="dl-note">共 %d 個 Word／PDF、%s；另有 %d 個 ZIP 打包檔。下載位置為 GitHub Releases 資產。</p>'
-             % (len(docs_files), fmt_size(tot), len(bundles)))
+             % (len(docs_files), fmt_size(tot), len(zips)))
     html = SA.page('下載・白話對照本｜南山律典', '\n'.join(L), prefix='',
                    book_label='下載', book_short='下載', body_class='page-download',
                    description='六書與合編本白話對照本 Word 與 PDF 下載（單欄／雙欄、單本／全部打包）。')

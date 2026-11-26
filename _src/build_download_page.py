@@ -164,36 +164,40 @@ def build_from_manifest(man):
         groups.setdefault(bk, {})[vol] = m
 
     L = ['<h1>下載・六書白話對照本</h1>',
-         '<p class="byline">標楷體 14pt、緊湊排版。單欄適合手機與平板，雙欄適合列印與對讀。'
-         'DOCX 可自行編輯；PDF 為排版完成版。</p>',
-         '<p class="dl-note">檔案存放於 GitHub Releases，不佔用網站流量。'
+         '<p class="dl-note">標楷體 14pt、緊湊排版。單欄適合手機與平板，雙欄適合列印與對讀；'
+         'DOCX 可自行編輯，PDF 為排版完成版。檔案存放於 GitHub Releases，不佔用網站流量。<br>'
          '版本：<b>%s</b>　定稿 commit <code>%s</code>　產生 %s　'
          '<a href="%s" target="_blank" rel="noopener">在 GitHub 檢視此版本</a></p>'
          % (man.get('tag', ''), man.get('commit', ''), man.get('generated', ''),
             man.get('release_url', '#'))]
 
-    # v70：所有書合併成同一張緊湊表格（書別用 rowspan，省掉六個大標題）
-    L.append('<table class="dl-table dl-all"><thead><tr>'
-             '<th>書</th><th>卷</th><th>單欄 DOCX</th><th>單欄 PDF</th>'
-             '<th>雙欄 DOCX</th><th>雙欄 PDF</th></tr></thead><tbody>')
-    for bk in BOOK_ORDER:
-        if bk not in groups:
-            continue
-        vols = sorted(groups[bk].items(), key=lambda kv: volkey(kv[0]))
-        for i, (vol, m) in enumerate(vols):
-            cells = []
-            for key in [('單欄', 'DOCX'), ('單欄', 'PDF'), ('雙欄', 'DOCX'), ('雙欄', 'PDF')]:
-                item = m.get(key)
-                if item:
-                    fn, sz, url = item
-                    cells.append('<a class="dl" href="%s">%s</a>' % (url, fmt_size(sz)))
-                else:
-                    cells.append('—')
-            bookcell = ('<td class="dl-book" rowspan="%d">%s</td>'
-                        % (len(vols), BOOK_LABEL.get(bk, bk))) if i == 0 else ''
-            L.append('<tr>%s<td class="dl-vol">%s</td>%s</tr>'
-                     % (bookcell, vol or '全書', ''.join('<td>%s</td>' % c for c in cells)))
-    L.append('</tbody></table>')
+    # v72：左右兩欄書卡（每欄三本），每卡書名＋卷別列(單欄DOCX/單欄PDF/雙欄DOCX/雙欄PDF)
+    order = [bk for bk in BOOK_ORDER if bk in groups]
+    half = (len(order) + 1) // 2
+    cols = [order[:half], order[half:]]
+    L.append('<p class="dl-legend">每列：卷 ｜ 單欄 DOCX ｜ 單欄 PDF ｜ 雙欄 DOCX ｜ 雙欄 PDF</p>')
+    L.append('<div class="dl-cols">')
+    for col in cols:
+        L.append('<div class="dl-col">')
+        for bk in col:
+            vols = sorted(groups[bk].items(), key=lambda kv: volkey(kv[0]))
+            L.append('<section class="dl-book"><h2>%s<span class="dl-meta">共 %d 卷</span></h2>'
+                     % (BOOK_LABEL.get(bk, bk), len(vols)))
+            L.append('<table class="dl-table"><tbody>')
+            for vol, m in vols:
+                cells = []
+                for key in [('單欄', 'DOCX'), ('單欄', 'PDF'), ('雙欄', 'DOCX'), ('雙欄', 'PDF')]:
+                    item = m.get(key)
+                    if item:
+                        fn, sz, url = item
+                        cells.append('<a class="dl" href="%s">%s</a>' % (url, fmt_size(sz)))
+                    else:
+                        cells.append('—')
+                L.append('<tr><td class="dl-vol">%s</td>%s</tr>'
+                         % (vol or '全書', ''.join('<td>%s</td>' % c for c in cells)))
+            L.append('</tbody></table></section>')
+        L.append('</div>')
+    L.append('</div>')
 
     tot = sum(f['size'] for f in man.get('files', []))
     L.append('<p class="dl-note">共 %d 個檔案、%s。下載位置為 GitHub Releases 資產。</p>'

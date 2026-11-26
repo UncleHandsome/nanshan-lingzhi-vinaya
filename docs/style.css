@@ -1622,3 +1622,24 @@ body.page-download .dl-table.dl-all a.dl { border-bottom: none; }
 @media (max-width: 760px) {
   body.page-download .dl-table.dl-all { display: block; overflow-x: auto; white-space: nowrap; }
 }
+
+/* ── 下載頁 v72：左右兩欄書卡 ── */
+body.page-download main { padding-top: .7rem; padding-bottom: 1.5rem; }
+body.page-download h1 { font-size: 1.4rem; margin: 0 0 .15rem; letter-spacing: .03em; }
+body.page-download .dl-note { margin: .15rem 0 .35rem; font-size: 11.5px; line-height: 1.5; }
+body.page-download .dl-legend { margin: .15rem 0 .35rem; font-size: 11px; color: var(--fg2); letter-spacing: .02em; }
+.dl-cols { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: .55rem .9rem; align-items: start; }
+.dl-col { display: flex; flex-direction: column; gap: .5rem; min-width: 0; }
+.dl-book { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .32rem .5rem .38rem; }
+.dl-book h2 { font-size: .9rem; margin: 0 0 .16rem; padding: 0 0 .16rem; border-bottom: 1px solid var(--line); color: var(--fg); font-weight: 700; }
+.dl-book h2 .dl-meta { font-weight: 400; font-size: 10.5px; color: var(--fg2); margin-left: .4rem; }
+.dl-book .dl-table { width: 100%; margin: 0; border-collapse: collapse; font-size: 11.5px; line-height: 1.2; table-layout: fixed; }
+.dl-book .dl-table td { padding: .1rem .25rem; border-bottom: 1px dotted var(--line); }
+.dl-book .dl-table tr:last-child td { border-bottom: 0; }
+.dl-book .dl-table td.dl-vol { width: 3.8em; white-space: nowrap; font-weight: 600; color: var(--fg); }
+.dl-book .dl-table td + td { text-align: center; white-space: nowrap; }
+.dl-book .dl-table a { border-bottom: none; }
+.dl-book .dl-table a:hover { color: var(--accent); text-decoration: underline; }
+body.page-download .wrap { min-height: calc(100vh - var(--chrome-h)); }
+@media (max-width: 900px) { .dl-cols { grid-template-columns: 1fr; } }
+body.page-download .sitefoot { margin-top: .5rem; }

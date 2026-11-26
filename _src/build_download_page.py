@@ -27,7 +27,7 @@ SRC = {
     ('雙欄', 'DOCX'): os.path.join(B, '白話對照本_標楷_雙欄_DOCX'),
     ('雙欄', 'PDF'): os.path.join(B, '白話對照本_標楷_雙欄_PDF'),
 }
-BOOK_ORDER = ['行事鈔', '戒本疏', '業疏', '尼鈔', '義鈔', '資持記']
+BOOK_ORDER = ['行事鈔', '戒本疏', '業疏', '尼鈔', '義鈔', '資持記', '合編']
 BOOK_LABEL = {
     '行事鈔': '四分律刪繁補闕行事鈔',
     '戒本疏': '四分律含注戒本疏行宗記',
@@ -35,10 +35,13 @@ BOOK_LABEL = {
     '尼鈔': '四分律比丘尼鈔',
     '義鈔': '四分律拾毘尼義鈔',
     '資持記': '四分律行事鈔資持記',
+    '合編': '四分律行事鈔資持記・句級合編',
 }
 
 
 def book_of(fn):
+    if '合編' in fn:
+        return '合編'
     for k in ['行事鈔', '戒本疏', '業疏', '尼鈔', '義鈔', '資持記']:
         if k in fn:
             return k
@@ -51,17 +54,23 @@ def vol_of(fn):
 
 
 SLUG2BOOK = {'xingshichao': '行事鈔', 'jieshu': '戒本疏', 'yeshu': '業疏',
-             'nicao': '尼鈔', 'yichao': '義鈔', 'zhichi': '資持記'}
+             'nicao': '尼鈔', 'yichao': '義鈔', 'zhichi': '資持記', 'hebian': '合編'}
 SLUG2VOL = {'shang': '卷上', 'zhong': '卷中', 'xia': '卷下', 'shou': '卷首',
             '01': '卷一', '02': '卷二', '03': '卷三', '04': '卷四',
-            '05': '卷五', '06': '卷六'}
+            '05': '卷五', '06': '卷六',
+            'shang-1': '卷上之一', 'shang-2': '卷上之二', 'shang-3': '卷上之三', 'shang-4': '卷上之四',
+            'zhong-1': '卷中之一', 'zhong-2': '卷中之二', 'zhong-3': '卷中之三', 'zhong-4': '卷中之四',
+            'xia-1': '卷下之一', 'xia-2': '卷下之二', 'xia-3': '卷下之三', 'xia-4': '卷下之四'}
 
 
 def split_asset(asset, fallback_name=''):
-    """xingshichao-shang-single.pdf → ('行事鈔','卷上')"""
+    """xingshichao-shang-single.pdf → ('行事鈔','卷上')；hebian-shang-1-single.pdf → ('合編','卷上之一')"""
     parts = (asset or '').rsplit('.', 1)[0].split('-')
     bk = SLUG2BOOK.get(parts[0]) if parts else None
-    vol = SLUG2VOL.get(parts[1]) if len(parts) > 1 else None
+    if parts and parts[0] == 'hebian' and len(parts) > 2:
+        vol = SLUG2VOL.get(parts[1] + '-' + parts[2])
+    else:
+        vol = SLUG2VOL.get(parts[1]) if len(parts) > 1 else None
     if not bk or not vol:
         f = fallback_name
         bk = bk or book_of(f)
@@ -157,54 +166,73 @@ def build_from_manifest(man):
     def volkey(v):
         order = {'卷首': 0}
         m = re.search(r'卷([一二三四五六七八九十])', v)
-        return (order.get(v, 1), m.group(1) if m else v)
+        j = re.search(r'之([一二三四])', v)
+        return (order.get(v, 1), m.group(1) if m else v, j.group(1) if j else '')
 
     groups = {}
     for (bk, vol), m in rows.items():
         groups.setdefault(bk, {})[vol] = m
 
-    L = ['<h1>下載・六書白話對照本</h1>',
-         '<p class="dl-note">標楷體 14pt、緊湊排版。單欄適合手機與平板，雙欄適合列印與對讀；'
-         'DOCX 可自行編輯，PDF 為排版完成版。檔案存放於 GitHub Releases，不佔用網站流量。<br>'
+    def link(m, layout, kind):
+        item = m.get((layout, kind))
+        if not item:
+            return '<span class="dl-na">—</span>'
+        fn, sz, url = item
+        return '<a class="dl" href="%s" title="%s">%s</a>' % (url, fn, fmt_size(sz))
+
+    def cells(m):
+        return ('<td>%s ／ %s</td><td>%s ／ %s</td>'
+                % (link(m, '單欄', 'DOCX'), link(m, '單欄', 'PDF'),
+                   link(m, '雙欄', 'DOCX'), link(m, '雙欄', 'PDF')))
+
+    L = ['<h1>下載・白話對照本</h1>',
+         '<p class="dl-note">六書與句級合編本，標楷體 14pt。單欄適合手機與平板，雙欄適合列印與對讀；'
+         'DOCX 可自行編輯，PDF 為排版完成版。檔案存放於 GitHub Releases。<br>'
          '版本：<b>%s</b>　定稿 commit <code>%s</code>　產生 %s　'
          '<a href="%s" target="_blank" rel="noopener">在 GitHub 檢視此版本</a></p>'
          % (man.get('tag', ''), man.get('commit', ''), man.get('generated', ''),
             man.get('release_url', '#'))]
 
-    # v72：左右兩欄書卡（每欄三本），每卡書名＋卷別列(單欄DOCX/單欄PDF/雙欄DOCX/雙欄PDF)
-    order = [bk for bk in BOOK_ORDER if bk in groups]
-    half = (len(order) + 1) // 2
-    cols = [order[:half], order[half:]]
-    L.append('<p class="dl-legend">每列：卷 ｜ 單欄 DOCX ｜ 單欄 PDF ｜ 雙欄 DOCX ｜ 雙欄 PDF</p>')
+    def card(bk, vols):
+        L.append('<section class="dl-book">')
+        L.append('<div class="dl-head"><h2>%s</h2><span class="dl-meta">共 %d 卷</span></div>'
+                 % (BOOK_LABEL.get(bk, bk), len(vols)))
+        L.append('<table class="dl-table"><thead><tr><th>卷</th>'
+                 '<th>單欄 DOCX／PDF</th><th>雙欄 DOCX／PDF</th></tr></thead><tbody>')
+        for vol, m in vols:
+            L.append('<tr><td class="dl-vol">%s</td>%s</tr>' % (vol or '全書', cells(m)))
+        L.append('</tbody></table></section>')
+
+    books = [bk for bk in BOOK_ORDER if bk in groups and bk != '合編']
+    half = (len(books) + 1) // 2
     L.append('<div class="dl-cols">')
-    for col in cols:
+    for col in (books[:half], books[half:]):
         L.append('<div class="dl-col">')
         for bk in col:
-            vols = sorted(groups[bk].items(), key=lambda kv: volkey(kv[0]))
-            L.append('<section class="dl-book"><h2>%s<span class="dl-meta">共 %d 卷</span></h2>'
-                     % (BOOK_LABEL.get(bk, bk), len(vols)))
-            L.append('<table class="dl-table"><tbody>')
-            for vol, m in vols:
-                cells = []
-                for key in [('單欄', 'DOCX'), ('單欄', 'PDF'), ('雙欄', 'DOCX'), ('雙欄', 'PDF')]:
-                    item = m.get(key)
-                    if item:
-                        fn, sz, url = item
-                        cells.append('<a class="dl" href="%s">%s</a>' % (url, fmt_size(sz)))
-                    else:
-                        cells.append('—')
-                L.append('<tr><td class="dl-vol">%s</td>%s</tr>'
-                         % (vol or '全書', ''.join('<td>%s</td>' % c for c in cells)))
-            L.append('</tbody></table></section>')
+            card(bk, sorted(groups[bk].items(), key=lambda kv: volkey(kv[0])))
         L.append('</div>')
     L.append('</div>')
+
+    if '合編' in groups:
+        hb = sorted(groups['合編'].items(), key=lambda kv: volkey(kv[0]))
+        L.append('<section class="dl-book dl-wide">')
+        L.append('<div class="dl-head"><h2>%s</h2><span class="dl-meta">共 %d 卷</span></div>'
+                 % (BOOK_LABEL['合編'], len(hb)))
+        L.append('<div class="dl-hbcols">')
+        for chunk in (hb[:len(hb) // 2 + len(hb) % 2], hb[len(hb) // 2 + len(hb) % 2:]):
+            L.append('<table class="dl-table"><thead><tr><th>卷</th>'
+                     '<th>單欄 DOCX／PDF</th><th>雙欄 DOCX／PDF</th></tr></thead><tbody>')
+            for vol, m in chunk:
+                L.append('<tr><td class="dl-vol">%s</td>%s</tr>' % (vol or '全書', cells(m)))
+            L.append('</tbody></table>')
+        L.append('</div></section>')
 
     tot = sum(f['size'] for f in man.get('files', []))
     L.append('<p class="dl-note">共 %d 個檔案、%s。下載位置為 GitHub Releases 資產。</p>'
              % (len(man.get('files', [])), fmt_size(tot)))
-    html = SA.page('下載・六書白話對照本｜南山律典', '\n'.join(L), prefix='',
+    html = SA.page('下載・白話對照本｜南山律典', '\n'.join(L), prefix='',
                    book_label='下載', book_short='下載', body_class='page-download',
-                   description='六書白話對照本 Word 與 PDF 下載（單欄／雙欄）。')
+                   description='六書與合編本白話對照本 Word 與 PDF 下載（單欄／雙欄）。')
     io.open(os.path.join(DOCS, 'download.html'), 'w', encoding='utf-8', newline='\n').write(html)
     print('由 manifest 產生下載頁：%s，%d 檔' % (man.get('tag'), len(man.get('files', []))))
 

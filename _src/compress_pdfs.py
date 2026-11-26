@@ -24,6 +24,9 @@ DIRS = [os.path.join(B, '白話對照本_標楷_單欄_PDF'),
 
 def main():
     dry = '--dry' in sys.argv
+    only = ''
+    if '--only' in sys.argv:
+        only = sys.argv[sys.argv.index('--only') + 1]
     if not os.path.exists(GS):
         raise SystemExit('找不到 Ghostscript：%s' % GS)
     t0 = time.time()
@@ -33,6 +36,8 @@ def main():
         if not os.path.isdir(d):
             continue
         for p in sorted(glob.glob(os.path.join(d, '*.pdf'))):
+            if only and only not in os.path.basename(p):
+                continue
             sz = os.path.getsize(p)
             before += sz
             tmp = p + '.gs.tmp'

@@ -40,8 +40,11 @@ API = 'https://api.github.com'
 
 VOL_ASCII = {'卷首': 'shou', '卷上': 'shang', '卷中': 'zhong', '卷下': 'xia',
              '卷一': '01', '卷二': '02', '卷三': '03', '卷四': '04',
-             '卷五': '05', '卷六': '06'}
-BOOK_MATCH = [('資持記', 'zhichi'), ('含注戒本疏', 'jieshu'), ('刪繁補闕行事鈔', 'xingshichao'),
+             '卷五': '05', '卷六': '06',
+             '卷上之一': 'shang-1', '卷上之二': 'shang-2', '卷上之三': 'shang-3', '卷上之四': 'shang-4',
+             '卷中之一': 'zhong-1', '卷中之二': 'zhong-2', '卷中之三': 'zhong-3', '卷中之四': 'zhong-4',
+             '卷下之一': 'xia-1', '卷下之二': 'xia-2', '卷下之三': 'xia-3', '卷下之四': 'xia-4'}
+BOOK_MATCH = [('合編', 'hebian'), ('資持記', 'zhichi'), ('含注戒本疏', 'jieshu'), ('刪繁補闕行事鈔', 'xingshichao'),
               ('羯磨疏', 'yeshu'), ('拾毗尼義鈔', 'yichao'), ('比丘尼鈔', 'nicao'),
               ('行事鈔', 'xingshichao'), ('戒疏', 'jieshu'), ('業疏', 'yeshu'),
               ('尼鈔', 'nicao'), ('義鈔', 'yichao')]
@@ -55,7 +58,7 @@ def ascii_name(fn):
         if k in fn:
             book = v
             break
-    m = _re.search(r'_(卷[首上中下一二三四五六])_白話對照本', fn)
+    m = _re.search(r'_(卷[首上中下一二三四五六](?:之[一二三四])?)_白話對照本', fn)
     vol = m.group(1) if m else ''
     layout = 'double' if '雙欄' in fn else 'single'
     ext = 'pdf' if fn.lower().endswith('.pdf') else 'docx'

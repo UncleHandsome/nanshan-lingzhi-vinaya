@@ -204,5 +204,25 @@ for i, e in enumerate(entries, 1):
 footer(doc)
 doc.save(OUT_DOCX)
 print('saved', OUT_DOCX)
+
+# ── 純文字版 ──
+OUT_TXT = os.path.join(B, '重審_行事鈔_3K_20261126', '抽樣十段_AI回覆_整理版.txt')
+lines = ['四分律刪繁補闕行事鈔', '代表性十段・AI 校閱回覆（整理版）',
+         '格式：（一）考據初檢　（二）語言與定稿覆核　（三）修正後完整白話', '']
+for i, e in enumerate(entries, 1):
+    lines += [
+        '%d. %s・%s（key %s，%s）' % (i, e['vol'], e['sec'], e['key'],
+                                      status_cn.get(e['status'], e['status'])),
+        '',
+        '【原文】', e['src'], '',
+        '【白話（原譯）】', e['tr'], '',
+        '（一）考據初檢', e['review'], '',
+        '（二）語言與定稿覆核', e['lang'], '',
+        '（三）修正後完整白話', e['final'], '',
+        '=' * 60, '',
+    ]
+io.open(OUT_TXT, 'w', encoding='utf-8', newline='\n').write('\n'.join(lines))
+print('saved', OUT_TXT)
+
 for e in entries:
     print(e['key'], e['status'], 'review', len(e['review']), 'lang', len(e['lang']), 'final', len(e['final']))

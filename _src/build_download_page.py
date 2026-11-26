@@ -209,30 +209,20 @@ def build_from_manifest(man):
             L.append('<tr><td class="dl-vol">%s</td>%s</tr>' % (vol or '全書', cells(m)))
         L.append('</tbody></table></section>')
 
-    books = [bk for bk in BOOK_ORDER if bk in groups and bk != '合編']
-    half = (len(books) + 1) // 2
+    # 指定排法：左欄 行事鈔／戒疏／業疏／尼鈔／義鈔；右欄 資持記／合編本
+    left = ['行事鈔', '戒本疏', '業疏', '尼鈔', '義鈔']
+    right = ['資持記', '合編']
+    extra = [bk for bk in BOOK_ORDER if bk in groups and bk not in left + right]
+    left += extra
     L.append('<div class="dl-cols">')
-    for col in (books[:half], books[half:]):
+    for col in (left, right):
         L.append('<div class="dl-col">')
         for bk in col:
+            if bk not in groups:
+                continue
             card(bk, sorted(groups[bk].items(), key=lambda kv: volkey(kv[0])))
         L.append('</div>')
     L.append('</div>')
-
-    if '合編' in groups:
-        hb = sorted(groups['合編'].items(), key=lambda kv: volkey(kv[0]))
-        L.append('<section class="dl-book dl-wide">')
-        L.append('<div class="dl-head"><h2>%s</h2><span class="dl-meta">共 %d 卷</span></div>'
-                 % (BOOK_LABEL['合編'], len(hb)))
-        L.append('<div class="dl-hbcols">')
-        half = (len(hb) + 1) // 2
-        for chunk in (hb[:half], hb[half:]):
-            L.append('<table class="dl-table"><thead><tr><th>卷</th>'
-                     '<th>單欄</th><th>雙欄</th></tr></thead><tbody>')
-            for vol, m in chunk:
-                L.append('<tr><td class="dl-vol">%s</td>%s</tr>' % (vol or '全書', cells(m)))
-            L.append('</tbody></table>')
-        L.append('</div></section>')
 
     tot = sum(f['size'] for f in man.get('files', []))
     L.append('<p class="dl-note">共 %d 個檔案、%s。下載位置為 GitHub Releases 資產。</p>'

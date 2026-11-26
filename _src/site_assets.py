@@ -13,7 +13,7 @@
 """
 import html
 
-ASSET_VERSION = '78'
+ASSET_VERSION = '79'
 
 BOOK_OPTIONS = [
     ('行事鈔', 'xingshichao/卷上.html'),

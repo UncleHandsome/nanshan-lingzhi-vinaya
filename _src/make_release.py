@@ -34,6 +34,10 @@ DIRS = [
     ('白話對照本_標楷_雙欄_DOCX', 'docx', '雙欄'),
     ('白話對照本_標楷_雙欄_PDF', 'pdf', '雙欄'),
 ]
+BUNDLE_DIR = os.path.join(B, '打包下載_ZIP')
+BUNDLE_ASCII = {'全部': 'all', '單欄': 'single-all', '雙欄': 'double-all',
+                '行事鈔': 'xingshichao', '戒疏': 'jieshu', '業疏': 'yeshu',
+                '尼鈔': 'nicao', '義鈔': 'yichao', '資持記': 'zhichi', '合編本': 'hebian'}
 API = 'https://api.github.com'
 
 
@@ -135,13 +139,21 @@ def main():
                 continue
             fn = os.path.basename(p)
             files.append((p, fn, kind, layout))
+    # 打包 ZIP
+    for p in sorted(glob.glob(os.path.join(BUNDLE_DIR, '*.zip'))):
+        files.append((p, os.path.basename(p), 'zip', ''))
     print('待上傳 %d 檔' % len(files))
+
+    def asset_name(fn, kind):
+        if kind == 'zip':
+            key = fn.replace('白話對照本_', '').replace('.zip', '')
+            return BUNDLE_ASCII.get(key, 'bundle') + '.zip'
+        return ascii_name(fn)
 
     out = []
     for p, fn, kind, layout in files:
-        aname = ascii_name(fn)
+        aname = asset_name(fn, kind)
         if aname not in have:
-            aname = ascii_name(fn)
             url = ('https://uploads.github.com/repos/%s/%s/releases/%s/assets?name=%s'
                    % (owner, repo, rel['id'], urllib.parse.quote(aname)))
             with io.open(p, 'rb') as fh:

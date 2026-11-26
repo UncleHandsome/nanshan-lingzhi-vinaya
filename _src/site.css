@@ -1730,3 +1730,15 @@ body.page-prompt .prompt-box {
   padding: 1rem 1.15rem; margin: 0 0 .8rem;
   font-family: inherit; font-size: 14.5px; line-height: 1.8; color: var(--fg);
 }
+
+/* ── 下載頁 v79：打包下載 ZIP ── */
+body.page-download .dl-bundles { display: flex; flex-wrap: wrap; gap: .5rem; margin: .45rem 0 .7rem; }
+body.page-download a.dl-big {
+  display: inline-flex; align-items: baseline; gap: .55rem;
+  padding: .5rem .95rem; border: 1px solid var(--line); border-radius: 9px;
+  background: var(--surface); text-decoration: none;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .03);
+}
+body.page-download a.dl-big:hover { background: var(--surface-3); border-color: var(--accent); text-decoration: none; }
+body.page-download a.dl-big .dl-k { font-size: 14.5px; font-weight: 600; color: var(--accent); }
+body.page-download a.dl-big .dl-s { font-size: 12.5px; color: var(--fg2); font-variant-numeric: tabular-nums; }

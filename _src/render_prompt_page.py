@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """產生 docs/prompt.html：校閱提示詞（可複製、方便閱讀）。
 
-提示詞來源：_src/review_prompt_universal.md（與送審材料開頭使用同一份）。
+提示詞來源：_src/review_prompt_public.md（公開版）。內部審閱用版本另存 _src/review_prompt_universal.md（含 JSONL）。
 """
 import html
 import io
@@ -11,7 +11,7 @@ import site_assets as SA
 
 B = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOCS = os.path.join(B, 'docs')
-PROMPT = os.path.join(B, '_src', 'review_prompt_universal.md')
+PROMPT = os.path.join(B, '_src', 'review_prompt_public.md')
 
 COPY_JS = '''<script>
 (function () {
@@ -47,7 +47,7 @@ def build():
     text = io.open(PROMPT, encoding='utf-8').read().rstrip('\n') + '\n'
     body = [
         '<h1>校閱提示詞</h1>',
-        '<p class="byline">現行版（2026-11-26）。送審材料開頭使用的完整提示詞，可直接複製給 AI；'
+        '<p class="byline">公開版（2026-11-26）。可直接複製給他人或 AI 使用的完整提示詞；'
         '材枓格式為每段 <code>## 書名／代號</code>＋原文＋白話。</p>',
         '<div class="prompt-actions">'
         '<button class="copy-btn" id="copyPrompt" type="button">⧉ 複製提示詞</button>'

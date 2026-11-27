@@ -112,7 +112,7 @@ def _single_body(doc, items):
             continue
         _h, label, src, tr = it
         p = doc.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        p.alignment = WD_ALIGN_PARAGRAPH.LEFT
         p.paragraph_format.space_before = Pt(1)
         p.paragraph_format.space_after = Pt(0)
         p.paragraph_format.line_spacing = 1.15
@@ -121,7 +121,7 @@ def _single_body(doc, items):
         EK.set_run(p.add_run(src), EK.BODY_PT, False, EK.SRC_COLOR)
         if tr:
             p2 = doc.add_paragraph()
-            p2.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+            p2.alignment = WD_ALIGN_PARAGRAPH.LEFT
             p2.paragraph_format.left_indent = Cm(0.25)
             p2.paragraph_format.space_before = Pt(0)
             p2.paragraph_format.space_after = Pt(4)

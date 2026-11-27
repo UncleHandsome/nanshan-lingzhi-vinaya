@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-"""第2篇集僧通局：合編本 Word（依合編頁對位：鈔文／記文兩欄，原文＋白話）。"""
+"""合編本 Word（依合編頁對位：鈔文／記文兩欄，原文＋白話）。
+用法：--page docs/hebian/卷上之一__p2.html --title "卷上之一・第2篇 集僧通局" --out 路徑.docx
+"""
+import argparse
 import html as H
 import io
 import os
@@ -12,8 +15,14 @@ from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 
 B = r'C:\Users\lionc\OneDrive\桌面\XW\三大部'
-PAGE = os.path.join(B, 'docs', 'hebian', '卷上之一__p2.html')
-OUT = os.path.join(B, '重審_行事鈔_3K_20261126', '第2篇_集僧通局_合編本_原文與最終白話.docx')
+ap = argparse.ArgumentParser()
+ap.add_argument('--page', default='docs/hebian/卷上之一__p2.html')
+ap.add_argument('--title', default='卷上之一・第2篇 集僧通局')
+ap.add_argument('--out', default='重審_行事鈔_3K_20261126/第2篇_集僧通局_合編本_原文與最終白話.docx')
+A = ap.parse_args()
+PAGE = A.page if os.path.isabs(A.page) else os.path.join(B, A.page)
+OUT = A.out if os.path.isabs(A.out) else os.path.join(B, A.out)
+TITLE = A.title
 FONT = 'DFKai-SB'
 HEI = 'Microsoft JhengHei'
 SRC_COLOR = RGBColor(0x6B, 0x5B, 0x4A)
@@ -103,7 +112,7 @@ set_run(p.add_run(), '四分律行事鈔資持記', 24, True, BROWN)
 p = para(doc, sa=4, align=WD_ALIGN_PARAGRAPH.CENTER)
 set_run(p.add_run(), '句級合編本', 20, True, INK)
 p = para(doc, sa=4, align=WD_ALIGN_PARAGRAPH.CENTER)
-set_run(p.add_run(), '卷上之一・第2篇 集僧通局', 18, True, INK)
+set_run(p.add_run(), TITLE, 18, True, INK)
 p = para(doc, sa=16, align=WD_ALIGN_PARAGRAPH.CENTER)
 set_run(p.add_run(), '原文與最終白話', 16, True, INK)
 for line in ('鈔文 %d 段、記文 %d 段並列' % (n_c, n_j),
@@ -139,7 +148,7 @@ for i, it in enumerate(items, 1):
 for s in doc.sections:
     f = s.footer.paragraphs[0]
     f.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    set_run(f.add_run(), '行事鈔資持記・句級合編　卷上之一 第2篇 集僧通局　第 ', 9, False, GRAY, HEI)
+    set_run(f.add_run(), '行事鈔資持記・句級合編　%s　第 ' % TITLE, 9, False, GRAY, HEI)
     fld = OxmlElement('w:fldSimple')
     fld.set(qn('w:instr'), 'PAGE')
     f._p.append(fld)

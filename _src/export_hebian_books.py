@@ -47,13 +47,17 @@ def _txt(s):
     return H.unescape(s).strip()
 
 
-def load_vol(vol):
+def load_vol(vol, pages=None):
     """回傳 [('h', 章名) 或 ('p', label, source, translation), ...]
 
     合編頁已一篇一頁，依 `卷__p1, __p2…` 順序串接。
+    pages 可指定只取某些篇頁（如 ['卷上之一__p2']）。
     """
     files = glob.glob(os.path.join(HB_DIR, vol + '__p*.html'))
     files.sort(key=lambda p: int(re.search(r'__p(\d+)\.html$', p).group(1)))
+    if pages:
+        want = set(pages)
+        files = [f for f in files if os.path.splitext(os.path.basename(f))[0] in want]
     items = []
     for fp in files:
         t = io.open(fp, encoding='utf-8').read()
@@ -161,15 +165,16 @@ def _two_col_body(doc, items):
     _flush_two_col(doc, cur)
 
 
-def build(vol, two, do_pdf=True):
-    items = load_vol(vol)
+def build(vol, two, do_pdf=True, pages=None, label=None):
+    label = label or vol
+    items = load_vol(vol, pages)
     doc = Document()
     _style_doc(doc)
-    EK.add_title(doc, TITLE, SERIES, vol)
+    EK.add_title(doc, TITLE, SERIES, label)
     doc.add_section(WD_SECTION.NEW_PAGE)
     for section in doc.sections:
-        EK.header_footer(section, TITLE, vol)
-    _heading(doc, vol, first=True)
+        EK.header_footer(section, TITLE, label)
+    _heading(doc, label, first=True)
     if two:
         _two_col_body(doc, items)
     else:
@@ -177,9 +182,10 @@ def build(vol, two, do_pdf=True):
     layout = '雙欄' if two else '單欄'
     ddir, pdir = OUT[layout]
     os.makedirs(ddir, exist_ok=True); os.makedirs(pdir, exist_ok=True)
-    base = '%s_%s_白話對照本_%s' % (TITLE, vol, layout)
+    slug = label.replace('　', '').replace('・', '_').replace(' ', '')
+    base = '%s_%s_白話對照本_%s' % (TITLE, slug, layout)
     docx = os.path.join(ddir, base + '.docx')
-    EK.rewrite_headers(doc, TITLE, vol)
+    EK.rewrite_headers(doc, TITLE, label)
     doc.save(docx)
     if not do_pdf:
         return docx, None, 'docx-only'
@@ -211,7 +217,19 @@ def main():
     ap.add_argument('--vol', default='')
     ap.add_argument('--layout', choices=('single', 'double'), default='')
     ap.add_argument('--no-pdf', action='store_true')
+    ap.add_argument('--page', action='append', default=[], help='只輸出指定篇頁，可重複，如 卷上之一__p2')
+    ap.add_argument('--label', default='', help='篇頁標題（預設同卷名），如 卷上之一・第2篇 集僧通局')
     a = ap.parse_args()
+    if a.page:
+        vols = sorted({p.split('__p')[0] for p in a.page})
+        for vol in vols:
+            pages = [p for p in a.page if p.startswith(vol + '__p')]
+            layouts = (False,) if a.layout == 'single' else ((True,) if a.layout == 'double' else (False, True))
+            for two in layouts:
+                print('build hebian', vol, pages, '雙欄' if two else '單欄', flush=True)
+                docx, pdf, st = build(vol, two, not a.no_pdf, pages, a.label or None)
+                print('->', docx, pdf or 'PDF FAIL', st, flush=True)
+        return
     for vol in VOLS:
         if a.vol and vol != a.vol:
             continue

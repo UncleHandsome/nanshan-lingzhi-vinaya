@@ -106,8 +106,8 @@ def pairs(row):
 
 
 def section_label(book, mark, occ, total):
-    """節標題顯示：戒疏保留卷題，其餘統一 `第N篇　短名（續）`。"""
-    if mark == '卷首' or book == 'jieshu':
+    """節標題顯示：統一 `第N篇　短名（續）`；卷首、流通分等非篇名原樣顯示。"""
+    if mark == '卷首':
         return mark
     parsed = CT.parse_mark(mark)
     if not parsed:
@@ -190,8 +190,25 @@ def main():
         first = re.search(cfg['pat'], raw)
         body_start = first.start() if first else 0
         if book == 'jieshu':
-            # 用 21 個卷題 marks 當節：每卷 4–6 節
-            sec_marks = [(pos, txt) for pos, _v, txt in marks]
+            # 依「卷 → 篇」切節：原典戒本八篇開篇（【律】諸大德！是…法）為界；
+            # 篇若被卷切開，會在下一卷以〈續〉節重出（跨卷續篇見下方補正）。
+            PIAN_JI = [
+                ('1 波羅夷篇', '諸大德！是四波羅夷法'),
+                ('2 僧殘篇', '諸大德！是十三僧伽婆尸沙法'),
+                ('3 不定篇', '諸大德！是二不定法'),
+                ('4 捨墮篇', '諸大德！是三十尼薩耆波逸提法'),
+                ('5 單提篇', '諸大德！是九十波逸提法'),
+                ('6 提舍尼篇', '諸大德！是四波羅提提舍尼法'),
+                ('7 眾學篇', '諸大德！是眾式叉迦羅尼法'),
+                ('8 滅諍篇', '諸大德！是七滅諍法'),
+                ('流通分', '諸大德！我已說七滅諍法'),
+            ]
+            sec_marks = []
+            for lab, pat in PIAN_JI:
+                i = raw.find(pat)
+                if i >= 0:
+                    sec_marks.append((hpos[i], lab))
+            sec_marks.sort()
             per_vol_marks = {}
             for v, a, b in intervals:
                 per_vol_marks[v] = [(p, t) for p, t in sec_marks if a <= p < b]
@@ -212,6 +229,20 @@ def main():
                 if x.strip()]
         rows = [r for r in rows if r.get('raw_start', -1) >= 0]
         rows.sort(key=lambda r: (r['raw_start'], r['raw_end']))
+
+        # 戒疏：篇被卷切開時，下一卷開頭是上一篇的延續，需在卷首補一個續篇界標，
+        # 否則該卷前段會被誤歸「卷首」。
+        if book == 'jieshu':
+            for v, a, b in intervals:
+                sel = [r for r in rows if r['raw_start'] < b and r['raw_end'] > a]
+                if not sel:
+                    continue
+                ck0 = chunk_of(sel[0]['raw_start'], sec_marks, '卷首')
+                if ck0 == '卷首':
+                    continue
+                local = per_vol_marks[v]
+                if not local or local[0][0] > sel[0]['raw_start']:
+                    per_vol_marks[v] = [(min(a, sel[0]['raw_start']), ck0)] + local
 
         # ── 第一遍：每卷節序，計算同篇出現次數（續篇標記） ──
         vol_rows = {}

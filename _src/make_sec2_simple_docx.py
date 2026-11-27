@@ -124,6 +124,8 @@ set_run(p.add_run(), '共 37 段・標楷體 14pt', HEI, 11, color=GRAY)
 doc.add_page_break()
 
 n = 0
+OVERRIDE = {'114-2', '114-4', '114-5', 'GAP02-2', 'GAP02-3', 'GAP02-6', '120',
+            '124', '127-3', '129', '131', '133', '137'}
 for i, key in enumerate(ORDER, 1):
     data = replies.get(key)
     if not data:
@@ -133,6 +135,8 @@ for i, key in enumerate(ORDER, 1):
     status = data.get('status')
     final = (data.get('translation') or '').strip()
     final = LBL.sub('', final).strip()
+    if key in OVERRIDE:
+        final = o['tr']
     if not final:
         final = o['tr']
     p = para(doc, sa=2, line=1.2, align=WD_ALIGN_PARAGRAPH.LEFT)

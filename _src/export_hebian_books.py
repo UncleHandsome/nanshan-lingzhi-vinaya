@@ -165,7 +165,7 @@ def _two_col_body(doc, items):
     _flush_two_col(doc, cur)
 
 
-def build(vol, two, do_pdf=True, pages=None, label=None):
+def build(vol, two, do_pdf=True, pages=None, label=None, outdir=None):
     label = label or vol
     items = load_vol(vol, pages)
     doc = Document()
@@ -181,9 +181,11 @@ def build(vol, two, do_pdf=True, pages=None, label=None):
         _single_body(doc, items)
     layout = '雙欄' if two else '單欄'
     ddir, pdir = OUT[layout]
+    if outdir:
+        ddir = pdir = outdir
     os.makedirs(ddir, exist_ok=True); os.makedirs(pdir, exist_ok=True)
     slug = label.replace('　', '').replace('・', '_').replace(' ', '')
-    base = '%s_%s_白話對照本_%s' % (TITLE, slug, layout)
+    base = ('%s_%s' % (TITLE, slug)) if outdir else ('%s_%s_白話對照本_%s' % (TITLE, slug, layout))
     docx = os.path.join(ddir, base + '.docx')
     EK.rewrite_headers(doc, TITLE, label)
     doc.save(docx)
@@ -219,6 +221,7 @@ def main():
     ap.add_argument('--no-pdf', action='store_true')
     ap.add_argument('--page', action='append', default=[], help='只輸出指定篇頁，可重複，如 卷上之一__p2')
     ap.add_argument('--label', default='', help='篇頁標題（預設同卷名），如 卷上之一・第2篇 集僧通局')
+    ap.add_argument('--outdir', default='', help='輸出到指定資料夾（不放入正式對照本系列）')
     a = ap.parse_args()
     if a.page:
         vols = sorted({p.split('__p')[0] for p in a.page})
@@ -227,7 +230,7 @@ def main():
             layouts = (False,) if a.layout == 'single' else ((True,) if a.layout == 'double' else (False, True))
             for two in layouts:
                 print('build hebian', vol, pages, '雙欄' if two else '單欄', flush=True)
-                docx, pdf, st = build(vol, two, not a.no_pdf, pages, a.label or None)
+                docx, pdf, st = build(vol, two, not a.no_pdf, pages, a.label or None, a.outdir or None)
                 print('->', docx, pdf or 'PDF FAIL', st, flush=True)
         return
     for vol in VOLS:

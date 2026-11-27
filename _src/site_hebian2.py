@@ -8,6 +8,17 @@
 差別只在「誰配誰」由 pairs_v2 決定：
   逐條鈔段 → 先出鈔（含白話）→ 再出所有對到它的記段（可多段）
   沒有對到任何鈔段的記段（orphan）→ 補在該篇／該卷末，並標示「無對應鈔段」
+
+篇題釋鏈（2026-11-27）
+---------------------
+每一篇的「釋○篇」記文（part='head'）及其後續仍屬釋篇名的記段，必須整串排在
+該篇第一個鈔段之前，順序為 head → 續段…。續段判定為通用規則（不再硬編碼）：
+依記文原序納入同篇後續段，直到
+  1. 段內出現「敘意中／敘來意／來意中／敘意／科判／標歎中／歎教文中／釋文」
+     等邊界標記：標記在段首則該段不提前；標記在段中則整段提前後停止
+     （記段不可切）；
+  2. 或該段已對到本篇鈔段（表示已開始逐句釋鈔）。
+見 HEAD_BOUNDARY 與 build_head_chains()。
 """
 import bisect
 import collections
@@ -24,6 +35,47 @@ OUT = SH.OUT
 HB = SH.HB
 PAIRS = os.path.join(B, '定稿', '對位結果_20261125', 'pairs_v2_index.json')
 SEGMAP_PATH = os.path.join(B, '定稿', '對位結果_20261125', 'seg_groups.json')
+
+# 「釋○篇」之後，記文由釋篇名轉入敘意／釋文的邊界標記。
+# 標記在段首：該段屬敘意／釋文，不提前；標記在段中：整段提前後停止（段不可切）。
+HEAD_BOUNDARY = ('敘意中', '敘來意', '來意中', '敘意', '科判', '標歎中',
+                 '歎教文中', '釋文')
+
+
+def build_head_chains(ji, ji2c, chao_chapter):
+    """回傳 {ch: [ji 索引, ...]}：每一篇「篇題釋」記文鏈（head 起）。
+
+    規則（通用，無硬編碼）：
+      * 從 part='head' 的記段起，依記文原序只納入同篇（ch 相同）的後續段；
+      * 遇到段內含 HEAD_BOUNDARY 標記者：段首 → 不納入並停止；
+        段中 → 整段納入後停止（該段同時是篇題釋尾巴，不可切）；
+      * 遇到已對到「本篇鈔段」的記段（開始逐句釋鈔）→ 不納入並停止；
+      * 其餘同篇後續段仍屬釋篇名，納入。
+    """
+    chains = {}
+    for ch in sorted({u['ch'] for u in ji if u.get('part') == 'head'}):
+        head = next(i for i, u in enumerate(ji)
+                    if u['ch'] == ch and u['part'] == 'head')
+        chain = [head]
+        for i in range(head + 1, len(ji)):
+            u = ji[i]
+            if u['ch'] != ch:
+                break
+            src = u['source']
+            mpos = min([src.find(m) for m in HEAD_BOUNDARY if m in src],
+                       default=-1)
+            on_chao = any(chao_chapter.get(str(t)) == ch
+                          for t in (ji2c.get(str(u['key'])) or []))
+            if mpos == 0:
+                break
+            if mpos > 0:
+                chain.append(i)
+                break
+            if on_chao:
+                break
+            chain.append(i)
+        chains[ch] = chain
+    return chains
 
 
 def main():
@@ -103,6 +155,8 @@ def main():
     # 同時，若某記段的章（ch）與對位到的鈔段章不同（跨篇切段，如 448 尾段之後的 449），
     # 一律改掛到該章第一個鈔段，確保整段篇頭與其後文都在同一篇頁、順序連續。
     chao_chapter = {str(x['key']): x.get('chapter') for x in chao}
+    # 篇題釋鏈：每篇從「釋○篇」head 起，到敘意／釋文之前的記段（通用判定）
+    head_chains = build_head_chains(ji, ji2c, chao_chapter)
     for i, u in enumerate(ji):
         ch = u.get('ch')
         if not ch:
@@ -174,14 +228,10 @@ def main():
                     toc.append(['p%d' % ch, label])
                     body.append('<h2 class="sec" id="p%d">%s</h2>' % (ch, SH.esc(label)))
                     stats['sections'] += 1
-                    # 篇頭「釋○篇」記文應排在该篇鈔文之前（解釋標題）；
-                    # 同一篇題釋的續段（如第2篇 449/450、第3篇 509）也一併提前。
-                    EXTRA_HEAD = {2: {'449', '450'}, 3: {'509'}}
-                    k0 = str(u['key'])
-                    for jidx in target_ji.get((k0, None), []):
-                        if (ji[jidx].get('part') == 'head'
-                                or str(ji[jidx].get('key')) in EXTRA_HEAD.get(ch, set())):
-                            emit_ji(jidx)
+                    # 篇題釋鏈（head→續段…）整串排在該篇第一個鈔段之前，
+                    # 續段判定見 build_head_chains()（不再硬編碼 EXTRA_HEAD）。
+                    for jidx in head_chains.get(ch, []):
+                        emit_ji(jidx)
             k = str(u['key'])
             spec = segmap.get(k)
             # 這一句段之下要掛的記段

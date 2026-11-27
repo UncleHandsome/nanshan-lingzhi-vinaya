@@ -100,11 +100,17 @@ def main():
 
     # 記文「新篇開頭」(part=head，如「2 釋集僧篇…」) 應掛到該篇的第一個鈔段，
     # 不能只依 unit key 的對位全掛在上一篇（否則第2篇開頭會漏在標宗篇）。
+    # 同時，若某記段的章（ch）與對位到的鈔段章不同（跨篇切段，如 448 尾段之後的 449），
+    # 一律改掛到該章第一個鈔段，確保整段篇頭與其後文都在同一篇頁、順序連續。
+    chao_chapter = {str(x['key']): x.get('chapter') for x in chao}
     for i, u in enumerate(ji):
-        if u.get('part') != 'head':
-            continue
         ch = u.get('ch')
-        cks = [str(x['key']) for x in chao if x.get('chapter') == ch]
+        if not ch:
+            continue
+        cur = ji_target.get(i)
+        if u.get('part') != 'head' and cur and chao_chapter.get(cur[0]) == ch:
+            continue
+        cks = [k for k, c in chao_chapter.items() if c == ch]
         if not cks:
             continue
         ck = min(cks, key=lambda k: key_pos.get(k, 1 << 30))
@@ -168,6 +174,11 @@ def main():
                     toc.append(['p%d' % ch, label])
                     body.append('<h2 class="sec" id="p%d">%s</h2>' % (ch, SH.esc(label)))
                     stats['sections'] += 1
+                    # 篇頭「釋○篇」記文應排在该篇鈔文之前（解釋標題）
+                    k0 = str(u['key'])
+                    for jidx in target_ji.get((k0, None), []):
+                        if ji[jidx].get('part') == 'head':
+                            emit_ji(jidx)
             k = str(u['key'])
             spec = segmap.get(k)
             # 這一句段之下要掛的記段

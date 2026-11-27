@@ -97,6 +97,19 @@ def main():
             for jidx in ji_by_key.get(str(jk), []):
                 if ji_target.get(jidx, (None,))[0] == ckey:
                     ji_target[jidx] = (ckey, 'tail')
+
+    # 記文「新篇開頭」(part=head，如「2 釋集僧篇…」) 應掛到該篇的第一個鈔段，
+    # 不能只依 unit key 的對位全掛在上一篇（否則第2篇開頭會漏在標宗篇）。
+    for i, u in enumerate(ji):
+        if u.get('part') != 'head':
+            continue
+        ch = u.get('ch')
+        cks = [str(x['key']) for x in chao if x.get('chapter') == ch]
+        if not cks:
+            continue
+        ck = min(cks, key=lambda k: key_pos.get(k, 1 << 30))
+        ji_target[i] = (ck, None)
+
     target_ji = collections.defaultdict(list)
     for jidx, tgt in ji_target.items():
         target_ji[tgt].append(jidx)

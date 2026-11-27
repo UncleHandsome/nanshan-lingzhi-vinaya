@@ -174,10 +174,13 @@ def main():
                     toc.append(['p%d' % ch, label])
                     body.append('<h2 class="sec" id="p%d">%s</h2>' % (ch, SH.esc(label)))
                     stats['sections'] += 1
-                    # 篇頭「釋○篇」記文應排在该篇鈔文之前（解釋標題）
+                    # 篇頭「釋○篇」記文應排在该篇鈔文之前（解釋標題）；
+                    # 同一篇題釋的續段（如第2篇 449/450、第3篇 509）也一併提前。
+                    EXTRA_HEAD = {2: {'449', '450'}, 3: {'509'}}
                     k0 = str(u['key'])
                     for jidx in target_ji.get((k0, None), []):
-                        if ji[jidx].get('part') == 'head':
+                        if (ji[jidx].get('part') == 'head'
+                                or str(ji[jidx].get('key')) in EXTRA_HEAD.get(ch, set())):
                             emit_ji(jidx)
             k = str(u['key'])
             spec = segmap.get(k)

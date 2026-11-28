@@ -41,6 +41,9 @@ SEGMAP_PATH = os.path.join(B, '定稿', '對位結果_20261125', 'seg_groups.jso
 HEAD_BOUNDARY = ('敘意中', '敘來意', '來意中', '敘意', '科判', '標歎中',
                  '歎教文中', '釋文')
 
+# 已人工核定的例外：某些段雖無標記，卻屬「釋鈔正文」，不得提前到鈔文前。
+CHAIN_EXCLUDE = {2: {'450'}}
+
 
 def build_head_chains(ji, ji2c, chao_chapter):
     """回傳 {ch: [ji 索引, ...]}：每一篇「篇題釋」記文鏈（head 起）。
@@ -62,14 +65,14 @@ def build_head_chains(ji, ji2c, chao_chapter):
             if u['ch'] != ch:
                 break
             src = u['source']
+            # 已知屬「釋鈔正文」的段（不由字面推測）：目前只有第2篇記文 450
+            # （「用彼決此…故今科判」），必須留在鈔文之後。
+            if str(u['key']) in CHAIN_EXCLUDE.get(ch, set()):
+                break
             hit = next((m for m in HEAD_BOUNDARY if m in src), None)
             mpos = src.find(hit) if hit else -1
             on_chao = any(chao_chapter.get(str(t)) == ch
                           for t in (ji2c.get(str(u['key'])) or []))
-            # 「科判」字樣本身不足以判為釋鈔正文（篇題釋也可能提到科判）；
-            # 僅當該段已對到本篇鈔段、且段中含科判時，才留在鈔文後（如記文 450）。
-            if '科判' in src and on_chao:
-                break
             if mpos == 0:
                 break
             if mpos > 0:

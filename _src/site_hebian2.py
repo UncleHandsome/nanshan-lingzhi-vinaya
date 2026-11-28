@@ -62,13 +62,14 @@ def build_head_chains(ji, ji2c, chao_chapter):
             if u['ch'] != ch:
                 break
             src = u['source']
-            if '科判' in src:
-                # 「科判」段屬釋鈔正文（如「用彼決此…故今科判」），一律留在鈔文後
-                break
             hit = next((m for m in HEAD_BOUNDARY if m in src), None)
             mpos = src.find(hit) if hit else -1
             on_chao = any(chao_chapter.get(str(t)) == ch
                           for t in (ji2c.get(str(u['key'])) or []))
+            # 「科判」字樣本身不足以判為釋鈔正文（篇題釋也可能提到科判）；
+            # 僅當該段已對到本篇鈔段、且段中含科判時，才留在鈔文後（如記文 450）。
+            if '科判' in src and on_chao:
+                break
             if mpos == 0:
                 break
             if mpos > 0:

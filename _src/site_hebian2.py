@@ -62,8 +62,11 @@ def build_head_chains(ji, ji2c, chao_chapter):
             if u['ch'] != ch:
                 break
             src = u['source']
-            mpos = min([src.find(m) for m in HEAD_BOUNDARY if m in src],
-                       default=-1)
+            if '科判' in src:
+                # 「科判」段屬釋鈔正文（如「用彼決此…故今科判」），一律留在鈔文後
+                break
+            hit = next((m for m in HEAD_BOUNDARY if m in src), None)
+            mpos = src.find(hit) if hit else -1
             on_chao = any(chao_chapter.get(str(t)) == ch
                           for t in (ji2c.get(str(u['key'])) or []))
             if mpos == 0:
